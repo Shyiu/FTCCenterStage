@@ -1,0 +1,15 @@
+package org.firstinspires.ftc.teamcode.PurePursuitTutorial.treamcode;
+
+
+
+public class MyOpMode extends OpMode {
+
+    @Override
+    public void init(){
+
+    }
+    @Override
+    public void loop() {
+        RobotMovement.goToPosition(400/2, 358/2, .2, 1, .1);
+    }
+}

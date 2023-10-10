@@ -1,12 +1,12 @@
-package Main;
+package org.firstinspires.ftc.teamcode.PurePursuitTutorial.Main;
 
-import RobotUtilities.MovementVars;
-import com.company.ComputerDebugging;
-import com.company.FloatPoint;
-import com.company.Robot;
-import com.company.UdpServer;
-import treamcode.MyOpMode;
-import treamcode.OpMode;
+
+import org.firstinspires.ftc.teamcode.PurePursuitTutorial.com.company.ComputerDebugging;
+import org.firstinspires.ftc.teamcode.PurePursuitTutorial.com.company.FloatPoint;
+import org.firstinspires.ftc.teamcode.PurePursuitTutorial.com.company.Robot;
+import org.firstinspires.ftc.teamcode.PurePursuitTutorial.treamcode.MyOpMode;
+import org.firstinspires.ftc.teamcode.PurePursuitTutorial.treamcode.OpMode;
+
 
 import java.io.IOException;
 import java.net.DatagramPacket;
