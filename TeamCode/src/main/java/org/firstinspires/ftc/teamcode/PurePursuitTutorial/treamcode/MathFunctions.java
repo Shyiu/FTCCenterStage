@@ -57,7 +57,7 @@ public class MathFunctions {
 
             xRoot2 += circleCenter.x;
             yRoot2 += circleCenter.y;
-x
+
 
             if(xRoot2 > minX && xRoot2 < maxX){
                 allPoints.add(new Point(xRoot2, yRoot2));

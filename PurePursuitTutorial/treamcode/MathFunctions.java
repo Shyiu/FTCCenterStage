@@ -10,11 +10,11 @@ public class MathFunctions {
     }
 
     public static double AngleWrap(double angle) {
-        while(angle < -3.141592653589793D) {
+        while (angle < -3.141592653589793D) {
             angle += 6.283185307179586D;
         }
 
-        while(angle > 3.141592653589793D) {
+        while (angle > 3.141592653589793D) {
             angle -= 6.283185307179586D;
         }
 
@@ -56,9 +56,66 @@ public class MathFunctions {
             if (xRoot2 > minX && xRoot2 < maxX) {
                 allPoints.add(new Point(xRoot2, yRoot2));
             }
-        } catch (Exception var30) {
+        } catch (Exception e) {
         }
 
         return allPoints;
     }
+
+    public static double distanceBetweenPoints(CurvePoint endLine, CurvePoint startLine) {
+        double x1 = endLine.x;
+        double y1 = endLine.y;
+        double x2 = startLine.x;
+        double y2 = startLine.y;
+        return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+    }
+
+    public static double distanceBetweenPoints(Point endLine, Point startLine) {
+        double x1 = endLine.x;
+        double y1 = endLine.y;
+        double x2 = startLine.x;
+        double y2 = startLine.y;
+        return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+    }
+    public static CurvePoint compositeLine(CurvePoint startPoint, CurvePoint endPoint, double percentage){
+        double newX = endPoint.x - startPoint.x;
+        newX *= percentage;
+        newX += startPoint.x;
+        double newY  = endPoint.y - startPoint.y;
+        newY *= percentage;
+        newY += startPoint.y;
+        CurvePoint output = new CurvePoint(endPoint);
+        output.x = newX;
+        output.y = newY;
+        output.endpoint =true;
+        return output;
+    }
+    public static CurvePoint extendLine(CurvePoint firstPoint, CurvePoint secondPoint, double distance) {
+
+        /**
+         * Since we are pointing to this point, extend the line if it is the last line
+         * but do nothing if it isn't the last line
+         *
+         * So if you imagine the robot is almost done its path, without this algorithm
+         * it will just point to the last point on its path creating craziness around
+         * the end (although this is covered by some sanity checks later).
+         * With this, it will imagine the line extends further and point to a location
+         * outside the endpoint of the line only if it's the last point. This makes the
+         * last part a lot smoother, almost looking like a curve but not.
+         */
+
+        //get the angle of this line
+        double lineAngle = Math.atan2(secondPoint.y - firstPoint.y, secondPoint.x - firstPoint.x);
+        //get this line's length
+        double lineLength = Math.hypot(secondPoint.x - firstPoint.x, secondPoint.y - firstPoint.y);
+        //extend the line by 1.5 pointLengths so that we can still point to it when we
+        //are at the end
+        double extendedLineLength = lineLength + distance;
+
+        CurvePoint extended = new CurvePoint(secondPoint);
+        extended.x = Math.cos(lineAngle) * extendedLineLength + firstPoint.x;
+        extended.y = Math.sin(lineAngle) * extendedLineLength + firstPoint.y;
+        return extended;
+    }
 }
+

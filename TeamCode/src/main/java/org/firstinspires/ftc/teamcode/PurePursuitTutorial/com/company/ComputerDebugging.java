@@ -6,7 +6,7 @@ import java.text.DecimalFormat;
 
 public class ComputerDebugging {
     //this is what actually sends our messages
-    private static com.company.UdpServer udpServer;
+    private static UdpServer udpServer;
     //this is what we will use to build the messages
     private static StringBuilder messageBuilder = new StringBuilder();
 
@@ -17,8 +17,8 @@ public class ComputerDebugging {
      * Initializes udp server and starts it's thread
      */
     public ComputerDebugging(){
-        com.company.UdpServer.kill = false;
-        udpServer = new com.company.UdpServer(11115);
+        UdpServer.kill = false;
+        udpServer = new UdpServer(11115);
         Thread runner = new Thread(udpServer);
         runner.start();//go go go
     }
@@ -47,7 +47,7 @@ public class ComputerDebugging {
      * Sends the location of any point you would like to send
      * @param floatPoint the point you want to send
      */
-    public static void sendKeyPoint(com.company.FloatPoint floatPoint) {
+    public static void sendKeyPoint(FloatPoint floatPoint) {
         if(!Robot.usingComputer){return;}
 
 
@@ -63,7 +63,7 @@ public class ComputerDebugging {
      * This is a point you don't want to clear every update
      * @param floatPoint the point you want to send
      */
-    public static void sendLogPoint(com.company.FloatPoint floatPoint) {
+    public static void sendLogPoint(FloatPoint floatPoint) {
         if(!Robot.usingComputer){return;}
 
 
@@ -80,7 +80,7 @@ public class ComputerDebugging {
      * @param point1
      * @param point2
      */
-    public static void sendLine(com.company.FloatPoint point1, com.company.FloatPoint point2){
+    public static void sendLine(FloatPoint point1, FloatPoint point2){
         //return if not using the computer
         if(!Robot.usingComputer){return;}
         messageBuilder.append("LINE,")
@@ -101,7 +101,7 @@ public class ComputerDebugging {
     public static void stopAll() {
         if(!Robot.usingComputer){return;}
 
-        com.company.UdpServer.kill = true;
+        UdpServer.kill = true;
     }
 
     /**

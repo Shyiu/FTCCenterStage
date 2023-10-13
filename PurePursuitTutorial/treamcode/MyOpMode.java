@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.PurePursuitTutorial.treamcode;
 
 
+import java.util.ArrayList;
 
 public class MyOpMode extends OpMode {
 
@@ -10,6 +11,17 @@ public class MyOpMode extends OpMode {
     }
     @Override
     public void loop() {
-        RobotMovement.goToPosition(400/2, 358/2, .2, 1, .1);
+        ArrayList<CurvePoint> allPoints = new ArrayList<>();
+        allPoints.add(new CurvePoint(125.0,50.0,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
+        allPoints.add(new CurvePoint(125.0,100,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
+        allPoints.add(new CurvePoint(250,100,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
+        allPoints.add(new CurvePoint(250,150,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
+        allPoints.add(new CurvePoint(300,200,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
+        allPoints.add(new CurvePoint(250,201,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
+
+        RobotMovement.handleCurve(allPoints);
+
+
+
     }
 }

@@ -1,14 +1,21 @@
 package org.firstinspires.ftc.teamcode.PurePursuitTutorial.org.opencv.core;
 
+import org.firstinspires.ftc.teamcode.PurePursuitTutorial.treamcode.CurvePoint;
+
 public class Point {
     public double x;
     public double y;
-
+    public boolean end;
     public Point(double x, double y) {
         this.x = x;
         this.y = y;
+        this.end = false;
     }
-
+    public Point(double x, double y, boolean end){
+        this.x =x;
+        this.y =y;
+        this.end = end;
+    }
     public Point() {
         this(0.0D, 0.0D);
     }
@@ -16,6 +23,11 @@ public class Point {
     public Point(double[] vals) {
         this();
         this.set(vals);
+    }
+    public Point(CurvePoint point){
+        this.x = point.x;
+        this.y = point.y;
+        this.end = false;
     }
 
     public void set(double[] vals) {
