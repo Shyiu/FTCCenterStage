@@ -12,6 +12,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDir
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
+import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -27,25 +28,28 @@ public class AprilTagPipeline {
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;
+    private MecanumBotConstant mc = new MecanumBotConstant();
     /**
      * Initialize the AprilTag processor.
      */
-    public void initAprilTag(HardwareMap hardwareMap) {
+    public void initAprilTag(HardwareMap hardwareMap) throws InterruptedException {
         // Create the AprilTag processor by using a builder.
         aprilTag = new AprilTagProcessor.Builder().build();
 
         // Create the vision portal by using a builder.
         if (USE_WEBCAM) {
             visionPortal = new VisionPortal.Builder()
-                    .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                    .setCamera(hardwareMap.get(WebcamName.class, mc.camera))
                     .addProcessor(aprilTag)
                     .build();
+            setManualExposure(6, 250);
         } else {
             visionPortal = new VisionPortal.Builder()
                     .setCamera(BuiltinCameraDirection.BACK)
                     .addProcessor(aprilTag)
                     .build();
         }
+
     }
     public AprilTagDetection getDetectionsForTargets(ArrayList<Integer> targets){
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();

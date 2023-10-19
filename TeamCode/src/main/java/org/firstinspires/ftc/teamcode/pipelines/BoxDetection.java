@@ -45,12 +45,12 @@ public class BoxDetection extends OpenCvPipeline {
             new Point(960, maxY));
 
     static double PERCENT_COLOR_THRESHOLD = 0.4;
-    public static int S11 = 75;
+    public static int S11 = 100;
     public static int S12 = 40;
-    public static int S13 = 0;
+    public static int S13 = 55;
     public static int S21 = 125;
-    public static int S22 = 255;
-    public static int S23 = 100;
+    public static int S22 = 150;
+    public static int S23 = 95;
     public boolean red = true;
     public BoxDetection(Telemetry t) { telemetry = t; }
     @Override
@@ -58,11 +58,11 @@ public class BoxDetection extends OpenCvPipeline {
         Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
         Scalar low, high;
         if (red) {
-            low = new Scalar(0, 180, 0);
-            high = new Scalar(50, 250, 250);
+            low = new Scalar(0, 125, 0);
+            high = new Scalar(26, 255, 250);
         }else{
-            low = new Scalar(S11, S12, S13);
-            high = new Scalar(S21, S22, S23);
+            low = new Scalar(100, 0, 0);
+            high = new Scalar(125, 150, 95);
         }
 
 

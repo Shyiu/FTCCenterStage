@@ -4,11 +4,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.autonomous_utilities.CurvePoint;
 import org.firstinspires.ftc.teamcode.autonomous_utilities.RobotMovement;
 import org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities.Robot;
-
-import java.util.ArrayList;
+import org.firstinspires.ftc.teamcode.subclasses.Encoder;
 
 @Autonomous(name = "Auto")
 public class MecanumAutonomous extends LinearOpMode {
