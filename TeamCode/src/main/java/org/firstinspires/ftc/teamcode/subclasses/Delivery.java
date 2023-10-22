@@ -26,15 +26,23 @@ public class Delivery {
 
     public static double RIGHT_OPEN = 1;
     public static double LEFT_OPEN = 1;
+    public static double RIGHT_CLOSE = 1;
+    public static double LEFT_CLOSE = 1;
     public Delivery(HardwareMap hardwareMap){
         m = new MecanumBotConstant();
+
+        RIGHT_OPEN = m.right_open_position;
+        LEFT_OPEN = m.left_open_position;
+        RIGHT_CLOSE = m.right_closed_position;
+        LEFT_CLOSE = m.left_closed_position;
+
         dleft = hardwareMap.get(DcMotorSimple.class, m.dleft);
         dright = hardwareMap.get(DcMotorSimple.class, m.dright);
         timer = new ElapsedTime();
     }
     public void toggleRight(){
         if (right_toggle && timer.time() - servoTimer1 > servoDelay){
-            dright.setPower(0);
+            dright.setPower(RIGHT_CLOSE);
             servoTimer1 = timer.time();
             right_toggle = false;
         }else if (timer.time() - servoTimer1 > servoDelay){
@@ -45,7 +53,7 @@ public class Delivery {
     }
     public void toggleLeft(){
         if (left_toggle && timer.time() - servoTimer2 > servoDelay){
-            dleft.setPower(0);
+            dleft.setPower(LEFT_CLOSE);
             servoTimer2 = timer.time();
             left_toggle = false;
         }else if (timer.time() - servoTimer2 > servoDelay){

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.pipelines.AprilTagPipeline;
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+@TeleOp(name = "PipeLineTesting")
 public class PipelineTesting extends LinearOpMode {
     AprilTagPipeline pipeline;
     ArrayList<Integer> targets;

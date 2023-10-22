@@ -1,15 +1,14 @@
 package org.firstinspires.ftc.teamcode.subclasses;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
 public class Rigging {
-    DcMotor riggingMotor1;
-    DcMotor riggingMotor2;
+    DcMotor riggingMotorRight;
+    DcMotor riggingMotorLeft;
     MecanumBotConstant mc = new MecanumBotConstant();
     private boolean busy = false;
     private boolean first = true;
@@ -24,15 +23,17 @@ public class Rigging {
     public Rigging(HardwareMap hardwareMap){
         timer = new ElapsedTime();
 
-        riggingMotor1 = hardwareMap.get(DcMotor.class, mc.rigging_motor_1);
-        riggingMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        riggingMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        riggingMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        riggingMotorRight = hardwareMap.get(DcMotor.class, mc.rigging_motor_right);
+        riggingMotorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        riggingMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        riggingMotorRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        riggingMotor2 = hardwareMap.get(DcMotor.class, mc.rigging_motor_2);
-        riggingMotor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        riggingMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        riggingMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        riggingMotorLeft = hardwareMap.get(DcMotor.class, mc.rigging_motor_left);
+        riggingMotorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        riggingMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        riggingMotorLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        riggingMotorRight.setDirection(DcMotor.Direction.REVERSE);
 
     }
     public boolean isBusy(){
@@ -40,28 +41,28 @@ public class Rigging {
     }
     public void rigUp(){
         if (first) {
-            riggingMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            riggingMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            riggingMotorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            riggingMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-            riggingMotor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            riggingMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            riggingMotorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            riggingMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             first = false;
             busy = true;
+            setRiggingPower(1);
+
         }
 
 
 
-        if (riggingMotor2.getCurrentPosition() > extension_distance || riggingMotor1.getCurrentPosition() < extension_distance) {
+        if (riggingMotorLeft.getCurrentPosition() > extension_distance || riggingMotorRight.getCurrentPosition() > extension_distance) {
             setRiggingPower(0);
             busy = false;
         }
-        else{
-            setRiggingPower(1);
-        }
+
 
     }
     public void rigDown(){
-        if(riggingMotor2.getCurrentPosition() > 0 || riggingMotor1.getCurrentPosition() > 0){
+        if(riggingMotorLeft.getCurrentPosition() > 0 || riggingMotorRight.getCurrentPosition() > 0){
             setRiggingPower(hold_speed);
             busy = false;
         }
@@ -70,8 +71,13 @@ public class Rigging {
             busy = true;
         }
     }
+    public int getRiggingPosition(){
+        int output = riggingMotorLeft.getCurrentPosition() + riggingMotorRight.getCurrentPosition();
+        output /= 2;
+        return output;
+    }
     public void setRiggingPower(double speed){
-        riggingMotor2.setPower(speed);
-        riggingMotor1.setPower(speed);
+        riggingMotorLeft.setPower(speed);
+        riggingMotorRight.setPower(speed);
     }
 }

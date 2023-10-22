@@ -130,14 +130,14 @@ public class MecanumTeleOp extends LinearOpMode {
 
 
 
-        public double closerToV2(double v1, double v2, double v3){
-            double diff1 = Math.abs(v1-v2);
-            double diff2 = Math.abs(v2-v3);
-            if (diff1 > diff2){
-                return v1;
-            }
-            return v3;
-        }
+//        public double closerToV2(double v1, double v2, double v3){
+//            double diff1 = Math.abs(v1-v2);
+//            double diff2 = Math.abs(v2-v3);
+//            if (diff1 > diff2){
+//                return v1;
+//            }
+//            return v3;
+//        }
 
         public double sameSignSqrt(double number){
             return Math.copySign(Math.sqrt(Math.abs(number)), number);

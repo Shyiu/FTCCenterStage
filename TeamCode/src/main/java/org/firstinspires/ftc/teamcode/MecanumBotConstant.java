@@ -15,10 +15,18 @@ public class MecanumBotConstant {
     public String dleft = "delivery_left";
     public String dright = "delivery_right";
 
+    public double left_closed_position = -.8;
+    public double right_closed_position = 0;
+    public double left_open_position = -1;
+    public double right_open_position = 1;
+
+
     public String camera = "Webcam 1";
 
     public String launcher_servo = "launcher_servo";
 
-    public String rigging_motor_1 = "rigging_motor_1";
-    public String rigging_motor_2 = "rigging_motor_2";
+    public String rigging_motor_right = "rigging_motor_right";
+    public String rigging_motor_left = "rigging_motor_left";
+
+
 }

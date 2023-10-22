@@ -10,30 +10,10 @@ import org.firstinspires.ftc.teamcode.subclasses.Encoder;
 
 @Autonomous(name = "Auto")
 public class MecanumAutonomous extends LinearOpMode {
-    public MecanumBotConstant names = new MecanumBotConstant();
-
-
-    private DcMotor frontLeft;
-    private DcMotor backLeft;
-    private DcMotor frontRight;
-    private DcMotor backRight;
-    private Encoder deadwheelLateral;
-    private Encoder deadwheelLinear;
     @Override
     public void runOpMode() {
-        frontRight = hardwareMap.get(DcMotor.class, names.fr);
-        frontLeft = hardwareMap.get(DcMotor.class, names.fl);
-        backRight = hardwareMap.get(DcMotor.class, names.br);
-        backLeft = hardwareMap.get(DcMotor.class, names.bl);
 
-        deadwheelLateral = new Encoder(hardwareMap, frontRight);
-        deadwheelLinear = new Encoder(hardwareMap, frontLeft);
-
-        // Reverses the direction of the left motors, to allow a positive motor power to equal
-        // forwards and a negative motor power to equal backwards
-        frontLeft.setDirection(DcMotor.Direction.REVERSE);
-        backLeft.setDirection(DcMotor.Direction.REVERSE);
-        Robot robot = new Robot(hardwareMap, frontRight, frontLeft, backRight,  backLeft, deadwheelLateral, deadwheelLinear);
+        Robot robot = new Robot(hardwareMap);
 
 //        ArrayList<CurvePoint> allPoints = new ArrayList<>();
 //        allPoints.add(new CurvePoint(0.0,0.0,.5,0.5,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));

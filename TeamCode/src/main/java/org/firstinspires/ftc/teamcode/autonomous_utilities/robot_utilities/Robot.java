@@ -2,6 +2,9 @@ package org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities;
 
 
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -11,6 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 import org.firstinspires.ftc.teamcode.subclasses.Encoder;
 
 import java.util.concurrent.TimeUnit;
@@ -33,6 +37,10 @@ public class Robot {
     private double lateralXOffset = 0; //in cm (dist to center of robot)
     private double linearYOffset = 0; //in cm (dist to center of robot)
 
+    private long dt = Long.MAX_VALUE;
+
+    private MecanumBotConstant names = new MecanumBotConstant();
+
     private long previous_time_ns = 0;
     private ElapsedTime nano_timer;
     private int previousX = 0;
@@ -44,7 +52,7 @@ public class Robot {
 
     private long lastUpdateTime = 0L;
 
-    public Robot(HardwareMap hardwareMap, DcMotor fr, DcMotor fl, DcMotor br, DcMotor bl, Encoder lateral, Encoder linear) {
+    public Robot(HardwareMap hardwareMap) {
         nano_timer = new ElapsedTime();
         worldXPosition = lateralXOffset;
         worldYPosition = linearYOffset;
@@ -52,12 +60,22 @@ public class Robot {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
-        frontLeft =fl;
-        frontRight = fr;
-        backLeft = bl;
-        backRight = br;
-        deadwheelLateral = lateral;
-        deadwheelLinear = linear;
+
+        frontRight = hardwareMap.get(DcMotor.class, names.fr);
+        frontLeft = hardwareMap.get(DcMotor.class, names.fl);
+        backRight = hardwareMap.get(DcMotor.class, names.br);
+        backLeft = hardwareMap.get(DcMotor.class, names.bl);
+
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        deadwheelLateral = new Encoder(hardwareMap, frontRight);
+        deadwheelLinear = new Encoder(hardwareMap, frontLeft);
+
+        deadwheelLateral.setReverse(true);
+        deadwheelLinear.setReverse(true);
+
+
         imu.initialize(parameters);
     }
     public long getTime(){
@@ -79,28 +97,46 @@ public class Robot {
         return WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;
     }
     public void updatePosition(){
-        long dt = getTime() - lastUpdateTime;
-        if(dt > 50000){
-            double lateralXComponent = deadwheelLateral.getCurrentPosition() * Math.cos(worldAngle_rad);
-            double lateralYComponent = deadwheelLateral.getCurrentPosition() * Math.sin(worldAngle_rad);
+
+        if(dt > 500000){
+            double lateralXComponent = deadwheelLateral.getCurrentPosition() * Math.cos(Math.toRadians(90) - worldAngle_rad);
+            double lateralYComponent = deadwheelLateral.getCurrentPosition() * Math.sin(Math.toRadians(90) - worldAngle_rad);
             double linearXComponent = deadwheelLinear.getCurrentPosition() * Math.cos(worldAngle_rad);
             double linearYComponent = deadwheelLinear.getCurrentPosition() * Math.sin(worldAngle_rad);
-            worldXPosition += Math.round(lateralXComponent + linearXComponent);
-            worldYPosition += Math.round(lateralYComponent + linearYComponent);
-            deadwheelLateral.resetEncoder();
+            worldXPosition += ticksToCM(Math.round(lateralXComponent - linearXComponent));
+            worldYPosition += ticksToCM(Math.round(lateralYComponent + linearYComponent));
+            dt = getTime() - lastUpdateTime;
             deadwheelLinear.resetEncoder();
+            deadwheelLateral.resetEncoder();
             nano_timer.reset();
             lastUpdateTime = getTime();
         }
     }
+    public void drawRobot() {
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        dashboard.setTelemetryTransmissionInterval(25);
+
+        TelemetryPacket packet = new TelemetryPacket();
+        Canvas fieldOverlay = packet.fieldOverlay();
+
+        fieldOverlay.setStrokeWidth(1);
+        fieldOverlay.setStroke("#4CAF50");
+        fieldOverlay.strokeCircle(worldXPosition, worldYPosition, 9);
+
+        dashboard.sendTelemetryPacket(packet);
+
+    }
     public double[] getCurrentPosition(){
         return new double[]{worldXPosition, worldYPosition};
     }
-    public void setMotorPowers(double fl, double fr, double bl, double br){
-        frontLeft.setPower(fl);
-        frontRight.setPower(fr);
-        backLeft.setPower(bl);
-        backRight.setPower(br);
+    public void setMotorPowers(double right, double left) throws InterruptedException{
+        frontLeft.setPower(left);
+        frontRight.setPower(right);
+        backLeft.setPower(left);
+        backRight.setPower(right);
+    }
+    public double[] getPowers(){
+        return new double[]{frontLeft.getPower(), frontRight.getPower(), backLeft.getPower(), backRight.getPower()};
     }
     public void update() {
         double y = MovementVars.movement_y; // Remember, Y stick value is reversed
