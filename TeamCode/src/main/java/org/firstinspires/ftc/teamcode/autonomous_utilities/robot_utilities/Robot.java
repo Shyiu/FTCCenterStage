@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities;
 
-
+//TODO: Determine what the starting IMU heading is and find if we need to offset by 90
+//TODO: Figure out how the localization works.
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -18,7 +20,7 @@ import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 import org.firstinspires.ftc.teamcode.subclasses.Encoder;
 
 import java.util.concurrent.TimeUnit;
-
+@Config
 public class Robot {
     public static double xSpeed = 0.0D;
     public static double ySpeed = 0.0D;
@@ -26,6 +28,9 @@ public class Robot {
     public static double worldXPosition;
     public static double worldYPosition;
     public static double worldAngle_rad;
+
+
+
     private Orientation angles;
     private DcMotor frontLeft;
     private DcMotor backLeft;
@@ -34,6 +39,12 @@ public class Robot {
     private BNO055IMU imu;
     private Encoder deadwheelLateral;
     private Encoder deadwheelLinear;
+
+    public double lastLateralX = 0;
+    public double lastLateralY = 0;
+    public double lastLinearX = 0;
+    public double lastLinearY = 0;
+
     private double lateralXOffset = 0; //in cm (dist to center of robot)
     private double linearYOffset = 0; //in cm (dist to center of robot)
 
@@ -61,6 +72,7 @@ public class Robot {
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
 
+
         frontRight = hardwareMap.get(DcMotor.class, names.fr);
         frontLeft = hardwareMap.get(DcMotor.class, names.fl);
         backRight = hardwareMap.get(DcMotor.class, names.br);
@@ -72,7 +84,7 @@ public class Robot {
         deadwheelLateral = new Encoder(hardwareMap, frontRight);
         deadwheelLinear = new Encoder(hardwareMap, frontLeft);
 
-        deadwheelLateral.setReverse(true);
+        deadwheelLateral.setReverse(false);
         deadwheelLinear.setReverse(true);
 
 
@@ -99,12 +111,18 @@ public class Robot {
     public void updatePosition(){
 
         if(dt > 500000){
-            double lateralXComponent = deadwheelLateral.getCurrentPosition() * Math.cos(Math.toRadians(90) - worldAngle_rad);
-            double lateralYComponent = deadwheelLateral.getCurrentPosition() * Math.sin(Math.toRadians(90) - worldAngle_rad);
+            double lateralXComponent = deadwheelLateral.getCurrentPosition() * Math.cos(- Math.toRadians(90) + worldAngle_rad);//untested
+            double lateralYComponent = deadwheelLateral.getCurrentPosition() * Math.sin(- Math.toRadians(90) + worldAngle_rad);//untested
             double linearXComponent = deadwheelLinear.getCurrentPosition() * Math.cos(worldAngle_rad);
             double linearYComponent = deadwheelLinear.getCurrentPosition() * Math.sin(worldAngle_rad);
-            worldXPosition += ticksToCM(Math.round(lateralXComponent - linearXComponent));
-            worldYPosition += ticksToCM(Math.round(lateralYComponent + linearYComponent));
+            worldXPosition += ticksToCM(Math.round(-lateralXComponent + linearXComponent));
+            worldYPosition += ticksToCM(Math.round(lateralYComponent  + linearYComponent));
+            lastLinearX = linearXComponent;
+            lastLinearY = linearYComponent;
+            lastLateralX = lateralXComponent;
+            lastLateralY = lateralYComponent;
+            worldAngle_rad = getWorldAngle_rad();
+
             dt = getTime() - lastUpdateTime;
             deadwheelLinear.resetEncoder();
             deadwheelLateral.resetEncoder();
@@ -172,7 +190,6 @@ public class Robot {
         backRight.setPower(backRightPower);
 
         updatePosition();
-        worldAngle_rad = getWorldAngle_rad();
     }
 
 

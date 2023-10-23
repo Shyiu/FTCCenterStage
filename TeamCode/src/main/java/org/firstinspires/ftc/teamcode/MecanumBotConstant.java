@@ -16,9 +16,9 @@ public class MecanumBotConstant {
     public String dright = "delivery_right";
 
     public double left_closed_position = .5;
-    public double right_closed_position = -1;
+    public double right_closed_position = .7;
     public double left_open_position = -1;
-    public double right_open_position = 0;
+    public double right_open_position = .2;
 
 
     public String camera = "Webcam 1";

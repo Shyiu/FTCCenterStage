@@ -17,7 +17,6 @@ import org.firstinspires.ftc.teamcode.subclasses.Encoder;
 @TeleOp
 public class DeadwheelDirectionDebug extends LinearOpMode {
 
-    private Orientation angles;
     private DcMotor frontLeft;
     private DcMotor backLeft;
     private DcMotor frontRight;
