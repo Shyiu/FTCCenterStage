@@ -111,8 +111,8 @@ public class Robot {
     public void updatePosition(){
 
         if(dt > 500000){
-            double lateralXComponent = deadwheelLateral.getCurrentPosition() * Math.cos(- Math.toRadians(90) + worldAngle_rad);//untested
-            double lateralYComponent = deadwheelLateral.getCurrentPosition() * Math.sin(- Math.toRadians(90) + worldAngle_rad);//untested
+            double lateralXComponent = deadwheelLateral.getCurrentPosition() * Math.sin(worldAngle_rad);//untested
+            double lateralYComponent = deadwheelLateral.getCurrentPosition() * Math.cos( worldAngle_rad);//untested
             double linearXComponent = deadwheelLinear.getCurrentPosition() * Math.cos(worldAngle_rad);
             double linearYComponent = deadwheelLinear.getCurrentPosition() * Math.sin(worldAngle_rad);
             worldXPosition += ticksToCM(Math.round(-lateralXComponent + linearXComponent));
