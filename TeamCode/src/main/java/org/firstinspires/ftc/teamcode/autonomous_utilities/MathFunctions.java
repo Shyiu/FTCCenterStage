@@ -19,6 +19,16 @@ public class MathFunctions {
 
         return angle;
     }
+    public static double AngleWrapPos(double angle){
+        while (angle < 0) {
+            angle += 6.283185307179586D;
+        }
+
+        while (angle > 2*Math.PI) {
+            angle -= 6.283185307179586D;
+        }
+        return angle;
+    }
 
     public static ArrayList<Point> lineCircleIntersection(Point circleCenter, double radius, Point linePoint1, Point linePoint2) {
         if (Math.abs(linePoint1.y - linePoint2.y) < 0.003D) {

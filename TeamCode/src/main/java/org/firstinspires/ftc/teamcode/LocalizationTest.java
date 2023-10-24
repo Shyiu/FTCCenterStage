@@ -35,6 +35,9 @@ public class LocalizationTest extends LinearOpMode {
             telemetry.addData("X", r.getCurrentPosition()[0]);
             telemetry.addData("Y", r.getCurrentPosition()[1]);
             telemetry.addData("HEADING", r.getWorldAngle_rad());
+            telemetry.addData("First Angle", Math.toDegrees(r.firstAngle));
+            telemetry.addData("Second Angle", Math.toDegrees(r.secondAngle));
+            telemetry.addData("Third Angle", Math.toDegrees(r.thirdAngle));
             telemetry.addData("LeftPower", leftpower);
             telemetry.addData("RightPower", rightpower);
             telemetry.addData("frontLeft", powers[0]);

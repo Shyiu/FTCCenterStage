@@ -25,7 +25,7 @@ public class MecanumAutonomous extends LinearOpMode {
 
         waitForStart();
         while (!isStopRequested() && opModeIsActive()) {
-            RobotMovement.goToLastPosition(0,120,.5, Math.toRadians(90), .5);
+            RobotMovement.goToLastPosition(0,30,.5, Math.toRadians(90), .5);
             robot.update();
             telemetry.addData("Heading", robot.getWorldAngle_rad());
             telemetry.addData("X Position", Robot.worldXPosition);

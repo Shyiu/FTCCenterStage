@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
+import org.firstinspires.ftc.teamcode.autonomous_utilities.MathFunctions;
 import org.firstinspires.ftc.teamcode.subclasses.Encoder;
 
 import java.util.concurrent.TimeUnit;
@@ -29,6 +30,9 @@ public class Robot {
     public static double worldYPosition;
     public static double worldAngle_rad;
 
+    public double firstAngle = 0;
+    public double secondAngle = 0;
+    public double thirdAngle = 0;
 
 
     private Orientation angles;
@@ -58,7 +62,7 @@ public class Robot {
     private int previousY = 0;
 
     private static double TICKS_PER_REV = 537.6;
-    private static double WHEEL_RADIUS = 1;
+    private static double WHEEL_RADIUS = .175;
     private static double GEAR_RATIO = 1;
 
     private long lastUpdateTime = 0L;
@@ -85,7 +89,7 @@ public class Robot {
         deadwheelLinear = new Encoder(hardwareMap, frontLeft);
 
         deadwheelLateral.setReverse(false);
-        deadwheelLinear.setReverse(true);
+        deadwheelLinear.setReverse(false);
 
 
         imu.initialize(parameters);
@@ -102,8 +106,13 @@ public class Robot {
     }
 
     public double getWorldAngle_rad() {
-        angles  = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        return angles.firstAngle;
+        angles  = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS);
+        double degree = MathFunctions.AngleWrapPos(angles.firstAngle + Math.toRadians(90));
+        firstAngle = MathFunctions.AngleWrapPos(angles.firstAngle + Math.toRadians(90));
+        secondAngle = MathFunctions.AngleWrapPos(angles.secondAngle + Math.toRadians(90));
+        thirdAngle = MathFunctions.AngleWrapPos(angles.thirdAngle + Math.toRadians(90));
+
+        return degree;
     }
     public double ticksToCM(double ticks){
         return WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;
@@ -112,10 +121,10 @@ public class Robot {
 
         if(dt > 500000){
             double lateralXComponent = deadwheelLateral.getCurrentPosition() * Math.sin(worldAngle_rad);//untested
-            double lateralYComponent = deadwheelLateral.getCurrentPosition() * Math.cos( worldAngle_rad);//untested
+            double lateralYComponent = deadwheelLateral.getCurrentPosition() * Math.cos(worldAngle_rad);//untested
             double linearXComponent = deadwheelLinear.getCurrentPosition() * Math.cos(worldAngle_rad);
             double linearYComponent = deadwheelLinear.getCurrentPosition() * Math.sin(worldAngle_rad);
-            worldXPosition += ticksToCM(Math.round(-lateralXComponent + linearXComponent));
+            worldXPosition += ticksToCM(Math.round(lateralXComponent + linearXComponent));
             worldYPosition += ticksToCM(Math.round(lateralYComponent  + linearYComponent));
             lastLinearX = linearXComponent;
             lastLinearY = linearYComponent;
