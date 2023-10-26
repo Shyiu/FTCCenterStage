@@ -25,11 +25,13 @@ public class Encoder {
         lastPosition = 0;
     }
     public void setReverse(boolean state){
-        if (!state){
+        if (state){
             reverse = -1;
+        }else{
+            reverse =1;
         }
     }
     public int getCurrentPosition(){
-        return encoder.getCurrentPosition();
+        return encoder.getCurrentPosition() * reverse;
     }
 }

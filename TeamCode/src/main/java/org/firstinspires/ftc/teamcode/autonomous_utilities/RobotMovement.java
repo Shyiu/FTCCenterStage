@@ -18,6 +18,7 @@ public class RobotMovement {
     private static int slice = 0;
     private static ArrayList<Integer> visited = new ArrayList<>();
     public static double initialFollow = 50;
+    public static double absoluteAngleToTarget;
     public RobotMovement() {
     }
 
@@ -144,7 +145,7 @@ public class RobotMovement {
     }
     public static void goToLastPosition(double x, double y, double movementSpeed, double preferredAngle, double turnSpeed) {
         double distanceToTarget = Math.hypot(x - worldXPosition, y - worldYPosition);
-        double absoluteAngleToTarget = Math.atan2(y - worldYPosition, x - worldXPosition);
+        absoluteAngleToTarget = Math.atan2(y - worldYPosition, x - worldXPosition);
         double relativeAngleToPoint = MathFunctions.AngleWrap(absoluteAngleToTarget - (worldAngle_rad - Math.toRadians(90.0D)));
         double relativeXToPoint = Math.cos(relativeAngleToPoint) * distanceToTarget;
         double relativeYToPoint = Math.sin(relativeAngleToPoint) * distanceToTarget;

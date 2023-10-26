@@ -14,10 +14,10 @@ public class MyOpMode extends OpMode {
         ArrayList<CurvePoint> allPoints = new ArrayList<>();
         allPoints.add(new CurvePoint(125.0,50.0,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
         allPoints.add(new CurvePoint(125.0,100,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
-        allPoints.add(new CurvePoint(250,100,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
-        allPoints.add(new CurvePoint(250,150,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
-        allPoints.add(new CurvePoint(300,200,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
-        allPoints.add(new CurvePoint(250,201,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
+//        allPoints.add(new CurvePoint(250,100,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
+//        allPoints.add(new CurvePoint(250,150,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
+//        allPoints.add(new CurvePoint(300,200,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
+//        allPoints.add(new CurvePoint(250,201,1.0,1.0,50.0, Math.toRadians(50), 1.0, Math.toRadians(90.0)));
 
         RobotMovement.handleCurve(allPoints);
 

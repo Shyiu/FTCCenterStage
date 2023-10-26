@@ -2,10 +2,10 @@ package org.firstinspires.ftc.teamcode;
 
 public class MecanumBotConstant {
     //CHUB
-    public String fr = "frontRight";
-    public String fl = "frontLeft";
-    public String br = "backRight";
-    public String bl = "backLeft";
+    public String fr = "frontRight";//0 & Perpendicular Deadwheel
+    public String br = "backRight";//1
+    public String fl = "frontLeft";//2 & Parallel Deadwheel
+    public String bl = "backLeft";//3
 
     //EHUB
     public String intake = "arm";

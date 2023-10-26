@@ -3,6 +3,14 @@ package org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities;
 //TODO: Determine what the starting IMU heading is and find if we need to offset by 90
 //TODO: Figure out how the localization works.
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
+import static org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities.MovementVars.movement_turn;
+import static org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities.MovementVars.movement_x;
+import static org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities.MovementVars.movement_y;
+
+import android.os.SystemClock;
+import android.sax.StartElementListener;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
@@ -12,6 +20,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -23,17 +32,16 @@ import org.firstinspires.ftc.teamcode.subclasses.Encoder;
 import java.util.concurrent.TimeUnit;
 @Config
 public class Robot {
-    public static double xSpeed = 0.0D;
-    public static double ySpeed = 0.0D;
-    public static double turnSpeed = 0.0D;
-    public static double worldXPosition;
-    public static double worldYPosition;
+
+    public static double worldXPosition = 0;
+    public static double worldYPosition = 0;
     public static double worldAngle_rad;
 
     public double firstAngle = 0;
     public double secondAngle = 0;
     public double thirdAngle = 0;
 
+    private double xSpeed, ySpeed, turnSpeed;
 
     private Orientation angles;
     private DcMotor frontLeft;
@@ -61,13 +69,13 @@ public class Robot {
     private int previousX = 0;
     private int previousY = 0;
 
-    private static double TICKS_PER_REV = 537.6;
-    private static double WHEEL_RADIUS = .175;
+    private static double TICKS_PER_REV = 8192;
+    private static double WHEEL_RADIUS_CM = 1.75;
     private static double GEAR_RATIO = 1;
 
     private long lastUpdateTime = 0L;
 
-    public Robot(HardwareMap hardwareMap) {
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry) {
         nano_timer = new ElapsedTime();
         worldXPosition = lateralXOffset;
         worldYPosition = linearYOffset;
@@ -82,17 +90,23 @@ public class Robot {
         backRight = hardwareMap.get(DcMotor.class, names.br);
         backLeft = hardwareMap.get(DcMotor.class, names.bl);
 
-        frontLeft.setDirection(DcMotor.Direction.REVERSE);
-        backLeft.setDirection(DcMotor.Direction.REVERSE);
+        frontRight.setDirection(DcMotor.Direction.REVERSE);
+        backRight.setDirection(DcMotor.Direction.REVERSE);
 
         deadwheelLateral = new Encoder(hardwareMap, frontRight);
         deadwheelLinear = new Encoder(hardwareMap, frontLeft);
 
-        deadwheelLateral.setReverse(false);
+        deadwheelLateral.setReverse(true);
         deadwheelLinear.setReverse(false);
 
 
         imu.initialize(parameters);
+
+        worldAngle_rad = getWorldAngle_rad();
+
+        telemetry.addLine("IMU Calibrated");
+        telemetry.update();
+
     }
     public long getTime(){
         return nano_timer.time(TimeUnit.NANOSECONDS);
@@ -115,7 +129,7 @@ public class Robot {
         return degree;
     }
     public double ticksToCM(double ticks){
-        return WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;
+        return WHEEL_RADIUS_CM * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;
     }
     public void updatePosition(){
 
@@ -124,8 +138,8 @@ public class Robot {
             double lateralYComponent = deadwheelLateral.getCurrentPosition() * Math.cos(worldAngle_rad);//untested
             double linearXComponent = deadwheelLinear.getCurrentPosition() * Math.cos(worldAngle_rad);
             double linearYComponent = deadwheelLinear.getCurrentPosition() * Math.sin(worldAngle_rad);
-            worldXPosition += ticksToCM(Math.round(lateralXComponent + linearXComponent));
-            worldYPosition += ticksToCM(Math.round(lateralYComponent  + linearYComponent));
+            worldXPosition += ticksToCM(lateralXComponent + linearXComponent);
+            worldYPosition += ticksToCM(lateralYComponent  + linearYComponent);
             lastLinearX = linearXComponent;
             lastLinearY = linearYComponent;
             lastLateralX = lateralXComponent;
@@ -166,17 +180,15 @@ public class Robot {
         return new double[]{frontLeft.getPower(), frontRight.getPower(), backLeft.getPower(), backRight.getPower()};
     }
     public void update() {
-        double y = MovementVars.movement_y; // Remember, Y stick value is reversed
-        double x = MovementVars.movement_x;
-        double rx = MovementVars.movement_turn;
+        double y = movement_y; // Remember, Y stick value is reversed
+        double x = movement_x;
+        double rx = movement_turn;
 
         // This button choice was made so that it is hard to hit on accident,
         // it can be freely changed based on preference.
         // The equivalent button is start on Xbox-style controllers.
-        angles  = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
-
-        double botHeading = angles.firstAngle; //Z or the vertical axis in theroy need to check
+        double botHeading = MathFunctions.AngleWrapPos(getWorldAngle_rad() - Math.toRadians(90));
 
         // Rotate the movement direction counter to the bot's rotation
         double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
@@ -199,6 +211,46 @@ public class Robot {
         backRight.setPower(backRightPower);
 
         updatePosition();
+    }
+    public void GFupdate(){
+        long currTime = SystemClock.uptimeMillis();
+        if(currTime - lastUpdateTime < 16){
+            return;
+        }
+        lastUpdateTime = currTime;
+
+
+        //figre out the signs with shreyas
+        double tl_power_raw = movement_y-movement_turn +movement_x*1.1;
+        double bl_power_raw = movement_y - movement_turn - movement_x*1.1;
+        double br_power_raw = -movement_y- movement_turn- movement_x*1.1;
+        double tr_power_raw = -movement_y- movement_turn + movement_x*1.1;
+
+
+        //find the maximum of the powers
+        double maxRawPower = Math.abs(tl_power_raw);
+        if(Math.abs(bl_power_raw) > maxRawPower){ maxRawPower = Math.abs(bl_power_raw);}
+        if(Math.abs(br_power_raw) > maxRawPower){ maxRawPower = Math.abs(br_power_raw);}
+        if(Math.abs(tr_power_raw) > maxRawPower){ maxRawPower = Math.abs(tr_power_raw);}
+
+        //if the maximum is greater than 1, scale all the powers down to preserve the shape
+        double scaleDownAmount = 1.0;
+        if(maxRawPower > 1.0){
+            //when max power is multiplied by this ratio, it will be 1.0, and others less
+            scaleDownAmount = 1.0/maxRawPower;
+        }
+        tl_power_raw *= scaleDownAmount;
+        bl_power_raw *= scaleDownAmount;
+        br_power_raw *= scaleDownAmount;
+        tr_power_raw *= scaleDownAmount;
+
+
+        //now we can set the powers ONLY IF THEY HAVE CHANGED TO AVOID SPAMMING USB COMMUNICATIONS
+        frontLeft.setPower(tl_power_raw);
+        backLeft.setPower(bl_power_raw);
+        backRight.setPower(br_power_raw);
+        frontRight.setPower(tr_power_raw);
+
     }
 
 

@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -10,6 +13,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+@Config
 @TeleOp(name = "PipeLineTesting")
 public class PipelineTesting extends LinearOpMode {
     AprilTagPipeline pipeline;
@@ -18,8 +22,9 @@ public class PipelineTesting extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         pipeline.initAprilTag(hardwareMap);
-        targets =  new ArrayList<>(Arrays.asList(1,2,3,4,5,6));
+        targets =  new ArrayList<>(Arrays.asList(1));
         waitForStart();
         while(!isStopRequested() && opModeIsActive()){
             AprilTagDetection detection = pipeline.getDetectionsForTargets(targets);

@@ -17,7 +17,7 @@ public class Robot {
     public Robot() {
         worldXPosition = 50.0D;
         worldYPosition = 50.0D;
-        worldAngle_rad = Math.toRadians(-45.0D);
+        worldAngle_rad = Math.toRadians(90.0D);
     }
 
     public double getXPos() {

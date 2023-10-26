@@ -55,11 +55,11 @@ public class MecanumTeleOp extends LinearOpMode {
             backLeft = hardwareMap.get(DcMotor.class, names.bl);
 
 
-            arm = new Intake(hardwareMap);
+//            arm = new Intake(hardwareMap);
             // Reverses the direction of the left motors, to allow a positive motor power to equal
             // forwards and a negative motor power to equal backwards
-            frontLeft.setDirection(DcMotor.Direction.REVERSE);
-            backLeft.setDirection(DcMotor.Direction.REVERSE);
+            backRight.setDirection(DcMotor.Direction.REVERSE);
+            frontRight.setDirection(DcMotor.Direction.REVERSE);
 
 
             // Makes the Driver Hub output the message "Status: Initialized"
@@ -70,10 +70,10 @@ public class MecanumTeleOp extends LinearOpMode {
 
             while (!isStopRequested() && opModeIsActive()) {
 
-                if(gamepad2.a){
-                    arm.toggle();
-                }
-                arm.setPower(sameSignSqrt(gamepad2.left_stick_y/2));
+//                if(gamepad2.a){
+//                    arm.toggle();
+//                }
+//                arm.setPower(sameSignSqrt(gamepad2.left_stick_y/2));
 
                 if(!disableDrive) {
                     switch (command) {
@@ -121,7 +121,7 @@ public class MecanumTeleOp extends LinearOpMode {
                 telemetry.addData("Front Left Motor Power", frontLeft.getPower());
                 telemetry.addData("Back Right Motor Power", backRight.getPower());
                 telemetry.addData("Back Left Motor Power", backLeft.getPower());
-                telemetry.addData("Arm Power", arm.getArmPower());
+//                telemetry.addData("Arm Power", arm.getArmPower());
                 telemetry.addData("Status", "Running");
                 telemetry.update();
             }

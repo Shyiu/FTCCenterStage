@@ -20,7 +20,7 @@ public class LocalizationTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException{
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        r = new Robot(hardwareMap);
+        r = new Robot(hardwareMap, telemetry);
         waitForStart();
         while(!isStopRequested() && opModeIsActive()){
 
