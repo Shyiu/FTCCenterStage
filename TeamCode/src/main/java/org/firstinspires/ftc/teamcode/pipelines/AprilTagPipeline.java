@@ -7,6 +7,7 @@ package org.firstinspires.ftc.teamcode.pipelines;
 import static java.lang.Thread.sleep;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -24,33 +25,29 @@ import java.util.concurrent.TimeUnit;
 //for dashboard
 //@Config
 public class AprilTagPipeline {
-    private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;
     private MecanumBotConstant mc = new MecanumBotConstant();
+    private boolean timer_toggle = true;
+    private int ms = 0;
+    private ElapsedTime timer;
     /**
      * Initialize the AprilTag processor.
      */
-    public void initAprilTag(HardwareMap hardwareMap) throws InterruptedException {
+    public AprilTagPipeline(HardwareMap hardwareMap) throws InterruptedException {
         // Create the AprilTag processor by using a builder.
+        timer = new ElapsedTime();
         aprilTag = new AprilTagProcessor.Builder().build();
-
         // Create the vision portal by using a builder.
-        if (USE_WEBCAM) {
-            visionPortal = new VisionPortal.Builder()
+        visionPortal = new VisionPortal.Builder()
                     .setCamera(hardwareMap.get(WebcamName.class, mc.camera))
                     .addProcessor(aprilTag)
                     .build();
-            setManualExposure(6, 250);
-        } else {
-            visionPortal = new VisionPortal.Builder()
-                    .setCamera(BuiltinCameraDirection.BACK)
-                    .addProcessor(aprilTag)
-                    .build();
-        }
+        setManualExposure(5, 200);
 
     }
+
     public AprilTagDetection getDetectionsForTargets(ArrayList<Integer> targets){
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         for (AprilTagDetection detection : currentDetections) {
@@ -73,8 +70,10 @@ public class AprilTagPipeline {
         }
         // Make sure camera is streaming before we try to set the exposure controls
         if (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
-            sleep(20);
-        }
+            while ((visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)) {
+                sleep(20);
+            }
+       }
 
         // Set camera controls unless we are stopping.
 

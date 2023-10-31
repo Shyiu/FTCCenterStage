@@ -13,11 +13,11 @@ public class Rigging {
     private boolean busy = false;
     private boolean first = true;
 
-    private int extension_distance = 1680;//TODO: Find this value
+    private int extension_distance = 14400;//TODO: Find this value
     ElapsedTime timer;
     private double delay = .5;
 
-    private double hold_speed = .15;
+    private double hold_speed = 0;
 
 
     public Rigging(HardwareMap hardwareMap){
@@ -33,7 +33,7 @@ public class Rigging {
         riggingMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         riggingMotorLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        riggingMotorRight.setDirection(DcMotor.Direction.REVERSE);
+        riggingMotorLeft.setDirection(DcMotor.Direction.REVERSE);
 
     }
     public boolean isBusy(){
@@ -51,10 +51,7 @@ public class Rigging {
             setRiggingPower(1);
 
         }
-
-
-
-        if (riggingMotorLeft.getCurrentPosition() > extension_distance || riggingMotorRight.getCurrentPosition() > extension_distance) {
+        if (getRiggingPosition() > extension_distance) {
             setRiggingPower(0);
             busy = false;
         }
@@ -62,7 +59,7 @@ public class Rigging {
 
     }
     public void rigDown(){
-        if(riggingMotorLeft.getCurrentPosition() > 0 || riggingMotorRight.getCurrentPosition() > 0){
+        if(getRiggingPosition() > 1000){
             setRiggingPower(hold_speed);
             busy = false;
         }
@@ -72,9 +69,21 @@ public class Rigging {
         }
     }
     public int getRiggingPosition(){
-        int output = riggingMotorLeft.getCurrentPosition() + riggingMotorRight.getCurrentPosition();
+        int output = -riggingMotorLeft.getCurrentPosition() + riggingMotorRight.getCurrentPosition();
+        if (riggingMotorRight.getCurrentPosition() == 0){
+            output = -riggingMotorLeft.getCurrentPosition();
+        }
+        if(riggingMotorLeft.getCurrentPosition() == 0){
+            output = riggingMotorRight.getCurrentPosition();
+        }
         output /= 2;
         return output;
+    }
+    public int getRiggingLeft(){
+        return riggingMotorLeft.getCurrentPosition();
+    }
+    public int getRiggingRight(){
+        return riggingMotorRight.getCurrentPosition();
     }
     public void setRiggingPower(double speed){
         riggingMotorLeft.setPower(speed);

@@ -94,7 +94,7 @@ public class Robot {
         backRight.setDirection(DcMotor.Direction.REVERSE);
 
         deadwheelLateral = new Encoder(hardwareMap, frontRight);
-        deadwheelLinear = new Encoder(hardwareMap, frontLeft);
+        deadwheelLinear = new Encoder(hardwareMap, backLeft);
 
         deadwheelLateral.setReverse(true);
         deadwheelLinear.setReverse(false);

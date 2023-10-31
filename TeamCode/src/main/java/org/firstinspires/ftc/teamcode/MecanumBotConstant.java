@@ -4,11 +4,11 @@ public class MecanumBotConstant {
     //CHUB
     public String fr = "frontRight";//0 & Perpendicular Deadwheel
     public String br = "backRight";//1
-    public String fl = "frontLeft";//2 & Parallel Deadwheel
-    public String bl = "backLeft";//3
+    public String fl = "frontLeft";//2
+    public String bl = "backLeft";//3 & Parallel Deadwheel
 
     //EHUB
-    public String intake = "arm";
+    public String intake = "intakeMotor";
     public String servo1 = "servo1";
     public String servo2 = "servo2";
 

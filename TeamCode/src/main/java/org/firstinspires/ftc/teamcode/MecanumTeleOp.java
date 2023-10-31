@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subclasses.Intake;
+import org.firstinspires.ftc.teamcode.subclasses.PlaneLauncher;
+import org.firstinspires.ftc.teamcode.subclasses.Rigging;
 
 @Config
 @TeleOp
@@ -20,7 +22,8 @@ public class MecanumTeleOp extends LinearOpMode {
     protected DcMotor backLeft;
 
     Intake arm;
-
+    PlaneLauncher launcher;
+    Rigging rigging;
     public boolean disableDrive = false;
 
     public static double MAX_SPEED = 1;
@@ -31,6 +34,12 @@ public class MecanumTeleOp extends LinearOpMode {
         DRIVE_TANK,
         DRIVE_STRAFE
     }
+    public enum RIGGING_STATE{
+        WAIT,
+        EXTEND,
+        RETRACT
+    }
+    RIGGING_STATE rigging_state;
     public double servoTimer = 0;
     public double servoDelay = .5;
     public boolean roller = false;
@@ -47,15 +56,18 @@ public class MecanumTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
             telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-
+            rigging_state = RIGGING_STATE.WAIT;
             // Pulls the motors from the robot configuration so that they can be manipulated
             frontRight = hardwareMap.get(DcMotor.class, names.fr);
             frontLeft = hardwareMap.get(DcMotor.class, names.fl);
             backRight = hardwareMap.get(DcMotor.class, names.br);
             backLeft = hardwareMap.get(DcMotor.class, names.bl);
 
+            launcher = new PlaneLauncher(hardwareMap);
+            arm = new Intake(hardwareMap);
+            rigging = new Rigging(hardwareMap);
 
-//            arm = new Intake(hardwareMap);
+
             // Reverses the direction of the left motors, to allow a positive motor power to equal
             // forwards and a negative motor power to equal backwards
             backRight.setDirection(DcMotor.Direction.REVERSE);
@@ -70,11 +82,42 @@ public class MecanumTeleOp extends LinearOpMode {
 
             while (!isStopRequested() && opModeIsActive()) {
 
-//                if(gamepad2.a){
-//                    arm.toggle();
-//                }
-//                arm.setPower(sameSignSqrt(gamepad2.left_stick_y/2));
+                if(gamepad2.a){
+                    arm.toggle();
+                }
+                if(gamepad2.x){
+                    launcher.reset();
+                }
+                if(gamepad2.y){
+                    launcher.launch();
+                }
+                arm.setServoPower(sameSignSqrt(-gamepad2.left_stick_y));
+                switch(rigging_state){
+                    case WAIT:
+                        if(gamepad2.right_bumper){
+                            rigging_state = RIGGING_STATE.EXTEND;
+                            rigging.rigUp();
+                            break;
+                        }
+                        if(gamepad2.left_bumper){
+                            rigging_state = RIGGING_STATE.RETRACT;
+                            rigging.rigDown();
+                            break;
+                        }
+                    case EXTEND:
+                        if(!rigging.isBusy()){
+                            rigging_state = RIGGING_STATE.WAIT;
+                            break;
+                        }
+                        rigging.rigUp();
 
+                    case RETRACT:
+                        if(!rigging.isBusy()){
+                            rigging_state = RIGGING_STATE.WAIT;
+                            break;
+                        }
+                        rigging.rigDown();
+                }
                 if(!disableDrive) {
                     switch (command) {
                         case DRIVE_TANK:
@@ -121,6 +164,7 @@ public class MecanumTeleOp extends LinearOpMode {
                 telemetry.addData("Front Left Motor Power", frontLeft.getPower());
                 telemetry.addData("Back Right Motor Power", backRight.getPower());
                 telemetry.addData("Back Left Motor Power", backLeft.getPower());
+                telemetry.addData("Rigging Position", rigging.getRiggingPosition());
 //                telemetry.addData("Arm Power", arm.getArmPower());
                 telemetry.addData("Status", "Running");
                 telemetry.update();

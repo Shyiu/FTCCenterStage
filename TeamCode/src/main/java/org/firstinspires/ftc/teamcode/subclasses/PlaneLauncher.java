@@ -7,14 +7,17 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
 public class PlaneLauncher {
-    DcMotorSimple launcher;
+    Servo launcher;
     MecanumBotConstant mc = new MecanumBotConstant();
     public PlaneLauncher(HardwareMap hardwareMap){
-        launcher = hardwareMap.get(DcMotorSimple.class, mc.launcher_servo);
-        launcher.setPower(1);
+        launcher = hardwareMap.get(Servo.class, mc.launcher_servo);
+        launcher.setPosition(1);
     }
     public void launch(){
-        launcher.setPower(0);
+        launcher.setPosition(0);
+    }
+    public void reset(){
+        launcher.setPosition(1);
     }
 
 }
