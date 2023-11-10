@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.trajectorysequence;
+package org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -19,10 +19,10 @@ import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAcceleration
 import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 import com.acmerobotics.roadrunner.util.Angle;
 
-import org.firstinspires.ftc.teamcode.trajectorysequence.sequencesegment.SequenceSegment;
-import org.firstinspires.ftc.teamcode.trajectorysequence.sequencesegment.TrajectorySegment;
-import org.firstinspires.ftc.teamcode.trajectorysequence.sequencesegment.TurnSegment;
-import org.firstinspires.ftc.teamcode.trajectorysequence.sequencesegment.WaitSegment;
+import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.SequenceSegment;
+import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.TrajectorySegment;
+import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.TurnSegment;
+import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.sequencesegment.WaitSegment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -582,14 +582,14 @@ public class TrajectorySequenceBuilder {
 
             if (segment instanceof WaitSegment) {
                 WaitSegment thisSegment = (WaitSegment) segment;
-                
+
                 List<TrajectoryMarker> newMarkers = new ArrayList<>(thisSegment.getMarkers());
                 newMarkers.add(new TrajectoryMarker(segmentOffsetTime, marker.getCallback()));
 
                 newSegment = new WaitSegment(thisSegment.getStartPose(), thisSegment.getDuration(), newMarkers);
             } else if (segment instanceof TurnSegment) {
                 TurnSegment thisSegment = (TurnSegment) segment;
-                
+
                 List<TrajectoryMarker> newMarkers = new ArrayList<>(thisSegment.getMarkers());
                 newMarkers.add(new TrajectoryMarker(segmentOffsetTime, marker.getCallback()));
 
