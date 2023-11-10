@@ -83,11 +83,11 @@ public class MecanumTeleOp extends LinearOpMode {
             if (gamepad2.a) {
                 arm.toggle();
             }
-            if (gamepad2.x) {
-                launcher.reset();
-            }
             if (gamepad2.y) {
                 launcher.launch();
+            }
+            if (gamepad2.x) {
+                launcher.reset();
             }
             arm.setServoPower(sameSignSqrt(-gamepad2.left_stick_y));
             switch (rigging_state) {

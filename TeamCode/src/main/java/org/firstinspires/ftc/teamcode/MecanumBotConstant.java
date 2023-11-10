@@ -29,4 +29,6 @@ public class MecanumBotConstant {
     public String rigging_motor_left = "rigging_motor_left";
 
 
+    public String slides = "slides_motor";
+    public String magnet = "magnet_sensor";
 }
