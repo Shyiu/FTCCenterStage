@@ -1,30 +1,25 @@
 package org.firstinspires.ftc.teamcode.testing;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities.Robot;
-import org.firstinspires.ftc.teamcode.subclasses.Encoder;
 
 @Config
 @TeleOp
-public class LocalizationTest extends LinearOpMode {
+public class VihasLocalizationtest extends LinearOpMode {
     Robot r;
 
     @Override
-    public void runOpMode() throws InterruptedException{
+    public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         r = new Robot(hardwareMap, telemetry);
         waitForStart();
+
         while(!isStopRequested() && opModeIsActive()){
-
-
             double leftpower = sameSignSqrt(-gamepad1.left_stick_y/2);
             double rightpower = sameSignSqrt(-gamepad1.right_stick_y/2);
             r.setMotorPowers(rightpower, leftpower);

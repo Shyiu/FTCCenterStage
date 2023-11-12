@@ -4,20 +4,28 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
 @TeleOp(name="Plane Launcher Testing")
 @Config
 public class PlaneLauncherTesting extends LinearOpMode {
-    DcMotorSimple servo;
-    String name = "test_servo";
+    Servo servo;
+    Servo turn;
+    MecanumBotConstant mc;
     ElapsedTime timer;
     double currentTime = 0;
-    double primed = -1;
-    double launch = 0;
+    double primed = 0;
+    public static double SERVO_POSITION = .06;
+    double launch = 1;
     @Override
     public void runOpMode(){
-        servo = hardwareMap.get(DcMotorSimple.class, name);
+        mc = new MecanumBotConstant();
+        servo = hardwareMap.get(Servo.class, mc.launcher_servo);
+        turn = hardwareMap.get(Servo.class, mc.plane_servo);
+
         timer = new ElapsedTime();
         waitForStart();
         timer.reset();
@@ -25,16 +33,17 @@ public class PlaneLauncherTesting extends LinearOpMode {
             telemetry.addLine("a to prime");
             telemetry.addLine("b to launch");
 
-            telemetry.addData("Servo Position: ", servo.getPower());
+            telemetry.addData("Servo Position: ", servo.getPosition());
             if (gamepad1.a && timer.time() - currentTime > .5){
-                servo.setPower(primed);
+                servo.setPosition(primed);
                 currentTime= timer.time();
             }
             if (gamepad1.b && timer.time() - currentTime > .5){
-                servo.setPower(launch);
+                servo.setPosition(launch);
                 currentTime= timer.time();
             }
-
+            turn.setPosition(SERVO_POSITION);
+            telemetry.addData("position", turn.getPosition());
             telemetry.update();
         }
     }

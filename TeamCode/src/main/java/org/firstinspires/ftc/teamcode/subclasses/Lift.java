@@ -44,13 +44,19 @@ public class Lift {
     }
 
     public void reset(){
-        while(magnet_sensor.getState()){
-            slides.setPower(-.1);
+        if(!magnet_sensor.getState()){
+            slides.setPower(-.3);
         }
+        while(magnet_sensor.getState()){
+            slides.setPower(-.3);
+        }
+        slides.setPower(0);
         slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
-
+    public boolean getMagnet(){
+        return magnet_sensor.getState();
+    }
     public boolean exceedingConstraints(){
         if(slides.getPower() < 0){
             return !magnet_sensor.getState();
@@ -91,11 +97,14 @@ public class Lift {
         reached = false;
         targetPos = target;
     }
+    public double getPower(){
+        return slides.getPower();
+    }
     public boolean getReached(){
         return reached;
     }
     public boolean isBusy(){
-        return Math.abs(getCurrentPosition()) > Math.abs(targetPos);
+        return Math.abs(getCurrentPosition()) < Math.abs(targetPos);
     }
     public void update() {
         double Kp = P;

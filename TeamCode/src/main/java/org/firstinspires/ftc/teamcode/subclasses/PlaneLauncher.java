@@ -8,9 +8,13 @@ import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
 public class PlaneLauncher {
     Servo launcher;
+    Servo rotation;
     MecanumBotConstant mc = new MecanumBotConstant();
+
     public PlaneLauncher(HardwareMap hardwareMap){
         launcher = hardwareMap.get(Servo.class, mc.launcher_servo);
+        rotation = hardwareMap.get(Servo.class, mc.plane_servo);
+        rotation.setPosition(0);
         launcher.setPosition(0);
     }
     public void launch(){

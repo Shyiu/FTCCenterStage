@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities.Movem
 import org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities.Robot;
 import org.firstinspires.ftc.teamcode.subclasses.Encoder;
 
+@Disabled
 @Autonomous(name = "Auto")
 public class MecanumAutonomous extends LinearOpMode {
     @Override

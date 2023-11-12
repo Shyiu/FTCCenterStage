@@ -2,16 +2,24 @@
 <Robot type="FirstInspires-FTC">
     <LynxUsbDevice name="Control Hub Portal" serialNumber="(embedded)" parentModuleAddress="173">
         <LynxModule name="Expansion Hub 3" port="3">
-            <NeveRest60Gearmotor name="intakeMotor" port="1" />
-            <NeveRest60Gearmotor name="delivery_left" port="2" />
-            <NeveRest60Gearmotor name="delivery_right" port="3" />
+            <NeveRest40Gearmotor name="rigging_motor_right" port="0" />
+            <NeveRest20Gearmotor name="slides_motor" port="1" />
+            <NeveRest60Gearmotor name="intakeMotor" port="2" />
+            <NeveRest60Gearmotor name="rigging_motor_left" port="3" />
+            <DigitalDevice name="magnet_sensor" port="0" />
         </LynxModule>
         <LynxModule name="Control Hub" port="173">
             <NeveRest20Gearmotor name="frontRight" port="0" />
             <NeveRest20Gearmotor name="backRight" port="1" />
-            <NeveRest20Gearmotor name="frontLeft" port="2" />
-            <NeveRest20Gearmotor name="backLeft" port="3" />
+            <NeveRest20Gearmotor name="backLeft" port="2" />
+            <NeveRest20Gearmotor name="frontLeft" port="3" />
+            <Servo name="servo1" port="0" />
+            <Servo name="servo2" port="1" />
+            <ContinuousRotationServo name="counter_roller" port="3" />
+            <Servo name="launcher_servo" port="4" />
+            <Servo name="rotation_servo" port="5" />
             <LynxEmbeddedIMU name="imu" port="0" bus="0" />
         </LynxModule>
     </LynxUsbDevice>
+    <Webcam name="Webcam 1" serialNumber="AC14CEA0" />
 </Robot>

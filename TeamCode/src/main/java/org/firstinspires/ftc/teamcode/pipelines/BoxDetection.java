@@ -30,21 +30,18 @@ public class BoxDetection extends OpenCvPipeline {
 
     static final int maxX = 960;
     static final int maxY = 540;
-    static final int minY = 120;
-    public static int x1 = maxX/3;
-    public static int x2 = (maxX * 2)/3;
+    static final int minY = 300;
+    public static int x1 = maxX/2;
 
-    static  Rect LEFT_TARGET = new Rect(
-            new Point(0, minY),
-            new Point(x1, maxY));
+
     static  Rect MIDDLE_TARGET = new Rect(
-            new Point(x1, minY),
-            new Point(x2, maxY));
+            new Point(150, minY),
+            new Point(420, maxY));
     static  Rect RIGHT_TARGET = new Rect(
-            new Point(x2, minY),
-            new Point(960, maxY));
+            new Point(700, minY),
+            new Point(maxX, maxY));
 
-    static double PERCENT_COLOR_THRESHOLD = 0.4;
+    static double PERCENT_COLOR_THRESHOLD = 0.1;
     public static int S11 = 100;
     public static int S12 = 40;
     public static int S13 = 55;
@@ -68,44 +65,35 @@ public class BoxDetection extends OpenCvPipeline {
 
         Core.inRange(mat, low, high, mat);
 
-        Mat leftMat = mat.submat(LEFT_TARGET);
         Mat middleMat = mat.submat(MIDDLE_TARGET);
         Mat rightMat = mat.submat(RIGHT_TARGET);
 
-        double LEFT_VALUE = Core.sumElems(leftMat).val[0] / LEFT_TARGET.area() / 255;
         double MIDDLE_VALUE = Core.sumElems(middleMat).val[0] / MIDDLE_TARGET.area() / 255;
         double RIGHT_VALUE = Core.sumElems(rightMat).val[0] / RIGHT_TARGET.area() / 255;
 
-        rightMat.release();
-        leftMat.release();
         middleMat.release();
+        rightMat.release();
 
-        telemetry.addData("Left raw value", (int) Core.sumElems(leftMat).val[0]);
         telemetry.addData("Middle raw value", (int) Core.sumElems(middleMat).val[0]);
         telemetry.addData("Right raw value", (int) Core.sumElems(rightMat).val[0]);
-        telemetry.addData("Left percentage", Math.round(LEFT_VALUE * 100) + "%");
         telemetry.addData("Middle percentage", Math.round(MIDDLE_VALUE * 100) + "%");
         telemetry.addData("Right percentage", Math.round(RIGHT_VALUE * 100) + "%");
 
-        boolean left = LEFT_VALUE > MIDDLE_VALUE + .1 && LEFT_VALUE > RIGHT_VALUE + .1;
-        boolean middle = MIDDLE_VALUE > LEFT_VALUE + .1 && MIDDLE_VALUE > RIGHT_VALUE + .1;
-        boolean right = RIGHT_VALUE > LEFT_VALUE + .1 && RIGHT_VALUE > MIDDLE_VALUE + .1;
+        boolean middle = MIDDLE_VALUE > RIGHT_VALUE + .1 && MIDDLE_VALUE > PERCENT_COLOR_THRESHOLD;
+        boolean right = RIGHT_VALUE > MIDDLE_VALUE + .1 && RIGHT_VALUE > PERCENT_COLOR_THRESHOLD;
 
 
-        if (left) {
-            location = Location.LEFT;
-            telemetry.addData("Box Detection", "Left");
-        }
-        else if (right){
+        if (right) {
             location = Location.RIGHT;
             telemetry.addData("Box Detection", "Right");
         }
-        else if(middle){
+        else if (middle){
             location = Location.MIDDLE;
             telemetry.addData("Box Detection", "Middle");
-        }else{
-            location = Location.MIDDLE;
-            telemetry.addData("Box Detection", "No Detection, defaulted to middle");
+        }
+        else {
+            location = Location.RIGHT;
+            telemetry.addData("Box Detection", "No Detection, defaulted to Left");
         }
         telemetry.update();
 
@@ -114,11 +102,13 @@ public class BoxDetection extends OpenCvPipeline {
 
         Scalar white = new Scalar(255, 255, 255);
 
-        Imgproc.rectangle(mat, LEFT_TARGET, white);
         Imgproc.rectangle(mat, MIDDLE_TARGET, white);
         Imgproc.rectangle(mat, RIGHT_TARGET, white);
 
         return mat;
 
+    }
+    public Location getLocation(){
+        return location;
     }
 }

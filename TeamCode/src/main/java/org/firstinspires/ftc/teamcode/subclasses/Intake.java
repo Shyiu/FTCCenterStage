@@ -26,7 +26,9 @@ public class Intake {
     public double servoDelay = .3;
 
     public static double kf = -0.15;
-
+    private static double SERVO_TWO_OFFSET = 0.03;
+    private static double SERVO_ONE_OFFSET = 0;
+    private static double MAX_SERVO = .6;
     public static double MOTOR_SPEED = 1;
     public static double servo_speed = .05; //This value is the rate of change at maximum input speed (degrees)
     public static double dt = .01;//This value is the loop time for the rate of change (seconds)
@@ -41,6 +43,9 @@ public class Intake {
         arm = hardwareMap.get(DcMotor.class, m.intake);
         servo_position1 = turn1.getPosition();
         servo_position2 = turn2.getPosition();
+        turn1.setDirection(Servo.Direction.REVERSE);
+        turn1.setPosition(SERVO_ONE_OFFSET);
+        turn2.setPosition(SERVO_TWO_OFFSET);
         timer = new ElapsedTime();
     }
     public void toggle(){
@@ -56,13 +61,20 @@ public class Intake {
     }
     public void setServoPower(double power){
         if (timer.time() - move_timer > dt) {
-            servo_position1 += power * servo_speed;
+            servo_position1 -= power * servo_speed;
             servo_position2 -= power * servo_speed;
-            servo_position1 = Math.min(1, servo_position1);
-            servo_position2 = Math.max(-1, servo_position2);
+            servo_position1 = Math.min(MAX_SERVO - Math.max(SERVO_TWO_OFFSET, SERVO_ONE_OFFSET), servo_position1) + SERVO_ONE_OFFSET;
+            servo_position1 = Math.max(SERVO_ONE_OFFSET, servo_position1);
+
+            servo_position2 = Math.min(MAX_SERVO - Math.max(SERVO_TWO_OFFSET, SERVO_ONE_OFFSET), servo_position2) + SERVO_TWO_OFFSET;
+            servo_position2 = Math.max(SERVO_TWO_OFFSET, servo_position2);
             turn1.setPosition(servo_position1);
             turn2.setPosition(servo_position2);
             move_timer = timer.time();
         }
+    }
+    public void setServoPosition(double position){
+        turn1.setPosition(position);
+        turn2.setPosition(position);
     }
 }

@@ -24,6 +24,7 @@ public class MecanumBotConstant {
     public String camera = "Webcam 1";
 
     public String launcher_servo = "launcher_servo";
+    public String plane_servo = "rotation_servo";
 
     public String rigging_motor_right = "rigging_motor_right";
     public String rigging_motor_left = "rigging_motor_left";
