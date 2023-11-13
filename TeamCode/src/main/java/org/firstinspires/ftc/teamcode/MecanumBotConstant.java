@@ -11,6 +11,7 @@ public class MecanumBotConstant {
     public String intake = "intakeMotor";
     public String servo1 = "servo1";
     public String servo2 = "servo2";
+    public String counter_roller = "counter_roller_servo";
 
     public String dleft = "delivery_left";
     public String dright = "delivery_right";

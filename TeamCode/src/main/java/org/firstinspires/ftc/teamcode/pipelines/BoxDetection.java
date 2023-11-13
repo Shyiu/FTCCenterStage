@@ -92,7 +92,7 @@ public class BoxDetection extends OpenCvPipeline {
             telemetry.addData("Box Detection", "Middle");
         }
         else {
-            location = Location.RIGHT;
+            location = Location.LEFT;
             telemetry.addData("Box Detection", "No Detection, defaulted to Left");
         }
         telemetry.update();

@@ -18,6 +18,7 @@ public class Intake {
     protected Servo turn1;
     protected Servo turn2;
     protected DcMotor arm;
+    protected DcMotorSimple counter_roller;
     protected MecanumBotConstant m;
     protected boolean running = false;
     private ElapsedTime timer;
@@ -41,6 +42,7 @@ public class Intake {
         turn1 = hardwareMap.get(Servo.class, m.servo1);
         turn2 = hardwareMap.get(Servo.class, m.servo2);
         arm = hardwareMap.get(DcMotor.class, m.intake);
+        counter_roller = hardwareMap.get(DcMotorSimple.class, m.counter_roller);
         servo_position1 = turn1.getPosition();
         servo_position2 = turn2.getPosition();
         turn1.setDirection(Servo.Direction.REVERSE);
@@ -51,10 +53,12 @@ public class Intake {
     public void toggle(){
         if (running && timer.time() - servoTimer > servoDelay){
             arm.setPower(0);
+            counter_roller.setPower(0);
             servoTimer = timer.time();
             running = false;
         }else if (timer.time() - servoTimer > servoDelay){
             arm.setPower(MOTOR_SPEED);
+            counter_roller.setPower(1);
             servoTimer = timer.time();
             running = true;
         }
