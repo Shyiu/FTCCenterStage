@@ -89,4 +89,10 @@ public class Rigging {
         riggingMotorLeft.setPower(speed);
         riggingMotorRight.setPower(speed);
     }
+    public void setMotorRightPower(double speed){
+        riggingMotorRight.setPower(speed);
+    }
+    public void setMotorLeftPower(double speed){
+        riggingMotorLeft.setPower(speed);
+    }
 }

@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
+import org.firstinspires.ftc.teamcode.subclasses.PlaneLauncher;
 
 @TeleOp(name="Plane Launcher Testing")
 @Config
@@ -20,30 +21,29 @@ public class PlaneLauncherTesting extends LinearOpMode {
     double primed = 0;
     public static double SERVO_POSITION = .06;
     double launch = 1;
+    PlaneLauncher planeLauncher;
     @Override
     public void runOpMode(){
         mc = new MecanumBotConstant();
-        servo = hardwareMap.get(Servo.class, mc.launcher_servo);
-        turn = hardwareMap.get(Servo.class, mc.plane_servo);
-
+//        servo = hardwareMap.get(Servo.class, mc.launcher_servo);
+//        turn = hardwareMap.get(Servo.class, mc.plane_servo);
+        planeLauncher = new PlaneLauncher(hardwareMap);
         timer = new ElapsedTime();
         waitForStart();
         timer.reset();
         while(opModeIsActive() && !isStopRequested()){
-            telemetry.addLine("a to prime");
+            telemetry.addLine("a to launch");
             telemetry.addLine("b to launch");
 
-            telemetry.addData("Servo Position: ", servo.getPosition());
-            if (gamepad1.a && timer.time() - currentTime > .5){
-                servo.setPosition(primed);
-                currentTime= timer.time();
+           if (gamepad1.a && timer.time() - currentTime > .5){
+                planeLauncher.setLaunchPos();
+                sleep(300);
+                planeLauncher.launch();
             }
             if (gamepad1.b && timer.time() - currentTime > .5){
-                servo.setPosition(launch);
+                planeLauncher.reset();
                 currentTime= timer.time();
             }
-            turn.setPosition(SERVO_POSITION);
-            telemetry.addData("position", turn.getPosition());
             telemetry.update();
         }
     }

@@ -31,8 +31,8 @@ public class PipelineTesting extends LinearOpMode {
             AprilTagDetection detection = pipeline.getDetectionsForTargets(targets);
             if (detection != null) {
                 telemetry.addData("Target", "ID %d (%s)", detection.id, detection.metadata.name);
-                telemetry.addData("Range", "%5.1f inches", detection.ftcPose.range);
-                telemetry.addData("Bearing", "%3.0f degrees", detection.ftcPose.bearing);
+                telemetry.addData("Range", "%5.1f inches", detection.ftcPose.range);//35 in
+                telemetry.addData("Bearing", "%3.0f degrees", detection.ftcPose.bearing);//12 degress
                 telemetry.addData("Yaw", "%3.0f degrees", detection.ftcPose.yaw);
                 telemetry.addData("X", detection.center.x);
                 telemetry.addData("Y", detection.center.y);

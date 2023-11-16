@@ -11,6 +11,8 @@ import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 import org.firstinspires.ftc.teamcode.pipelines.AprilTagPipeline;
 import org.firstinspires.ftc.teamcode.pipelines.BoxDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -25,14 +27,27 @@ public class BoxTesting extends LinearOpMode {
     OpenCvCamera camera;
     MecanumBotConstant mc;
 
+
+
+    public static Rect MIDDLE_TARGET = new Rect(
+            new Point(150, 300),
+            new Point(420, 540));
+    //(60,404), (230, 544) BLUE STACK and RED BACKDROP
+    //(220,404), (440, 544) BLUE BACKDROP AND RED STACK
+    public static Rect RIGHT_TARGET = new Rect(
+            new Point(700, 300),
+            new Point(960, 540));
+    public static boolean red = false;
+    //(450,404), (640, 544) BLUE STACK and RED BACKDROP
+    //(640,404), (900, 544) BLUE BACKDROP AND RED STACK
     @Override
     public void runOpMode() throws InterruptedException {
         mc = new MecanumBotConstant();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        pipeline = new BoxDetection(telemetry);
+        pipeline = new BoxDetection(telemetry, MIDDLE_TARGET, RIGHT_TARGET, red);
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, mc.camera), cameraMonitorViewId);
-
+        pipeline.red = red;
         camera.setPipeline(pipeline);
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override

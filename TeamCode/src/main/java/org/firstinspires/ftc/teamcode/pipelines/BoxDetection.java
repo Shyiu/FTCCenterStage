@@ -48,8 +48,17 @@ public class BoxDetection extends OpenCvPipeline {
     public static int S21 = 125;
     public static int S22 = 150;
     public static int S23 = 95;
-    public boolean red = true;
-    public BoxDetection(Telemetry t) { telemetry = t; }
+    public boolean red;
+    public BoxDetection(Telemetry t, Rect mid, Rect right, boolean red) {
+        telemetry = t;
+        MIDDLE_TARGET = mid;
+        RIGHT_TARGET = right;
+        this.red = red;
+    }
+    public BoxDetection(Telemetry t) {
+        telemetry = t;
+        this.red = false;
+    }
     @Override
     public Mat processFrame(Mat input) {
         Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
@@ -58,8 +67,8 @@ public class BoxDetection extends OpenCvPipeline {
             low = new Scalar(0, 125, 0);
             high = new Scalar(26, 255, 250);
         }else{
-            low = new Scalar(100, 0, 0);
-            high = new Scalar(125, 150, 95);
+            low = new Scalar(0, 125, 0);
+            high = new Scalar(125, 255, 255);
         }
 
 

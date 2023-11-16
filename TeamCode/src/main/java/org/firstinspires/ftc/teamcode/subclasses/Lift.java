@@ -22,7 +22,7 @@ public class Lift {
     private double powerReduction = 1;
     private double conversion = -1;
     private boolean reached = false;
-    private int maxHardstop = 2000;
+    private int maxHardstop = 1450;
 
     HardwareMap hardware;
 
@@ -42,14 +42,27 @@ public class Lift {
         slides.setDirection(DcMotor.Direction.FORWARD);
 
     }
+    public Lift(HardwareMap hardwareMap) {
+        this.hardware = hardwareMap;
+
+        slides = hardwareMap.get(DcMotor.class, m.slides);
+        magnet_sensor = hardwareMap.get(DigitalChannel.class, m.magnet);
+
+        // set the digital channel to input.
+        magnet_sensor.setMode(DigitalChannel.Mode.INPUT);
+        slides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        slides.setDirection(DcMotor.Direction.FORWARD);
+
+    }
 
     public void reset(){
-        if(!magnet_sensor.getState()){
-            slides.setPower(-.3);
+        if(magnet_sensor.getState()){
+            slides.setPower(-.6);
         }
-        while(magnet_sensor.getState()){
-            slides.setPower(-.3);
+        while (magnet_sensor.getState()) {
+            slides.setPower(-.6);
         }
+
         slides.setPower(0);
         slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -57,9 +70,14 @@ public class Lift {
     public boolean getMagnet(){
         return magnet_sensor.getState();
     }
+
     public boolean exceedingConstraints(){
         if(slides.getPower() < 0){
-            return !magnet_sensor.getState();
+            if (!magnet_sensor.getState()){
+                slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                slides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
+            return magnet_sensor.getState();
         }else{
             return slides.getCurrentPosition() > maxHardstop;
         }
