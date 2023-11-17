@@ -12,12 +12,14 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.autonomous_utilities.MathFunctions;
 import org.firstinspires.ftc.teamcode.pipelines.AprilTagPipeline;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.subclasses.PlaneLauncher;
 import org.firstinspires.ftc.teamcode.subclasses.Rigging;
+import org.firstinspires.ftc.teamcode.subclasses.TempDelivery;
 import org.firstinspires.ftc.teamcode.subclasses.VihasIntake;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
@@ -34,10 +36,11 @@ public class MecanumTeleOp extends LinearOpMode {
     protected DcMotor backLeft;
     private boolean running_auto = false;
 
-    VihasIntake arm;
+//    VihasIntake arm;
     PlaneLauncher launcher;
     Rigging rigging;
     IMU imu;
+    TempDelivery delivery;
 
     public boolean disableDrive = false;
 
@@ -74,18 +77,17 @@ public class MecanumTeleOp extends LinearOpMode {
     public MecanumBotConstant names = new MecanumBotConstant();
 
 
-    public static DRIVE_STATE command = DRIVE_STATE.DRIVE_TANK;
+    public static DRIVE_STATE command = DRIVE_STATE.FIELD_CENTRIC;
 
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         rigging_state = RIGGING_STATE.WAIT;
         plane_state = PLANE_STATE.WAIT;
-        try{
+        if(IMUTransfer.init) {
             imu = IMUTransfer.imu;
-        }catch(NullPointerException e){
-            telemetry.addLine(e.toString());
-            telemetry.update();
+
+        }else{
             imu = hardwareMap.get(IMU.class, "imu");
             // Adjust the orientation parameters to match your robot
             IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
@@ -93,7 +95,8 @@ public class MecanumTeleOp extends LinearOpMode {
                     DriveConstants.USB_FACING_DIR));
             // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
             imu.initialize(parameters);
-
+            IMUTransfer.imu = imu;
+            IMUTransfer.init = true;
         }
         MecanumDrive drive = new MecanumDrive(hardwareMap);
 
@@ -106,9 +109,11 @@ public class MecanumTeleOp extends LinearOpMode {
         backLeft = hardwareMap.get(DcMotor.class, names.bl);
 
         launcher = new PlaneLauncher(hardwareMap);
-        arm = new VihasIntake(hardwareMap);
+//        arm = new VihasIntake(hardwareMap);
         rigging = new Rigging(hardwareMap);
         pipeline = new AprilTagPipeline(hardwareMap);
+        delivery = new TempDelivery(hardwareMap);
+        delivery.setIn();
 
         // Reverses the direction of the left motors, to allow a positive motor power to equal
         // forwards and a negative motor power to equal backwards
@@ -124,9 +129,9 @@ public class MecanumTeleOp extends LinearOpMode {
 
         while (!isStopRequested() && opModeIsActive()) {
 
-            if (gamepad2.a) {
-                arm.toggle();
-            }
+//            if (gamepad2.a) {
+//                arm.toggle();
+//            }
             switch (plane_state){
                 case WAIT:
                     if (gamepad2.y){
@@ -172,6 +177,7 @@ public class MecanumTeleOp extends LinearOpMode {
                     break;
 
             }
+            calculatePose();
             //arm.setServoPower(sameSignSqrt(-gamepad2.left_stick_y));
 //            switch (rigging_state) {
 //                case WAIT:
@@ -250,7 +256,7 @@ public class MecanumTeleOp extends LinearOpMode {
                             imu.resetYaw();
                         }
 
-                        double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+                        double botHeading = MathFunctions.AngleWrap(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + Math.toRadians(90));
 
                         // Rotate the movement direction counter to the bot's rotation
                         double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);

@@ -99,9 +99,10 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
         }
 
         // TODO: adjust the names of the following hardware devices to match your configuration
-        try{
+        if(IMUTransfer.init) {
             imu = IMUTransfer.imu;
-        }catch(NullPointerException e){
+
+        }else{
             imu = hardwareMap.get(IMU.class, "imu");
             // Adjust the orientation parameters to match your robot
             IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
@@ -109,8 +110,10 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
                     DriveConstants.USB_FACING_DIR));
             // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
             imu.initialize(parameters);
-
+            IMUTransfer.imu = imu;
+            IMUTransfer.init = true;
         }
+
 
         leftFront = hardwareMap.get(DcMotorEx.class, "frontLeft");
         leftRear = hardwareMap.get(DcMotorEx.class, "backLeft");
