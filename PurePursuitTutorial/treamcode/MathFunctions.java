@@ -61,7 +61,37 @@ public class MathFunctions {
 
         return allPoints;
     }
+    public static double calculateLineHeading(CurvePoint point1, CurvePoint point2){
+        double dy = point1.y - point2.y;
+        double dx = point1.x - point2.x;
+        if (dy == 0){
+            dy = 0.00001;
+        }
+        if (dx == 0) {
+            dx = 0.00001;
+        }
+        double output = Math.atan2(dy,dx);
+        return output;
+    }
+    public static double calculateLineHeading(Point point1, Point point2){
+        double dy = point1.y - point2.y;
+        double dx = point1.x - point2.x;
+        if (dy == 0){
+            dy = 0.00001;
+        }
+        if (dx == 0) {
+            dx = 0.00001;
+        }
+        double output = Math.atan2(dy,dx);
+        return output;
+    }
+    public static double pointAhead(Point position, Point target, double lineheading){
+        double heading = calculateLineHeading(position, target);
+        System.out.println(heading);
+        System.out.println(lineheading);
+        return Math.abs(lineheading - heading);
 
+    }
     public static double distanceBetweenPoints(CurvePoint endLine, CurvePoint startLine) {
         double x1 = endLine.x;
         double y1 = endLine.y;

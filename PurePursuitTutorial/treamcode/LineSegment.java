@@ -45,7 +45,9 @@ public class LineSegment {
     }
     public static CurvePoint intersect(CurvePoint startLine, CurvePoint endLine, Point target){
         double changeX = startLine.x - endLine.x;
-        changeX = Math.max(0.003, changeX);
+        if (changeX == 0){
+            changeX = 0.003;
+        }
         double m = (startLine.y - endLine.y)/(changeX);
         double x1 = startLine.x;
         double y1 = startLine.y;

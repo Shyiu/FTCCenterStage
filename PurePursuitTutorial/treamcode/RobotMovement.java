@@ -33,11 +33,10 @@ public class RobotMovement {
             CurvePoint endLine = allPoints.get(allPoints.size() - 1);
 
             //Adding a intermediate point on the last line to allow the robot to effectively stop.
-            allPoints.add(allPoints.size() -1 , MathFunctions.compositeLine(startLine, endLine, .85));
+            allPoints.add(allPoints.size() , MathFunctions.compositeLine(startLine, endLine,
+                    1.15));
         }
-        if(visited.size() == 0){
-            visited.add(0);
-        }
+
 //        System.out.println(visited.toString());
         followCurve(allPoints);
 
@@ -51,16 +50,16 @@ public class RobotMovement {
 
 
         CurvePoint followMe = getFollowPointPath(allPoints, new Point(Robot.worldXPosition, Robot.worldYPosition));
-        System.out.println(followMe.toString());
-        System.out.println(end_index);
-        System.out.println(slice);
+
         ComputerDebugging.sendKeyPoint(new FloatPoint(followMe.x, followMe.y));
-        if(end_index != allPoints.size() - 1) {
+        if (MathFunctions.distanceBetweenPoints(followMe, new CurvePoint(allPoints.get(allPoints.size() - 1))) < 10){
+            followMe = new CurvePoint(allPoints.get(allPoints.size() - 1));
             goToPosition(followMe.x, followMe.y, followMe.moveSpeed, followMe.endAngle, followMe.turnSpeed);
         }
         else{
-            followMe = new CurvePoint(allPoints.get(allPoints.size() - 1));
-            goToLastPosition(followMe.x, followMe.y, followMe.moveSpeed, followMe.endAngle, followMe.turnSpeed);
+
+                goToPosition(followMe.x, followMe.y, followMe.moveSpeed, followMe.endAngle, followMe.turnSpeed);
+
         }
 
     }
@@ -80,17 +79,17 @@ public class RobotMovement {
            double followRadius = initialFollow;
            CurvePoint startLine = pathPoints.get(i);
            CurvePoint endLine = pathPoints.get(i + 1);
-           CurvePoint robotPoint = new CurvePoint(LineSegment.intersect(startLine, endLine, robotLocation));
 
-           ArrayList<Point> intersections = MathFunctions.lineCircleIntersection(robotLocation, followRadius, startLine.toPoint(), endLine.toPoint());
+           CurvePoint robotPoint = new CurvePoint(LineSegment.intersect(startLine, endLine, robotLocation));
+           CurvePoint extendedEnd = MathFunctions.extendLine(robotPoint, endLine, 1.25);
+           ArrayList<Point> intersections = MathFunctions.lineCircleIntersection(robotLocation, followRadius, robotPoint.toPoint(), extendedEnd.toPoint());
+           double lineheading = MathFunctions.calculateLineHeading(robotPoint, extendedEnd);
 
            double closestAngle = Integer.MAX_VALUE;
 
            for (Point thisIntersection: intersections){
 
-                   if ((end_index != slice) || (thisIntersection.x >= robotPoint.x && thisIntersection.y >= robotPoint.y && thisIntersection.x <= endLine.x && thisIntersection.y <= endLine.y)) {
-                       double angle = Math.atan2(thisIntersection.y - worldYPosition, thisIntersection.x - worldXPosition);
-                       double deltaAngle = Math.abs(MathFunctions.AngleWrap(angle - worldAngle_rad));
+                       double deltaAngle = MathFunctions.pointAhead(robotLocation, thisIntersection, lineheading);
 
                        if (deltaAngle < closestAngle) {
                            followMe.setPoint(thisIntersection);
@@ -98,7 +97,7 @@ public class RobotMovement {
                            end_index = i + 1;
                            visited.add(i+1);
                        }
-                   }
+
 
 
 
@@ -156,18 +155,19 @@ public class RobotMovement {
         double relativeAngleToPoint = MathFunctions.AngleWrap(absoluteAngleToTarget - (worldAngle_rad - Math.toRadians(90.0D)));
         double relativeXToPoint = Math.cos(relativeAngleToPoint) * distanceToTarget;
         double relativeYToPoint = Math.sin(relativeAngleToPoint) * distanceToTarget;
-        double movementXPower = relativeXToPoint / (Math.abs(relativeXToPoint) + Math.abs(relativeYToPoint));
-        double movementYPower = relativeYToPoint / (Math.abs(relativeXToPoint) + Math.abs(relativeYToPoint));
+        double taxicabdistance = Math.abs(relativeXToPoint) + Math.abs(relativeYToPoint);
+        double movementXPower = relativeXToPoint / taxicabdistance;
+        double movementYPower = relativeYToPoint / taxicabdistance;
 
-        double reductionX = .006 * relativeXToPoint;
-        double reductionY = .006 * relativeYToPoint;
-
+        double reductionX = .005 * relativeXToPoint;
+        double reductionY = 0.001 * relativeYToPoint;
+        double reductionTheta = 0.008 * relativeAngleToPoint;
 
         MovementVars.movement_x = movementXPower * movementSpeed * reductionX;
         MovementVars.movement_y = movementYPower * movementSpeed * reductionY;
         double relativeTurnAngle = relativeAngleToPoint - Math.toRadians(180.0) + preferredAngle;
-        MovementVars.movement_turn = Range.clip(relativeTurnAngle / Math.toRadians(30.0), -1.0D, 1.0D) * turnSpeed;
-
+        MovementVars.movement_turn = Range.clip(relativeTurnAngle / Math.toRadians(30.0), -1.0D, 1.0D) * turnSpeed * reductionTheta;
+        System.out.println(distanceToTarget);
         if (Math.abs(distanceToTarget) <= 10) {
             MovementVars.movement_turn = 0.0;
         }

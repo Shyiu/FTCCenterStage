@@ -60,6 +60,11 @@ public class CurvePoint {
         endpoint = end;
 
     }
+
+    public CurvePoint() {
+
+    }
+
     public Point toPoint(){
         return new Point(x,y);
 
