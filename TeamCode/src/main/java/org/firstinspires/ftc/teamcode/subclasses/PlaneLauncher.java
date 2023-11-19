@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 @Config
-public class PlaneLauncher {
+public class PlaneLauncher extends Subsystem{
     Servo launcher;
     Servo rotation;
     private double startPos = 0.1;
@@ -24,20 +24,35 @@ public class PlaneLauncher {
     public void moveTo(double position){
         rotation.setPosition(position);
     }
+
     public void setFlat(){
-        rotation.setPosition(.3);
+        rotation.setPosition(flat);
     }
+
     public void setStartPos(){
         rotation.setPosition(startPos);
     }
+
     public void setLaunchPos(){
         rotation.setPosition(launchPos);
     }
+
     public void launch(){
         launcher.setPosition(1);
     }
+
     public void reset(){
         launcher.setPosition(0);
+    }
+
+    @Override
+    public void init(){
+        setStartPos();
+    }
+
+    @Override
+    public void telemetry(){
+        return;
     }
 
 }

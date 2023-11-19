@@ -80,10 +80,8 @@ public class MecanumRoadrunner extends LinearOpMode {
 
         IMUTransfer.init = false;
         plane = new PlaneLauncher(hardwareMap);
-//        intake = new VihasIntake(hardwareMap);
         delivery = new TempDelivery(hardwareMap);
-//        lift = new Lift(hardwareMap);
-        distance = new Distance(hardwareMap);
+        distance = new Distance(hardwareMap, telemetry);
 
         plane.moveTo(.1);
 //        intake.open();

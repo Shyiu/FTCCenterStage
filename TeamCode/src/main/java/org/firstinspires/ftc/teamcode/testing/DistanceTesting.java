@@ -28,10 +28,10 @@ public class DistanceTesting extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        distance = new Distance(hardwareMap);
+        distance = new Distance(hardwareMap,telemetry);
         waitForStart();
         while(!isStopRequested() && opModeIsActive()){
-            telemetry.addData("Distance", distance.getDist());
+            distance.telemetry();
             telemetry.update();
         }
     }

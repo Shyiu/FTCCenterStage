@@ -4,9 +4,10 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
-public class Rigging {
+public class Rigging extends Subsystem{
     DcMotor riggingMotorRight;
     DcMotor riggingMotorLeft;
     MecanumBotConstant mc = new MecanumBotConstant();
@@ -18,11 +19,12 @@ public class Rigging {
     private double delay = .5;
 
     private double hold_speed = 0;
+    Telemetry telemetry;
 
 
-    public Rigging(HardwareMap hardwareMap){
+    public Rigging(HardwareMap hardwareMap, Telemetry telemetry){
         timer = new ElapsedTime();
-
+        this.telemetry = telemetry;
         riggingMotorRight = hardwareMap.get(DcMotor.class, mc.rigging_motor_right);
         riggingMotorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         riggingMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -94,5 +96,26 @@ public class Rigging {
     }
     public void setMotorLeftPower(double speed){
         riggingMotorLeft.setPower(speed);
+    }
+
+    @Override
+    public void telemetry() {
+        telemetry.addData("Left Position", getRiggingLeft());
+        telemetry.addData("Right Position", getRiggingRight());
+        telemetry.addData("Rigging Position", getRiggingPosition());
+        telemetry.addData("Busy", isBusy());
+    }
+
+    @Override
+    public void init() {
+        riggingMotorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        riggingMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        riggingMotorRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        riggingMotorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        riggingMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        riggingMotorLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        riggingMotorLeft.setDirection(DcMotor.Direction.REVERSE);
     }
 }

@@ -5,10 +5,11 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
 @Config
-public class Delivery{
+public class Delivery extends Subsystem{
     protected Servo dleft;
     protected Servo dright;
     protected MecanumBotConstant m;
@@ -25,17 +26,19 @@ public class Delivery{
     public double leftTimer = 0;
 
 
-    public static double RIGHT_OPEN = 1;
-    public static double LEFT_OPEN = 1;
-    public static double RIGHT_CLOSE = 0;
-    public static double LEFT_CLOSE = 0;
-    public Delivery(HardwareMap hardwareMap){
-        m = new MecanumBotConstant();
+    public static double RIGHT_DUMP = 1;
+    public static double LEFT_DUMP = 1;
+    public static double RIGHT_INTAKE = 0;
+    public static double LEFT_INTAKE = 0;
 
-        RIGHT_OPEN = m.right_open_position;
-        LEFT_OPEN = m.left_open_position;
-        RIGHT_CLOSE = m.right_closed_position;
-        LEFT_CLOSE = m.left_closed_position;
+    Telemetry telemetry;
+    public Delivery(HardwareMap hardwareMap, Telemetry telemetry){
+        m = new MecanumBotConstant();
+        this.telemetry = telemetry;
+        RIGHT_DUMP = m.right_open_position;
+        LEFT_DUMP = m.left_open_position;
+        RIGHT_INTAKE = m.right_closed_position;
+        LEFT_INTAKE = m.left_closed_position;
 
         dleft = hardwareMap.get(Servo.class, m.dleft);
         dright = hardwareMap.get(Servo.class, m.dright);
@@ -64,23 +67,34 @@ public class Delivery{
             right_toggle = false;
         }
         if (left_toggle){
-            if(far(dleft.getPosition(), LEFT_CLOSE)) {
-                dleft.setPosition(LEFT_CLOSE);
+            if(far(dleft.getPosition(), LEFT_INTAKE)) {
+                dleft.setPosition(LEFT_INTAKE);
             }
         }else{
-            if(far(dleft.getPosition(), LEFT_OPEN)) {
-                dleft.setPosition(LEFT_OPEN);
+            if(far(dleft.getPosition(), LEFT_DUMP)) {
+                dleft.setPosition(LEFT_DUMP);
             }
         }if (right_toggle){
-            if(far(dright.getPosition(), RIGHT_CLOSE)) {
-                dright.setPosition(RIGHT_CLOSE);
+            if(far(dright.getPosition(), RIGHT_INTAKE)) {
+                dright.setPosition(RIGHT_INTAKE);
             }
         }else{
-            if(far(dright.getPosition(), RIGHT_OPEN)) {
-                dright.setPosition(RIGHT_OPEN);
+            if(far(dright.getPosition(), RIGHT_DUMP)) {
+                dright.setPosition(RIGHT_DUMP);
             }
         }
     }
 
 
+    @Override
+    public void telemetry() {
+        telemetry.addData("Right Open", right_toggle);
+        telemetry.addData("Left Open", left_toggle);
+    }
+
+    @Override
+    public void init() {
+        dleft.setPosition(LEFT_INTAKE);
+        dright.setPosition(RIGHT_INTAKE);
+    }
 }

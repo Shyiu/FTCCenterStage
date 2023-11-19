@@ -96,7 +96,7 @@ public class RobotMovement {
                            followMe.setPoint(thisIntersection);
                            closestAngle = deltaAngle;
                            end_index = i + 1;
-                           visited.add(i);
+                           visited.add(i+1);
                        }
                    }
 

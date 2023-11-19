@@ -85,9 +85,12 @@ public class MecanumTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        distance = new Distance(hardwareMap);
+        distance = new Distance(hardwareMap,telemetry);
+
+
         rigging_state = RIGGING_STATE.WAIT;
         plane_state = PLANE_STATE.WAIT;
+
         if(IMUTransfer.init) {
             imu = IMUTransfer.imu;
 
@@ -114,7 +117,7 @@ public class MecanumTeleOp extends LinearOpMode {
 
         launcher = new PlaneLauncher(hardwareMap);
 //        arm = new VihasIntake(hardwareMap);
-        rigging = new Rigging(hardwareMap);
+        rigging = new Rigging(hardwareMap, telemetry);
         pipeline = new AprilTagPipeline(hardwareMap);
         delivery = new TempDelivery(hardwareMap);
         delivery.setIn();
@@ -325,16 +328,20 @@ public class MecanumTeleOp extends LinearOpMode {
 
                 }
             }
-            double offset = distance.getDist();
 
-            telemetry.addData("offset", offset);
+
+            distance.telemetry();
+            rigging.telemetry();
+
             telemetry.addData("Left Target Power", leftTgtPower);
             telemetry.addData("Right Target Power", rightTgtPower);
             telemetry.addData("Front Right Motor Power", frontRight.getPower());
             telemetry.addData("Front Left Motor Power", frontLeft.getPower());
             telemetry.addData("Back Right Motor Power", backRight.getPower());
             telemetry.addData("Back Left Motor Power", backLeft.getPower());
-            telemetry.addData("Rigging Position", rigging.getRiggingPosition());
+
+
+
 //                telemetry.addData("Arm Power", arm.getArmPower());
             telemetry.addData("Status", "Running");
             telemetry.update();

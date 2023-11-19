@@ -6,9 +6,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
-public class Lift {
+public class Lift extends Subsystem{
     MecanumBotConstant m = new MecanumBotConstant();
     DcMotor slides;
     DigitalChannel magnet_sensor;
@@ -16,18 +17,19 @@ public class Lift {
     public static double P = 0, I = 0, D = 0;
     double error, lastError;
     int startPos = Integer.MAX_VALUE;
-    boolean up = true;
+    boolean direction = true;
     double GAIN = 30;
     public boolean stopped = false;
     private double powerReduction = 1;
     private double conversion = -1;
     private boolean reached = false;
+
     private int maxHardstop = 1450;
 
     HardwareMap hardware;
-
-    public Lift(HardwareMap hardwareMap, double P, double I, double D) {
-
+    Telemetry telemetry;
+    public Lift(HardwareMap hardwareMap, double P, double I, double D, Telemetry telemetry) {
+        this.telemetry = telemetry;
         this.hardware = hardwareMap;
         this.P = P;
         this.I = I;
@@ -42,8 +44,9 @@ public class Lift {
         slides.setDirection(DcMotor.Direction.FORWARD);
 
     }
-    public Lift(HardwareMap hardwareMap) {
+    public Lift(HardwareMap hardwareMap, Telemetry telemetry) {
         this.hardware = hardwareMap;
+        this.telemetry = telemetry;
 
         slides = hardwareMap.get(DcMotor.class, m.slides);
         magnet_sensor = hardwareMap.get(DigitalChannel.class, m.magnet);
@@ -55,7 +58,8 @@ public class Lift {
 
     }
 
-    public void reset(){
+    @Override
+    public void init(){
         if(magnet_sensor.getState()){
             slides.setPower(-.6);
         }
@@ -67,6 +71,14 @@ public class Lift {
         slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
+    @Override
+    public void telemetry(){
+        telemetry.addData("Slide Power", getPower());
+        telemetry.addData("Current Position", getCurrentPosition());
+        telemetry.addData("Magnet Sensor", getMagnet());
+        telemetry.addData("Exceeding Constraints", exceedingConstraints());
+    }
+
     public boolean getMagnet(){
         return magnet_sensor.getState();
     }
@@ -114,15 +126,19 @@ public class Lift {
     public void moveTo(double target) {
         reached = false;
         targetPos = target;
+        direction = getCurrentPosition() < target;
     }
     public double getPower(){
         return slides.getPower();
     }
-    public boolean getReached(){
-        return reached;
-    }
+
+
     public boolean isBusy(){
-        return Math.abs(getCurrentPosition()) < Math.abs(targetPos);
+        if(direction){
+            return getCurrentPosition() < targetPos;
+        }else{
+            return getCurrentPosition() > targetPos;
+        }
     }
     public void update() {
         double Kp = P;

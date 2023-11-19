@@ -23,18 +23,12 @@ public class SlideTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        lift = new Lift(hardwareMap, P ,I ,D);
-        lift.reset();
+        lift = new Lift(hardwareMap, P ,I ,D, telemetry);
+        lift.init();
         lift.moveTo(500);
         waitForStart();
         while(!isStopRequested() && opModeIsActive()) {
-            telemetry.addData("magnest", lift.getMagnet());
-            lift.setPower(gamepad1.left_stick_y * -1);
-//            lift.update();
-            telemetry.addData("slide power", lift.getPower());
-            telemetry.addData("slide test", lift.getCurrentPosition());
-            telemetry.addData("slide other test", lift.exceedingConstraints());
-            telemetry.addData("slide power", lift.getPower());
+            lift.telemetry();
 
             telemetry.update();
         }

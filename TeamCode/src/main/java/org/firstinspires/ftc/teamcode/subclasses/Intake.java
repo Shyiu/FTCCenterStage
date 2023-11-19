@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
 @Config
-public class Intake {
+public class Intake extends Subsystem{
     protected Servo turn1;
     protected Servo turn2;
     protected DcMotor arm;
@@ -36,9 +36,11 @@ public class Intake {
     public static double move_timer = 0;
     public static double servo_position1;
     public static double servo_position2;
-    public Intake(HardwareMap hardwareMap){
-        m = new MecanumBotConstant();
 
+    Telemetry telemetry;
+    public Intake(HardwareMap hardwareMap, Telemetry telemetry){
+        m = new MecanumBotConstant();
+        this.telemetry = telemetry;
         turn1 = hardwareMap.get(Servo.class, m.servo1);
         turn2 = hardwareMap.get(Servo.class, m.servo2);
         arm = hardwareMap.get(DcMotor.class, m.intake);
@@ -46,8 +48,6 @@ public class Intake {
         servo_position1 = turn1.getPosition();
         servo_position2 = turn2.getPosition();
         turn1.setDirection(Servo.Direction.REVERSE);
-        turn1.setPosition(SERVO_ONE_OFFSET);
-        turn2.setPosition(SERVO_TWO_OFFSET);
         timer = new ElapsedTime();
     }
     public void toggle(){
@@ -80,5 +80,19 @@ public class Intake {
     public void setServoPosition(double position){
         turn1.setPosition(position);
         turn2.setPosition(position);
+    }
+
+    @Override
+    public void telemetry() {
+        telemetry.addData("Counter Roller Power", counter_roller.getPower());
+        telemetry.addData("Servo Position 1", servo_position1);
+        telemetry.addData("Servo Position 2", servo_position2);
+        telemetry.addData("Running", running);
+    }
+
+    @Override
+    public void init() {
+        turn1.setPosition(SERVO_ONE_OFFSET);
+        turn2.setPosition(SERVO_TWO_OFFSET);
     }
 }
