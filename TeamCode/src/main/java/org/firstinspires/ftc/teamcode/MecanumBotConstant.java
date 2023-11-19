@@ -33,4 +33,5 @@ public class MecanumBotConstant {
 
     public String slides = "slides_motor";
     public String magnet = "magnet_sensor";
+    public String distance = "distance_sensor";
 }

@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
 @Config
-public class Delivery {
+public class Delivery{
     protected Servo dleft;
     protected Servo dright;
     protected MecanumBotConstant m;
@@ -41,6 +41,7 @@ public class Delivery {
         dright = hardwareMap.get(Servo.class, m.dright);
         timer = new ElapsedTime();
     }
+
     public void openRight(){
         right_toggle = true;
         rightTimer = timer.time();

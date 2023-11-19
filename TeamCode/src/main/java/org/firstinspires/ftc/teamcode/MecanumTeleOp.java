@@ -8,6 +8,7 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -17,6 +18,7 @@ import org.firstinspires.ftc.teamcode.pipelines.AprilTagPipeline;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.subclasses.Distance;
 import org.firstinspires.ftc.teamcode.subclasses.PlaneLauncher;
 import org.firstinspires.ftc.teamcode.subclasses.Rigging;
 import org.firstinspires.ftc.teamcode.subclasses.TempDelivery;
@@ -41,16 +43,17 @@ public class MecanumTeleOp extends LinearOpMode {
     Rigging rigging;
     IMU imu;
     TempDelivery delivery;
+    Distance distance;
 
     public boolean disableDrive = false;
 
-    public static double MAX_SPEED = 1;
+    public static double MAX_SPEED = .9;
     public static double SERVO_SPEED = 1;
 
     ElapsedTime timer = new ElapsedTime();
 
     public enum DRIVE_STATE {
-        DRIVE_TANK, DRIVE_STRAFE, FIELD_CENTRIC
+        DRIVE_TANK, DRIVE_STRAFE, WAIT, SHAKE, FIELD_CENTRIC
     }
     public enum PLANE_STATE{
         LAUNCH,
@@ -77,11 +80,12 @@ public class MecanumTeleOp extends LinearOpMode {
     public MecanumBotConstant names = new MecanumBotConstant();
 
 
-    public static DRIVE_STATE command = DRIVE_STATE.FIELD_CENTRIC;
+    public static DRIVE_STATE command = DRIVE_STATE.DRIVE_TANK;
 
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        distance = new Distance(hardwareMap);
         rigging_state = RIGGING_STATE.WAIT;
         plane_state = PLANE_STATE.WAIT;
         if(IMUTransfer.init) {
@@ -117,8 +121,11 @@ public class MecanumTeleOp extends LinearOpMode {
 
         // Reverses the direction of the left motors, to allow a positive motor power to equal
         // forwards and a negative motor power to equal backwards
-        backRight.setDirection(DcMotor.Direction.REVERSE);
-        frontRight.setDirection(DcMotor.Direction.REVERSE);
+        backRight.setDirection(DcMotor.Direction.FORWARD);
+        frontRight.setDirection(DcMotor.Direction.FORWARD);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+
 
 
         // Makes the Driver Hub output the message "Status: Initialized"
@@ -136,19 +143,18 @@ public class MecanumTeleOp extends LinearOpMode {
                 case WAIT:
                     if (gamepad2.y){
                         launcher.setLaunchPos();
-                        Pose2d start = calculatePose();
                         plane_state = PLANE_STATE.LAUNCH;
                         planeTimer = timer.time();
-                        if (start == null){
-                            running_auto = false;
-                            break;
-                        }else{
-                            running_auto = true;
-                        }
-                        TrajectorySequence to_launch = drive.trajectorySequenceBuilder(start)
-                                .lineToLinearHeading(new Pose2d(0, 0, Math.toRadians(0)))
-                                .build();
-                        drive.followTrajectorySequenceAsync(to_launch);
+//                        Pose2d start = calculatePose();
+
+//                        if (start == null){
+//                            running_auto = false;
+//                            break;
+//                        }else{
+//                            running_auto = true;
+//                        }
+                        running_auto = false;
+
 
                         break;
                     }
@@ -165,9 +171,6 @@ public class MecanumTeleOp extends LinearOpMode {
                         plane_state = PLANE_STATE.WAIT;
                         break;
                     }
-                    if(running_auto) {
-                        drive.update();
-                    }
                     break;
                 case FLAT:
                     if(timer.time() - planeTimer > .300){
@@ -177,7 +180,16 @@ public class MecanumTeleOp extends LinearOpMode {
                     break;
 
             }
-            calculatePose();
+            Pose2d temp = calculatePose();
+            try {
+                telemetry.addData("estimate x:", temp.getX());
+                telemetry.addData("estimate y:", temp.getY());
+                telemetry.addData("estimate deg:", temp.getHeading());
+            }
+            catch(NullPointerException e){
+                telemetry.addLine("nothing seen");
+            }
+
             //arm.setServoPower(sameSignSqrt(-gamepad2.left_stick_y));
 //            switch (rigging_state) {
 //                case WAIT:
@@ -212,33 +224,39 @@ public class MecanumTeleOp extends LinearOpMode {
                     case DRIVE_TANK:
                         double leftPower = sameSignSqrt(-gamepad1.left_stick_y);
                         double rightPower = sameSignSqrt(-gamepad1.right_stick_y);
-                        frontLeft.setPower(leftPower * MAX_SPEED);
-                        backLeft.setPower(leftPower * MAX_SPEED);
-                        frontRight.setPower(rightPower * MAX_SPEED);
-                        backRight.setPower(rightPower * MAX_SPEED);
+
+                        frontRight.setPower(leftPower * MAX_SPEED);
+                        backRight.setPower(leftPower * MAX_SPEED);
+
+                        frontLeft.setPower(rightPower * MAX_SPEED);
+                        backLeft.setPower(rightPower * MAX_SPEED);
 
                         if (leftPower == 0 && rightPower == 0) {
                             command = DRIVE_STATE.DRIVE_STRAFE;
                         }
+//                        if(gamepad1.a){
+//                            command = DRIVE_STATE.SHAKE;
+//                            break;
+//                        }
                         telemetry.addLine("Drive mode: TANK");
 
 
                     case DRIVE_STRAFE:
                         if (gamepad1.left_trigger != 0) {
-                            double backPower = sameSignSqrt(-gamepad1.left_trigger);
-                            double frontPower = sameSignSqrt(gamepad1.left_trigger);
-                            frontLeft.setPower(backPower * MAX_SPEED);
-                            backRight.setPower(backPower * MAX_SPEED);
-                            frontRight.setPower(frontPower * MAX_SPEED);
-                            backLeft.setPower(frontPower * MAX_SPEED);
+                            double posPower = sameSignSqrt(-gamepad1.left_trigger);
+                            double negPower = sameSignSqrt(gamepad1.left_trigger);
+                            frontLeft.setPower(posPower * MAX_SPEED);
+                            backRight.setPower(posPower * MAX_SPEED);
+                            frontRight.setPower(negPower * MAX_SPEED);
+                            backLeft.setPower(negPower * MAX_SPEED);
 
                         } else if (gamepad1.right_trigger != 0) {
-                            double frontPower = sameSignSqrt(-gamepad1.right_trigger);
-                            double backPower = sameSignSqrt(gamepad1.right_trigger);
-                            frontLeft.setPower(backPower * MAX_SPEED);
-                            backRight.setPower(backPower * MAX_SPEED);
-                            frontRight.setPower(frontPower * MAX_SPEED);
-                            backLeft.setPower(frontPower * MAX_SPEED);
+                            double posPower = sameSignSqrt(-gamepad1.right_trigger);
+                            double negPower = sameSignSqrt(gamepad1.right_trigger);
+                            frontLeft.setPower(negPower * MAX_SPEED);
+                            backRight.setPower(negPower * MAX_SPEED);
+                            frontRight.setPower(posPower * MAX_SPEED);
+                            backLeft.setPower(posPower * MAX_SPEED);
                         } else {
                             command = DRIVE_STATE.DRIVE_TANK;
                         }
@@ -256,7 +274,7 @@ public class MecanumTeleOp extends LinearOpMode {
                             imu.resetYaw();
                         }
 
-                        double botHeading = MathFunctions.AngleWrap(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + Math.toRadians(90));
+                        double botHeading = MathFunctions.AngleWrap(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
 
                         // Rotate the movement direction counter to the bot's rotation
                         double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
@@ -277,9 +295,39 @@ public class MecanumTeleOp extends LinearOpMode {
                         backLeft.setPower(backLeftPower);
                         frontRight.setPower(frontRightPower);
                         backRight.setPower(backRightPower);
+                        break;
+                    case SHAKE:
+                        if(!drive.isBusy()) {
+                            double offset = distance.getDist();
+                            if (offset > 75) {
+                                offset = 0;
+                            } else {
+                                offset -= 26;
+                            }
+
+                            TrajectorySequence to_launch = drive.trajectorySequenceBuilder(new Pose2d(0, 0, 0))
+                                    .back(6)
+                                    .forward(6)
+                                    .build();
+                            drive.setPoseEstimate(new Pose2d());
+                            drive.followTrajectorySequenceAsync(to_launch);
+                            command = DRIVE_STATE.WAIT;
+                        }
+                        break;
+                    case WAIT:
+                        if(!drive.isBusy()){
+                            command = DRIVE_STATE.DRIVE_TANK;
+                            break;
+                        }
+                        break;
+
+
 
                 }
             }
+            double offset = distance.getDist();
+
+            telemetry.addData("offset", offset);
             telemetry.addData("Left Target Power", leftTgtPower);
             telemetry.addData("Right Target Power", rightTgtPower);
             telemetry.addData("Front Right Motor Power", frontRight.getPower());
@@ -289,8 +337,8 @@ public class MecanumTeleOp extends LinearOpMode {
             telemetry.addData("Rigging Position", rigging.getRiggingPosition());
 //                telemetry.addData("Arm Power", arm.getArmPower());
             telemetry.addData("Status", "Running");
-
             telemetry.update();
+            drive.update();
         }
 
     }
@@ -325,10 +373,10 @@ public class MecanumTeleOp extends LinearOpMode {
             telemetry.addData("Yaw", "%3.0f degrees", detection.ftcPose.yaw);
             telemetry.addData("X", detection.center.x);
             telemetry.addData("Y", detection.center.y);
-            range = detection.ftcPose.range - 35;
-            degrees = detection.ftcPose.bearing - 12;
+            range = 35 - detection.ftcPose.range;
+            degrees = detection.ftcPose.yaw;
             double y = range * Math.tan(Math.toRadians(degrees));
-            output = new Pose2d(-range, -y, Math.toRadians(degrees));
+            output = new Pose2d(range,y, Math.toRadians(degrees));
             telemetry.addData("Position", y);
             telemetry.addData("range", range);
             return output;

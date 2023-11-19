@@ -67,7 +67,7 @@ public class BoxDetection extends OpenCvPipeline {
             low = new Scalar(0, 125, 0);
             high = new Scalar(26, 255, 250);
         }else{
-            low = new Scalar(0, 125, 0);
+            low = new Scalar(0, 100, 0);
             high = new Scalar(125, 255, 255);
         }
 

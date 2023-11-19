@@ -28,7 +28,7 @@ public class TempDelivery {
 
     public static double RIGHT_OPEN = 1;
     public static double RIGHT_CLOSE = 1;
-    public static double downPosition = .1;
+    public static double downPosition = .05;
     public TempDelivery(HardwareMap hardwareMap){
         m = new MecanumBotConstant();
         main = hardwareMap.get(Servo.class, m.servo2);
@@ -45,6 +45,19 @@ public class TempDelivery {
         main.setPosition(RIGHT_OPEN);
     }
     public void dropPixel() throws InterruptedException {
+//        for (double i = main.getPosition(); i >= downPosition; i-=0.1){
+//            main.setPosition(i);
+//            sleep(20);
+//        }
+        main.setPosition(downPosition);
+        sleep(2000);
+        setIn();
+    }
+    public void dropPixelSlowly() throws InterruptedException{
+        for (double i = main.getPosition(); i >= downPosition; i-=0.1){
+            main.setPosition(i);
+            sleep(20);
+        }
         main.setPosition(downPosition);
         sleep(800);
         setIn();
