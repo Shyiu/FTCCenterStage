@@ -32,7 +32,7 @@ public class AprilTagLocalization {
             double bearing = detection.ftcPose.bearing;
             double dy = detection.ftcPose.yaw;
             double dx = detection.ftcPose.range;
-            Pose2d finalPose = new Pose2d(aprilTagPose.getX() - dx, aprilTagPose.getY() - dy, MathFunctions.AngleWrapPos(Math.toRadians(bearing) + Math.toRadians(180)))
+            Pose2d finalPose = new Pose2d(aprilTagPose.getX() - dx, aprilTagPose.getY() - dy, MathFunctions.AngleWrapPos(Math.toRadians(bearing) + Math.toRadians(180)));
             return finalPose;
         }
     }
