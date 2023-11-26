@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
@@ -19,9 +20,11 @@ public class IntakeTest extends LinearOpMode {
     protected Servo turn1;
     protected Servo turn2;
     protected DcMotor arm;
+    protected DcMotorSimple counter_roller;
     protected MecanumBotConstant m;
     public static double SERVO_POSITION = .5;
     public static double SERVO_POSITION_2 = .5;
+    public static double COUNTER_ROLLER_SPEED = 1;
     private static double SERVO_TWO_OFFSET = 0.03;
     private static double SERVO_ONE_OFFSET = 0;
     @Override
@@ -33,13 +36,16 @@ public class IntakeTest extends LinearOpMode {
         turn2 = hardwareMap.get(Servo.class, m.servo2);
         turn1.setDirection(Servo.Direction.REVERSE);
         arm = hardwareMap.get(DcMotor.class, m.intake);
+        counter_roller = hardwareMap.get(DcMotorSimple.class, m.counter_roller);
         waitForStart();
         while(!isStopRequested() && opModeIsActive()) {
             if (gamepad2.a) {
-                arm.setPower(.5);
+                arm.setPower(1);
+                counter_roller.setPower(COUNTER_ROLLER_SPEED);
             }
             else{
                 arm.setPower(0);
+                counter_roller.setPower(0);
             }
             turn1.setPosition(SERVO_POSITION);
             turn2.setPosition(SERVO_POSITION_2);

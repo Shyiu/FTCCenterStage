@@ -36,7 +36,8 @@ public class Intake extends Subsystem{
     public static double move_timer = 0;
     public static double servo_position1;
     public static double servo_position2;
-
+    private static double[] stack_positions = new double[]{.56};
+    private static double start_position = .50;
     Telemetry telemetry;
     public Intake(HardwareMap hardwareMap, Telemetry telemetry){
         m = new MecanumBotConstant();
@@ -78,8 +79,8 @@ public class Intake extends Subsystem{
         }
     }
     public void setServoPosition(double position){
-        turn1.setPosition(position);
-        turn2.setPosition(position);
+        turn1.setPosition(position + SERVO_ONE_OFFSET);
+        turn2.setPosition(position + SERVO_TWO_OFFSET);
     }
 
     @Override
@@ -92,7 +93,6 @@ public class Intake extends Subsystem{
 
     @Override
     public void init() {
-        turn1.setPosition(SERVO_ONE_OFFSET);
-        turn2.setPosition(SERVO_TWO_OFFSET);
+        setServoPosition(start_position);
     }
 }
