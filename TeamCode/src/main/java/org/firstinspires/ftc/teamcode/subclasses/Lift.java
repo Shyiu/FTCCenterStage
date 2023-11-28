@@ -105,6 +105,8 @@ public class Lift extends Subsystem{
     public void setPower(double power) {
         if(!exceedingConstraints()) {
             slides.setPower(power);
+        }else{
+            slides.setPower(0);
         }
     }
     private boolean magnet_activated(){
