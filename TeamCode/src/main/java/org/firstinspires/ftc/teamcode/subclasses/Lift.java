@@ -23,7 +23,8 @@ public class Lift extends Subsystem{
     private double powerReduction = 1;
     private double conversion = -1;
     private boolean reached = false;
-
+    private boolean working_magnet;
+    private ElapsedTime timer;
     private int maxHardstop = 1450;
 
     HardwareMap hardware;
@@ -34,10 +35,10 @@ public class Lift extends Subsystem{
         this.P = P;
         this.I = I;
         this.D = D;
-
+        timer = new ElapsedTime();
         slides = hardwareMap.get(DcMotor.class, m.slides);
         magnet_sensor = hardwareMap.get(DigitalChannel.class, m.magnet);
-
+        working_magnet = true;
         // set the digital channel to input.
         magnet_sensor.setMode(DigitalChannel.Mode.INPUT);
         slides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -60,10 +61,16 @@ public class Lift extends Subsystem{
 
     @Override
     public void init(){
+        timer.reset();
         if(magnet_sensor.getState()){
             slides.setPower(-.6);
         }
-        while (magnet_sensor.getState()) {
+        while (magnet_sensor.getState() ) {
+            if(timer.time() > 4){
+                telemetry.addLine("Suspecting Disconnected Magnet Sensor. Aborting init.");
+                working_magnet = false;
+                break;
+            }
             slides.setPower(-.6);
         }
 
@@ -85,11 +92,11 @@ public class Lift extends Subsystem{
 
     public boolean exceedingConstraints(){
         if(slides.getPower() < 0){
-            if (!magnet_sensor.getState()){
+            if (magnet_activated()){
                 slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 slides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
-            return magnet_sensor.getState();
+            return working_magnet ? magnet_activated() : slides.getCurrentPosition() < 0;
         }else{
             return slides.getCurrentPosition() > maxHardstop;
         }
@@ -100,7 +107,9 @@ public class Lift extends Subsystem{
             slides.setPower(power);
         }
     }
-
+    private boolean magnet_activated(){
+        return !magnet_sensor.getState();
+    }
     public int getCurrentPosition() {
         return slides.getCurrentPosition();
     }

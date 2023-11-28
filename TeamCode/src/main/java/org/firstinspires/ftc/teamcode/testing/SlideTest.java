@@ -25,9 +25,10 @@ public class SlideTest extends LinearOpMode {
 
         lift = new Lift(hardwareMap, P ,I ,D, telemetry);
         lift.init();
-        lift.moveTo(500);
+//        lift.moveTo(500);
         waitForStart();
         while(!isStopRequested() && opModeIsActive()) {
+            lift.setPower(-gamepad1.left_stick_y);
             lift.telemetry();
 
             telemetry.update();
