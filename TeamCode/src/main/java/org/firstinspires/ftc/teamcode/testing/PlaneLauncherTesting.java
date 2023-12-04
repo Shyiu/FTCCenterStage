@@ -3,12 +3,11 @@ package org.firstinspires.ftc.teamcode.testing;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
-import org.firstinspires.ftc.teamcode.subclasses.PlaneLauncher;
+import org.firstinspires.ftc.teamcode.subclasses.PremPlaneLauncher;
 
 @TeleOp(name="Plane Launcher Testing")
 @Config
@@ -21,13 +20,13 @@ public class PlaneLauncherTesting extends LinearOpMode {
     double primed = 0;
     public static double SERVO_POSITION = .06;
     double launch = 1;
-    PlaneLauncher planeLauncher;
+    PremPlaneLauncher planeLauncher;
     @Override
     public void runOpMode(){
         mc = new MecanumBotConstant();
 //        servo = hardwareMap.get(Servo.class, mc.launcher_servo);
 //        turn = hardwareMap.get(Servo.class, mc.plane_servo);
-        planeLauncher = new PlaneLauncher(hardwareMap);
+        planeLauncher = new PremPlaneLauncher(hardwareMap);
         timer = new ElapsedTime();
         waitForStart();
         timer.reset();

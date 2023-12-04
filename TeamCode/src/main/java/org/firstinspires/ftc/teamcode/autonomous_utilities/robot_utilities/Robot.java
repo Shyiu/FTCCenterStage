@@ -40,7 +40,7 @@ public class Robot {
     public double firstAngle = 0;
     public double secondAngle = 0;
     public double thirdAngle = 0;
-
+    public static boolean lix = false, liy = false, lax = false, lay = false;
     private double xSpeed, ySpeed, turnSpeed;
 
     private Orientation angles;
@@ -138,6 +138,7 @@ public class Robot {
             double lateralYComponent = deadwheelLateral.getCurrentPosition() * Math.cos(worldAngle_rad);//untested
             double linearXComponent = deadwheelLinear.getCurrentPosition() * Math.cos(worldAngle_rad);
             double linearYComponent = deadwheelLinear.getCurrentPosition() * Math.sin(worldAngle_rad);
+
             worldXPosition += ticksToCM(lateralXComponent + linearXComponent);
             worldYPosition += ticksToCM(lateralYComponent  + linearYComponent);
             lastLinearX = linearXComponent;

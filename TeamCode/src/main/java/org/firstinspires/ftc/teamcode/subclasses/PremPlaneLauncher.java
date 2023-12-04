@@ -5,9 +5,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
-
 @Config
-public class PlaneLauncher extends Subsystem{
+public class PremPlaneLauncher extends Subsystem{
     Servo launcher;
     Servo rotation;
     private double startPos = 0.1;
@@ -15,7 +14,7 @@ public class PlaneLauncher extends Subsystem{
     private double flat = .3;
     MecanumBotConstant mc = new MecanumBotConstant();
 
-    public PlaneLauncher(HardwareMap hardwareMap){
+    public PremPlaneLauncher(HardwareMap hardwareMap){
         launcher = hardwareMap.get(Servo.class, mc.launcher_servo);
         rotation = hardwareMap.get(Servo.class, mc.plane_servo);
         rotation.setPosition(startPos);

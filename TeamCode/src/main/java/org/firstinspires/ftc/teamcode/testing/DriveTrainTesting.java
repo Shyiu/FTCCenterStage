@@ -3,30 +3,13 @@ package org.firstinspires.ftc.teamcode.testing;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.IMUTransfer;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
-import org.firstinspires.ftc.teamcode.autonomous_utilities.MathFunctions;
-import org.firstinspires.ftc.teamcode.pipelines.AprilTagPipeline;
-import org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.MecanumDrive;
-import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
-import org.firstinspires.ftc.teamcode.subclasses.Distance;
-import org.firstinspires.ftc.teamcode.subclasses.PlaneLauncher;
-import org.firstinspires.ftc.teamcode.subclasses.Rigging;
-import org.firstinspires.ftc.teamcode.subclasses.TempDelivery;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 
 @Config
 @TeleOp

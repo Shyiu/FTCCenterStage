@@ -8,7 +8,6 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -19,10 +18,9 @@ import org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.subclasses.Distance;
-import org.firstinspires.ftc.teamcode.subclasses.PlaneLauncher;
+import org.firstinspires.ftc.teamcode.subclasses.PremPlaneLauncher;
 import org.firstinspires.ftc.teamcode.subclasses.Rigging;
 import org.firstinspires.ftc.teamcode.subclasses.TempDelivery;
-import org.firstinspires.ftc.teamcode.subclasses.VihasIntake;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.ArrayList;
@@ -39,7 +37,7 @@ public class MecanumTeleOp extends LinearOpMode {
     private boolean running_auto = false;
 
 //    VihasIntake arm;
-    PlaneLauncher launcher;
+    PremPlaneLauncher launcher;
     Rigging rigging;
     IMU imu;
     TempDelivery delivery;
@@ -115,7 +113,7 @@ public class MecanumTeleOp extends LinearOpMode {
         backRight = hardwareMap.get(DcMotor.class, names.br);
         backLeft = hardwareMap.get(DcMotor.class, names.bl);
 
-        launcher = new PlaneLauncher(hardwareMap);
+        launcher = new PremPlaneLauncher(hardwareMap);
 //        arm = new VihasIntake(hardwareMap);
         rigging = new Rigging(hardwareMap, telemetry);
         pipeline = new AprilTagPipeline(hardwareMap);

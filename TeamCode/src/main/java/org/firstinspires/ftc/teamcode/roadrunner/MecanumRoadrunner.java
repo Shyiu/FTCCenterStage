@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.roadrunner;
 
-import android.icu.text.Transliterator;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -9,7 +7,6 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.MarkerCallback;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -22,9 +19,8 @@ import org.firstinspires.ftc.teamcode.roadrunner.drive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.subclasses.Distance;
 import org.firstinspires.ftc.teamcode.subclasses.Lift;
-import org.firstinspires.ftc.teamcode.subclasses.PlaneLauncher;
+import org.firstinspires.ftc.teamcode.subclasses.PremPlaneLauncher;
 import org.firstinspires.ftc.teamcode.subclasses.TempDelivery;
-import org.firstinspires.ftc.teamcode.subclasses.VihasIntake;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -67,7 +63,7 @@ public class MecanumRoadrunner extends LinearOpMode {
             new Point(700, 300),
             new Point(960, 540));
 
-    PlaneLauncher plane;
+    PremPlaneLauncher plane;
 //    VihasIntake intake;
     Lift lift;
     TempDelivery delivery;
@@ -79,7 +75,7 @@ public class MecanumRoadrunner extends LinearOpMode {
 
 
         IMUTransfer.init = false;
-        plane = new PlaneLauncher(hardwareMap);
+        plane = new PremPlaneLauncher(hardwareMap);
         delivery = new TempDelivery(hardwareMap);
         distance = new Distance(hardwareMap, telemetry);
 
