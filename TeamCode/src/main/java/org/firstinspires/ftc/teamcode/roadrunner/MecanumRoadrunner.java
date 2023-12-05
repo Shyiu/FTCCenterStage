@@ -218,7 +218,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .addTemporalMarker(.5, new MarkerCallback() {
                             @Override
                             public void onMarkerReached() {
-                                plane.setFlat();
+                                plane.setFlatPosition();
                             }
                         })
                         .build();
@@ -231,7 +231,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .addTemporalMarker(.5, new MarkerCallback() {
                             @Override
                             public void onMarkerReached() {
-                                plane.setFlat();
+                                plane.setFlatPosition();
                             }
                         })
                         .splineToSplineHeading(new Pose2d(49, BLUE_SIDE_MIDDLE, Math.toRadians(180)), Math.toRadians(0))
@@ -243,7 +243,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .addTemporalMarker(.5, new MarkerCallback() {
                             @Override
                             public void onMarkerReached() {
-                                plane.setFlat();
+                                plane.setFlatPosition();
                             }
                         })
                         .splineToSplineHeading(new Pose2d(49, BLUE_SIDE_LEFT, Math.toRadians(180)), Math.toRadians(0))
@@ -266,7 +266,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .addTemporalMarker(.5, new MarkerCallback() {
                             @Override
                             public void onMarkerReached() {
-                                plane.setFlat();
+                                plane.setFlatPosition();
                             }
                         })
                         .build();
@@ -279,7 +279,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .addTemporalMarker(.5, new MarkerCallback() {
                             @Override
                             public void onMarkerReached() {
-                                plane.setFlat();
+                                plane.setFlatPosition();
                             }
                         })
 
@@ -295,7 +295,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .addTemporalMarker(.5, new MarkerCallback() {
                             @Override
                             public void onMarkerReached() {
-                                plane.setFlat();
+                                plane.setFlatPosition();
                             }
                         })
                         .build();
@@ -307,7 +307,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .addTemporalMarker(.5, new MarkerCallback() {
                             @Override
                             public void onMarkerReached() {
-                                plane.setFlat();
+                                plane.setFlatPosition();
                             }
                         })
                         .lineToLinearHeading(new Pose2d(15.00, -39.00, Math.toRadians(325.00)))
@@ -319,7 +319,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .addTemporalMarker(.5, new MarkerCallback() {
                             @Override
                             public void onMarkerReached() {
-                                plane.setFlat();
+                                plane.setFlatPosition();
                             }
                         })
                         .lineTo(new Vector2d(13, -29))
@@ -333,7 +333,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .addTemporalMarker(.5, new MarkerCallback() {
                             @Override
                             public void onMarkerReached() {
-                                plane.setFlat();
+                                plane.setFlatPosition();
                             }
                         })
                         .lineTo(new Vector2d(20.00, -36.00))
@@ -350,7 +350,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .addTemporalMarker(.5, new MarkerCallback() {
                             @Override
                             public void onMarkerReached() {
-                                plane.setFlat();
+                                plane.setFlatPosition();
                             }
                         })
                         .lineToLinearHeading(new Pose2d(-33.50, -29.00, Math.toRadians(270.00)))
@@ -366,7 +366,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .addTemporalMarker(.5, new MarkerCallback() {
                             @Override
                             public void onMarkerReached() {
-                                plane.setFlat();
+                                plane.setFlatPosition();
                             }
                         })
                         .lineTo(new Vector2d(-37.50, -50.00))
@@ -380,7 +380,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .addTemporalMarker(.5, new MarkerCallback() {
                             @Override
                             public void onMarkerReached() {
-                                plane.setFlat();
+                                plane.setFlatPosition();
                             }
                         })
                         .lineToLinearHeading(new Pose2d(-39.50, -30.00, Math.toRadians(360.00)))

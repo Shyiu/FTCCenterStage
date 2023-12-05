@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
 @Config
 public class THEBOOT {
-    protected Servo main;
-    protected MecanumBotConstant m;
+    protected Servo boot_rotation_servo;
+    protected MecanumBotConstant config;
     private ElapsedTime timer;
 
     private double servoTimer1 = 0;
@@ -30,40 +30,40 @@ public class THEBOOT {
     public static double FLAT_POSITION = .5;
 
     public THEBOOT(HardwareMap hardwareMap){
-        m = new MecanumBotConstant();
-        main = hardwareMap.get(Servo.class, m.servo2);
-        main.setDirection(Servo.Direction.FORWARD);
+        config = new MecanumBotConstant();
+        boot_rotation_servo = hardwareMap.get(Servo.class, config.servo2);
+        boot_rotation_servo.setDirection(Servo.Direction.FORWARD);
         setUp();
     }
 
     public void moveTo(double position){
-        main.setPosition(position);
+        boot_rotation_servo.setPosition(position);
     }
 
     public void setIn(){
-        main.setPosition(RIGHT_CLOSE);
+        boot_rotation_servo.setPosition(RIGHT_CLOSE);
     }
 
     public void setUp(){
-        main.setPosition(FLAT_POSITION);
+        boot_rotation_servo.setPosition(FLAT_POSITION);
     }
 
     public void dropPixel() throws InterruptedException {
-        main.setPosition(downPosition);
+        boot_rotation_servo.setPosition(downPosition);
         sleep(2000);
         setIn();
     }
     public void setPosition(double position)  throws InterruptedException {
-        main.setPosition(position);
+        boot_rotation_servo.setPosition(position);
         sleep(200);
     }
 
     public void dropPixelSlowly() throws InterruptedException{
-        for (double i = main.getPosition(); i >= downPosition; i-=0.1){
-            main.setPosition(i);
+        for (double i = boot_rotation_servo.getPosition(); i >= downPosition; i-=0.1){
+            boot_rotation_servo.setPosition(i);
             sleep(20);
         }
-        main.setPosition(downPosition);
+        boot_rotation_servo.setPosition(downPosition);
         sleep(800);
         setIn();
     }

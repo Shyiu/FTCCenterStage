@@ -10,8 +10,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
-import org.firstinspires.ftc.teamcode.subclasses.Intake;
-import org.firstinspires.ftc.teamcode.subclasses.Lift;
 
 @Config
 @TeleOp(name = "servo_testing")
@@ -35,7 +33,7 @@ public class IntakeTest extends LinearOpMode {
         turn1 = hardwareMap.get(Servo.class, m.servo1);
         turn2 = hardwareMap.get(Servo.class, m.servo2);
         turn1.setDirection(Servo.Direction.REVERSE);
-        arm = hardwareMap.get(DcMotor.class, m.intake);
+        arm = hardwareMap.get(DcMotor.class, m.intake_motor);
         counter_roller = hardwareMap.get(DcMotorSimple.class, m.counter_roller);
         waitForStart();
         while(!isStopRequested() && opModeIsActive()) {

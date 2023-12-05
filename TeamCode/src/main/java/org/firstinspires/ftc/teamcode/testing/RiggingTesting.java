@@ -13,7 +13,6 @@ public class RiggingTesting extends LinearOpMode {
         rigging = new Rigging(hardwareMap, telemetry);
         waitForStart();
         while(!isStopRequested() && opModeIsActive()){
-//            rigging.setRiggingPower(-gamepad2.left_stick_y);
             rigging.setMotorLeftPower(-gamepad2.left_stick_y);
             rigging.setMotorRightPower(-gamepad2.right_stick_y);
             rigging.telemetry();

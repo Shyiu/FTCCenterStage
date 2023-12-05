@@ -51,7 +51,7 @@ public class MecanumTeleOp extends LinearOpMode {
     ElapsedTime timer = new ElapsedTime();
 
     public enum DRIVE_STATE {
-        DRIVE_TANK, DRIVE_STRAFE, WAIT, SHAKE, FIELD_CENTRIC
+        DRIVE_TANK, DRIVE_STRAFE, WAIT, SHAKE_PLANE, FIELD_CENTRIC
     }
     public enum PLANE_STATE{
         LAUNCH,
@@ -65,17 +65,17 @@ public class MecanumTeleOp extends LinearOpMode {
     }
 
     RIGGING_STATE rigging_state;
-    AprilTagPipeline pipeline;
-    ArrayList<Integer> targets;
+    AprilTagPipeline apriltag_pipeline;
+    ArrayList<Integer> apriltag_targets;
 
     public double servoTimer = 0;
     public double planeTimer = 0;
     public double servoDelay = .5;
     public boolean roller = false;
 
-    double leftTgtPower = 0, rightTgtPower = 0;
+    double left_target_power = 0, right_target_power = 0;
 
-    public MecanumBotConstant names = new MecanumBotConstant();
+    public MecanumBotConstant config = new MecanumBotConstant();
 
 
     public static DRIVE_STATE command = DRIVE_STATE.DRIVE_TANK;
@@ -105,18 +105,18 @@ public class MecanumTeleOp extends LinearOpMode {
         }
         MecanumDrive drive = new MecanumDrive(hardwareMap);
 
-        targets =  new ArrayList<>(Arrays.asList(1));
+        apriltag_targets =  new ArrayList<>(Arrays.asList(1));
 
         // Pulls the motors from the robot configuration so that they can be manipulated
-        frontRight = hardwareMap.get(DcMotor.class, names.fr);
-        frontLeft = hardwareMap.get(DcMotor.class, names.fl);
-        backRight = hardwareMap.get(DcMotor.class, names.br);
-        backLeft = hardwareMap.get(DcMotor.class, names.bl);
+        frontRight = hardwareMap.get(DcMotor.class, config.fr);
+        frontLeft = hardwareMap.get(DcMotor.class, config.fl);
+        backRight = hardwareMap.get(DcMotor.class, config.br);
+        backLeft = hardwareMap.get(DcMotor.class, config.bl);
 
         launcher = new PremPlaneLauncher(hardwareMap);
 //        arm = new VihasIntake(hardwareMap);
         rigging = new Rigging(hardwareMap, telemetry);
-        pipeline = new AprilTagPipeline(hardwareMap);
+        apriltag_pipeline = new AprilTagPipeline(hardwareMap);
         delivery = new TempDelivery(hardwareMap);
         delivery.setIn();
 
@@ -136,14 +136,10 @@ public class MecanumTeleOp extends LinearOpMode {
         time.reset();
 
         while (!isStopRequested() && opModeIsActive()) {
-
-//            if (gamepad2.a) {
-//                arm.toggle();
-//            }
             switch (plane_state){
                 case WAIT:
                     if (gamepad2.y){
-                        launcher.setLaunchPos();
+                        launcher.setLaunchPosition();
                         plane_state = PLANE_STATE.LAUNCH;
                         planeTimer = timer.time();
 //                        Pose2d start = calculatePose();
@@ -160,7 +156,7 @@ public class MecanumTeleOp extends LinearOpMode {
                         break;
                     }
                     if(gamepad2.x){
-                        launcher.setFlat();
+                        launcher.setFlatPosition();
                         plane_state = PLANE_STATE.FLAT;
                         planeTimer = timer.time();
                         break;
@@ -183,12 +179,12 @@ public class MecanumTeleOp extends LinearOpMode {
             }
             Pose2d temp = calculatePose();
             try {
-                telemetry.addData("estimate x:", temp.getX());
-                telemetry.addData("estimate y:", temp.getY());
-                telemetry.addData("estimate deg:", temp.getHeading());
+                telemetry.addData("Estimate X:", temp.getX());
+                telemetry.addData("Estimate Y:", temp.getY());
+                telemetry.addData("Estimate Heading:", temp.getHeading());
             }
             catch(NullPointerException e){
-                telemetry.addLine("nothing seen");
+                telemetry.addLine("No April Tag Detected");
             }
 
             //arm.setServoPower(sameSignSqrt(-gamepad2.left_stick_y));
@@ -218,8 +214,12 @@ public class MecanumTeleOp extends LinearOpMode {
 //                    }
 //                    rigging.rigDown();
 //            }
-            rigging.setMotorLeftPower(-gamepad2.left_stick_y);
-            rigging.setMotorRightPower(-gamepad2.right_stick_y);
+            double gamepad2_left_y = -gamepad2.left_stick_y;
+            double gamepad2_right_y = -gamepad2.right_stick_y;
+
+            rigging.setMotorLeftPower(gamepad2_left_y);
+            rigging.setMotorRightPower(gamepad2_right_y);
+
             if (!disableDrive) {
                 switch (command) {
                     case DRIVE_TANK:
@@ -266,7 +266,7 @@ public class MecanumTeleOp extends LinearOpMode {
                     case FIELD_CENTRIC:
                         double y = -gamepad1.left_stick_y; // Remember, Y stick value is reversed
                         double x = gamepad1.left_stick_x;
-                        double rx = gamepad1.right_stick_x;
+                        double right_stick_x = gamepad1.right_stick_x;
 
                         // This button choice was made so that it is hard to hit on accident,
                         // it can be freely changed based on preference.
@@ -278,40 +278,40 @@ public class MecanumTeleOp extends LinearOpMode {
                         double botHeading = MathFunctions.AngleWrap(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
 
                         // Rotate the movement direction counter to the bot's rotation
-                        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
-                        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+                        double rotationX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+                        double rotationY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
 
-                        rotX = rotX * 1.1;  // Counteract imperfect strafing
+                        rotationX = rotationX * 1.1;  // Counteract imperfect strafing
 
                         // Denominator is the largest motor power (absolute value) or 1
                         // This ensures all the powers maintain the same ratio,
                         // but only if at least one is out of the range [-1, 1]
-                        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
-                        double frontLeftPower = (rotY + rotX + rx) / denominator;
-                        double backLeftPower = (rotY - rotX + rx) / denominator;
-                        double frontRightPower = (rotY - rotX - rx) / denominator;
-                        double backRightPower = (rotY + rotX - rx) / denominator;
+                        double denominator = Math.max(Math.abs(rotationY) + Math.abs(rotationX) + Math.abs(right_stick_x), 1);
+                        double frontLeftPower = (rotationY + rotationX + right_stick_x) / denominator;
+                        double backLeftPower = (rotationY - rotationX + right_stick_x) / denominator;
+                        double frontRightPower = (rotationY - rotationX - right_stick_x) / denominator;
+                        double backRightPower = (rotationY + rotationX - right_stick_x) / denominator;
 
                         frontLeft.setPower(frontLeftPower);
                         backLeft.setPower(backLeftPower);
                         frontRight.setPower(frontRightPower);
                         backRight.setPower(backRightPower);
                         break;
-                    case SHAKE:
+                    case SHAKE_PLANE:
                         if(!drive.isBusy()) {
-                            double offset = distance.getDist();
-                            if (offset > 75) {
-                                offset = 0;
+                            double distance_to_backdrop = distance.getDist();
+                            if (distance_to_backdrop > 75) {
+                                distance_to_backdrop = 0;
                             } else {
-                                offset -= 26;
+                                distance_to_backdrop -= 26;
                             }
 
-                            TrajectorySequence to_launch = drive.trajectorySequenceBuilder(new Pose2d(0, 0, 0))
+                            TrajectorySequence to_launch_position = drive.trajectorySequenceBuilder(new Pose2d(0, 0, 0))
                                     .back(6)
                                     .forward(6)
                                     .build();
                             drive.setPoseEstimate(new Pose2d());
-                            drive.followTrajectorySequenceAsync(to_launch);
+                            drive.followTrajectorySequenceAsync(to_launch_position);
                             command = DRIVE_STATE.WAIT;
                         }
                         break;
@@ -331,8 +331,8 @@ public class MecanumTeleOp extends LinearOpMode {
             distance.telemetry();
             rigging.telemetry();
 
-            telemetry.addData("Left Target Power", leftTgtPower);
-            telemetry.addData("Right Target Power", rightTgtPower);
+            telemetry.addData("Left Target Power", left_target_power);
+            telemetry.addData("Right Target Power", right_target_power);
             telemetry.addData("Front Right Motor Power", frontRight.getPower());
             telemetry.addData("Front Left Motor Power", frontLeft.getPower());
             telemetry.addData("Back Right Motor Power", backRight.getPower());
@@ -367,8 +367,8 @@ public class MecanumTeleOp extends LinearOpMode {
         return (number <= max) && (number >= min);
     }
     public Pose2d calculatePose(){
-        Pose2d output = new Pose2d();
-        AprilTagDetection detection = pipeline.getDetectionsForTargets(targets);
+        Pose2d aprilTagPosition = new Pose2d();
+        AprilTagDetection detection = apriltag_pipeline.getDetectionsForTargets(apriltag_targets);
         double range = 0;
         double degrees = 10;
         if (detection != null) {
@@ -381,10 +381,10 @@ public class MecanumTeleOp extends LinearOpMode {
             range = 35 - detection.ftcPose.range;
             degrees = detection.ftcPose.yaw;
             double y = range * Math.tan(Math.toRadians(degrees));
-            output = new Pose2d(range,y, Math.toRadians(degrees));
+            aprilTagPosition = new Pose2d(range,y, Math.toRadians(degrees));
             telemetry.addData("Position", y);
             telemetry.addData("range", range);
-            return output;
+            return aprilTagPosition;
         }
         return null;
 

@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode.subclasses;
 
-import android.telecom.TelecomManager;
-
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -44,7 +41,7 @@ public class Intake extends Subsystem{
         this.telemetry = telemetry;
         turn1 = hardwareMap.get(Servo.class, m.servo1);
         turn2 = hardwareMap.get(Servo.class, m.servo2);
-        arm = hardwareMap.get(DcMotor.class, m.intake);
+        arm = hardwareMap.get(DcMotor.class, m.intake_motor);
         counter_roller = hardwareMap.get(DcMotorSimple.class, m.counter_roller);
         servo_position1 = turn1.getPosition();
         servo_position2 = turn2.getPosition();

@@ -57,7 +57,6 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
     private Encoder parallelEncoder, perpendicularEncoder;
     private MecanumBotConstant mc;
     private MecanumDrive drive;
-    private double distance = 75.4375;
 
     public TwoWheelTrackingLocalizer(HardwareMap hardwareMap, MecanumDrive drive) {
         super(Arrays.asList(

@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.subclasses;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -36,8 +35,8 @@ public class Lift extends Subsystem{
         this.I = I;
         this.D = D;
         timer = new ElapsedTime();
-        slides = hardwareMap.get(DcMotor.class, m.slides);
-        magnet_sensor = hardwareMap.get(DigitalChannel.class, m.magnet);
+        slides = hardwareMap.get(DcMotor.class, m.slides_motor);
+        magnet_sensor = hardwareMap.get(DigitalChannel.class, m.magnet_sensor);
         working_magnet = true;
         // set the digital channel to input.
         magnet_sensor.setMode(DigitalChannel.Mode.INPUT);
@@ -49,8 +48,8 @@ public class Lift extends Subsystem{
         this.hardware = hardwareMap;
         this.telemetry = telemetry;
 
-        slides = hardwareMap.get(DcMotor.class, m.slides);
-        magnet_sensor = hardwareMap.get(DigitalChannel.class, m.magnet);
+        slides = hardwareMap.get(DcMotor.class, m.slides_motor);
+        magnet_sensor = hardwareMap.get(DigitalChannel.class, m.magnet_sensor);
 
         // set the digital channel to input.
         magnet_sensor.setMode(DigitalChannel.Mode.INPUT);

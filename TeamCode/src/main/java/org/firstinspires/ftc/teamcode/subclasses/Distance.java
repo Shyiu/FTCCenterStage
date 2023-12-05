@@ -15,7 +15,7 @@ public class Distance extends Subsystem{
     public Distance(HardwareMap hardwareMap, Telemetry telemetry){
         this.telemetry = telemetry;
         mc = new MecanumBotConstant();
-        sensorDistance = hardwareMap.get(DistanceSensor.class, mc.distance);
+        sensorDistance = hardwareMap.get(DistanceSensor.class, mc.distance_sensor);
     }
     public double getDist() {
         return sensorDistance.getDistance(DistanceUnit.INCH);

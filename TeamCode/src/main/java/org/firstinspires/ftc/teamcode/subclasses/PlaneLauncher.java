@@ -10,16 +10,18 @@ import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 public class PlaneLauncher extends Subsystem{
     Servo launcher;
     Servo rotation;
-    private double startPos = 0.1;
-    public static double launchPos = .21;
+    public static double startPos = 0.1;
+    public static double launchPos = .57;
     private double flat = .3;
+    private double spring_stop_position = .6;
+    private double release_position = 0;
     MecanumBotConstant mc = new MecanumBotConstant();
 
     public PlaneLauncher(HardwareMap hardwareMap){
-        launcher = hardwareMap.get(Servo.class, mc.launcher_servo);
-        rotation = hardwareMap.get(Servo.class, mc.plane_servo);
+        launcher = hardwareMap.get(Servo.class, mc.plane_launcher_pinion_servo);
+        rotation = hardwareMap.get(Servo.class, mc.plane_launcher_rotation_servo);
         rotation.setPosition(startPos);
-        launcher.setPosition(0);
+        launcher.setPosition(spring_stop_position);
     }
     public void moveTo(double position){
         rotation.setPosition(position);
@@ -38,11 +40,11 @@ public class PlaneLauncher extends Subsystem{
     }
 
     public void launch(){
-        launcher.setPosition(1);
+        launcher.setPosition(release_position);
     }
 
     public void reset(){
-        launcher.setPosition(0);
+        launcher.setPosition(spring_stop_position);
     }
 
     @Override

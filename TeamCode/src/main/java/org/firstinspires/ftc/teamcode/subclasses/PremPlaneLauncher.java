@@ -15,8 +15,8 @@ public class PremPlaneLauncher extends Subsystem{
     MecanumBotConstant mc = new MecanumBotConstant();
 
     public PremPlaneLauncher(HardwareMap hardwareMap){
-        launcher = hardwareMap.get(Servo.class, mc.launcher_servo);
-        rotation = hardwareMap.get(Servo.class, mc.plane_servo);
+        launcher = hardwareMap.get(Servo.class, mc.plane_launcher_pinion_servo);
+        rotation = hardwareMap.get(Servo.class, mc.plane_launcher_rotation_servo);
         rotation.setPosition(startPos);
         launcher.setPosition(0);
     }
@@ -24,7 +24,7 @@ public class PremPlaneLauncher extends Subsystem{
         rotation.setPosition(position);
     }
 
-    public void setFlat(){
+    public void setFlatPosition(){
         rotation.setPosition(flat);
     }
 
@@ -32,7 +32,7 @@ public class PremPlaneLauncher extends Subsystem{
         rotation.setPosition(startPos);
     }
 
-    public void setLaunchPos(){
+    public void setLaunchPosition(){
         rotation.setPosition(launchPos);
     }
 

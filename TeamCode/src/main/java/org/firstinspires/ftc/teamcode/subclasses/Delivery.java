@@ -40,8 +40,8 @@ public class Delivery extends Subsystem{
         RIGHT_INTAKE = m.right_closed_position;
         LEFT_INTAKE = m.left_closed_position;
 
-        dleft = hardwareMap.get(Servo.class, m.dleft);
-        dright = hardwareMap.get(Servo.class, m.dright);
+        dleft = hardwareMap.get(Servo.class, m.delivery_left);
+        dright = hardwareMap.get(Servo.class, m.delivery_right);
         timer = new ElapsedTime();
     }
 
