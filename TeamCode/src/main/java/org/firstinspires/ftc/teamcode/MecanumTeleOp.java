@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.drive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.subclasses.Distance;
 import org.firstinspires.ftc.teamcode.subclasses.PremPlaneLauncher;
-import org.firstinspires.ftc.teamcode.subclasses.Rigging;
+import org.firstinspires.ftc.teamcode.subclasses.RiggingOld;
 import org.firstinspires.ftc.teamcode.subclasses.TempDelivery;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
@@ -38,7 +38,7 @@ public class MecanumTeleOp extends LinearOpMode {
 
 //    VihasIntake arm;
     PremPlaneLauncher launcher;
-    Rigging rigging;
+    RiggingOld rigging;
     IMU imu;
     TempDelivery delivery;
     Distance distance;
@@ -115,7 +115,7 @@ public class MecanumTeleOp extends LinearOpMode {
 
         launcher = new PremPlaneLauncher(hardwareMap);
 //        arm = new VihasIntake(hardwareMap);
-        rigging = new Rigging(hardwareMap, telemetry);
+        rigging = new RiggingOld(hardwareMap, telemetry);
         apriltag_pipeline = new AprilTagPipeline(hardwareMap);
         delivery = new TempDelivery(hardwareMap);
         delivery.setIn();

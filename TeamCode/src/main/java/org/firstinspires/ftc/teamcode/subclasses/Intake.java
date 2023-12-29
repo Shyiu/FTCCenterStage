@@ -56,7 +56,7 @@ public class Intake extends Subsystem{
             running = false;
         }else if (timer.time() - servoTimer > servoDelay){
             arm.setPower(MOTOR_SPEED);
-            counter_roller.setPower(1);
+            counter_roller.setPower(-1);
             servoTimer = timer.time();
             running = true;
         }

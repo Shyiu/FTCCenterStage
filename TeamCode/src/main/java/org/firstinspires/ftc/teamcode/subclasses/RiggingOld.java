@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
-public class Rigging extends Subsystem{
+public class RiggingOld extends Subsystem{
     DcMotor riggingMotorRight;
     DcMotor riggingMotorLeft;
     MecanumBotConstant mc = new MecanumBotConstant();
@@ -22,7 +22,7 @@ public class Rigging extends Subsystem{
     Telemetry telemetry;
 
 
-    public Rigging(HardwareMap hardwareMap, Telemetry telemetry){
+    public RiggingOld(HardwareMap hardwareMap, Telemetry telemetry){
         timer = new ElapsedTime();
         this.telemetry = telemetry;
         riggingMotorRight = hardwareMap.get(DcMotor.class, mc.rigging_motor_right);

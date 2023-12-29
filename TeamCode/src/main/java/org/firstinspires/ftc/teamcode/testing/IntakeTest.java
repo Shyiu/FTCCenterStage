@@ -35,6 +35,7 @@ public class IntakeTest extends LinearOpMode {
         turn1.setDirection(Servo.Direction.REVERSE);
         arm = hardwareMap.get(DcMotor.class, m.intake_motor);
         counter_roller = hardwareMap.get(DcMotorSimple.class, m.counter_roller);
+        counter_roller.setDirection(DcMotorSimple.Direction.REVERSE);
         waitForStart();
         while(!isStopRequested() && opModeIsActive()) {
             if (gamepad2.a) {

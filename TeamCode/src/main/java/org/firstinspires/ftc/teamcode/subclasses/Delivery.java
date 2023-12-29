@@ -35,10 +35,7 @@ public class Delivery extends Subsystem{
     public Delivery(HardwareMap hardwareMap, Telemetry telemetry){
         m = new MecanumBotConstant();
         this.telemetry = telemetry;
-        RIGHT_DUMP = m.right_open_position;
-        LEFT_DUMP = m.left_open_position;
-        RIGHT_INTAKE = m.right_closed_position;
-        LEFT_INTAKE = m.left_closed_position;
+
 
         dleft = hardwareMap.get(Servo.class, m.delivery_left);
         dright = hardwareMap.get(Servo.class, m.delivery_right);

@@ -11,10 +11,10 @@ public class PlaneLauncher extends Subsystem{
     Servo launcher;
     Servo rotation;
     public static double startPos = 0.1;
-    public static double launchPos = .57;
+    public static double launchPos = .4;
     private double flat = .3;
-    private double spring_stop_position = .6;
-    private double release_position = 0;
+    public static double spring_stop_position = .65;
+    public static double release_position = 0;
     MecanumBotConstant mc = new MecanumBotConstant();
 
     public PlaneLauncher(HardwareMap hardwareMap){

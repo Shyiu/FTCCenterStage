@@ -2,19 +2,20 @@ package org.firstinspires.ftc.teamcode.testing;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.subclasses.RiggingOld;
 
-@TeleOp(name = "RiggingTest")
-public class RiggingTesting extends LinearOpMode {
-    DcMotor rigging_motor;
+@TeleOp(name = "OldRiggingTest")
+public class OldRiggingTesting extends LinearOpMode {
+    RiggingOld rigging;
     @Override
     public void runOpMode(){
-        rigging_motor = hardwareMap.get(DcMotor.class, "rigging");
-            waitForStart();
+        rigging = new RiggingOld(hardwareMap, telemetry);
+        waitForStart();
         while(!isStopRequested() && opModeIsActive()){
-            rigging_motor.setPower(-gamepad1.left_stick_y);
+            rigging.setMotorLeftPower(-gamepad2.left_stick_y);
+            rigging.setMotorRightPower(-gamepad2.right_stick_y);
+            rigging.telemetry();
             telemetry.update();
         }
     }
