@@ -26,7 +26,8 @@ import org.opencv.core.Rect;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-
+//Todo: when retuning define the front of the robot to be the intake/rollers.
+//Todo: rewrite the paths to match that as well.
 @Config
 @Autonomous
 public class MecanumRoadrunner extends LinearOpMode {
@@ -206,7 +207,7 @@ public class MecanumRoadrunner extends LinearOpMode {
 
         switch(position){
             case BLUE_BACKDROP:
-                robotStart = new Pose2d(15, 63, Math.toRadians(90));
+                robotStart = new Pose2d(15, 63, Math.toRadians(270));
                 drive.setPoseEstimate(robotStart);
                 //y = 29 for the right most april tag
                 right = drive.trajectorySequenceBuilder(robotStart)

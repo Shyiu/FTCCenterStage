@@ -31,7 +31,7 @@ public class TempDelivery {
     public static double downPosition = .05;
     public TempDelivery(HardwareMap hardwareMap){
         config = new MecanumBotConstant();
-        axle_rotation_servo = hardwareMap.get(Servo.class, config.servo2);
+        axle_rotation_servo = hardwareMap.get(Servo.class, config.servo_right);
         axle_rotation_servo.setDirection(Servo.Direction.FORWARD);
         setUp();
     }

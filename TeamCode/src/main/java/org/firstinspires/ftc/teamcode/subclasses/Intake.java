@@ -12,8 +12,9 @@ import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
 @Config
 public class Intake extends Subsystem{
-    protected Servo turn1;
-    protected Servo turn2;
+    private static final double COUNTER_ROLLER_SPEED = -1;
+    protected Servo turn_left;
+    protected Servo turn_right;
     protected DcMotor arm;
     protected DcMotorSimple counter_roller;
     protected MecanumBotConstant m;
@@ -24,8 +25,8 @@ public class Intake extends Subsystem{
     public double servoDelay = .3;
 
     public static double kf = -0.15;
-    private static double SERVO_TWO_OFFSET = 0.03;
-    private static double SERVO_ONE_OFFSET = 0;
+    public static double SERVO_TWO_OFFSET = 0;
+    public static double SERVO_ONE_OFFSET = 0;
     private static double MAX_SERVO = .6;
     public static double MOTOR_SPEED = 1;
     public static double servo_speed = .05; //This value is the rate of change at maximum input speed (degrees)
@@ -39,13 +40,12 @@ public class Intake extends Subsystem{
     public Intake(HardwareMap hardwareMap, Telemetry telemetry){
         m = new MecanumBotConstant();
         this.telemetry = telemetry;
-        turn1 = hardwareMap.get(Servo.class, m.servo1);
-        turn2 = hardwareMap.get(Servo.class, m.servo2);
+        turn_left = hardwareMap.get(Servo.class, m.servo_left);
+        turn_right = hardwareMap.get(Servo.class, m.servo_right);
+        turn_left.setDirection(Servo.Direction.REVERSE);
         arm = hardwareMap.get(DcMotor.class, m.intake_motor);
         counter_roller = hardwareMap.get(DcMotorSimple.class, m.counter_roller);
-        servo_position1 = turn1.getPosition();
-        servo_position2 = turn2.getPosition();
-        turn1.setDirection(Servo.Direction.REVERSE);
+        counter_roller.setDirection(DcMotorSimple.Direction.REVERSE);
         timer = new ElapsedTime();
     }
     public void toggle(){
@@ -56,9 +56,16 @@ public class Intake extends Subsystem{
             running = false;
         }else if (timer.time() - servoTimer > servoDelay){
             arm.setPower(MOTOR_SPEED);
-            counter_roller.setPower(-1);
+            counter_roller.setPower(COUNTER_ROLLER_SPEED);
             servoTimer = timer.time();
             running = true;
+        }
+    }
+    public void set_speed(double MOTOR_SPEED, double COUNTER_ROLLER_SPEED){
+        if (timer.time() - servoTimer > servoDelay){
+            arm.setPower(MOTOR_SPEED);
+            counter_roller.setPower(COUNTER_ROLLER_SPEED);
+            servoTimer = timer.time();
         }
     }
     public void setServoPower(double power){
@@ -70,14 +77,16 @@ public class Intake extends Subsystem{
 
             servo_position2 = Math.min(MAX_SERVO - Math.max(SERVO_TWO_OFFSET, SERVO_ONE_OFFSET), servo_position2) + SERVO_TWO_OFFSET;
             servo_position2 = Math.max(SERVO_TWO_OFFSET, servo_position2);
-            turn1.setPosition(servo_position1);
-            turn2.setPosition(servo_position2);
+            turn_left.setPosition(servo_position1);
+            turn_right.setPosition(servo_position2);
             move_timer = timer.time();
         }
     }
     public void setServoPosition(double position){
-        turn1.setPosition(position + SERVO_ONE_OFFSET);
-        turn2.setPosition(position + SERVO_TWO_OFFSET);
+        position = Math.min(1 - SERVO_TWO_OFFSET, position);
+        position = Math.max(-1, position);
+        turn_left.setPosition(position + SERVO_ONE_OFFSET);
+        turn_right.setPosition(position + SERVO_TWO_OFFSET);
     }
 
     @Override

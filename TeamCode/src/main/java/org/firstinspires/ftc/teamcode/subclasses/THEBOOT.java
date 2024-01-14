@@ -31,7 +31,7 @@ public class THEBOOT {
 
     public THEBOOT(HardwareMap hardwareMap){
         config = new MecanumBotConstant();
-        boot_rotation_servo = hardwareMap.get(Servo.class, config.servo2);
+        boot_rotation_servo = hardwareMap.get(Servo.class, config.servo_right);
         boot_rotation_servo.setDirection(Servo.Direction.FORWARD);
         setUp();
     }

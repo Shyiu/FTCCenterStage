@@ -30,7 +30,7 @@ public class SpinDelivery extends Subsystem{
         delay = new ElapsedTime();
         mc = new MecanumBotConstant();
         this.telemetry = telemetry;
-        servo  = hardwareMap.get(Servo.class, mc.servo2);
+        servo  = hardwareMap.get(Servo.class, mc.servo_right);
 
     }
 

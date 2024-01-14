@@ -28,7 +28,7 @@ public class VihasIntake {
     public VihasIntake(HardwareMap hardwareMap){
         m = new MecanumBotConstant();
 
-        turn1 = hardwareMap.get(Servo.class, m.servo1);
+        turn1 = hardwareMap.get(Servo.class, m.servo_left);
         turn1.setDirection(Servo.Direction.REVERSE);
         turn1.setPosition(SERVO_START);
         timer = new ElapsedTime();

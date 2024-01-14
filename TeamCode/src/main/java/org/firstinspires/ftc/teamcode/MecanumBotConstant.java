@@ -9,8 +9,8 @@ public class MecanumBotConstant {
 
     //EHUB
     public String intake_motor = "intakeMotor";
-    public String servo1 = "servo1";
-    public String servo2 = "servo2";
+    public String servo_left = "servo_left";
+    public String servo_right = "servo_right";
     public String counter_roller = "counter_roller";
 
     public String delivery_left = "delivery_left";

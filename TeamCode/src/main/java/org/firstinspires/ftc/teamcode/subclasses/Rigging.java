@@ -8,8 +8,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
 public class Rigging extends Subsystem{
-    DcMotor riggingMotorRight;
-    DcMotor riggingMotorLeft;
+    DcMotor riggingMotor;
     MecanumBotConstant mc = new MecanumBotConstant();
     private boolean busy = false;
     private boolean first = true;
@@ -25,17 +24,11 @@ public class Rigging extends Subsystem{
     public Rigging(HardwareMap hardwareMap, Telemetry telemetry){
         timer = new ElapsedTime();
         this.telemetry = telemetry;
-        riggingMotorRight = hardwareMap.get(DcMotor.class, mc.rigging_motor_right);
-        riggingMotorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        riggingMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        riggingMotorRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        riggingMotor = hardwareMap.get(DcMotor.class, mc.rigging_motor_right);
+        riggingMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        riggingMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        riggingMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        riggingMotorLeft = hardwareMap.get(DcMotor.class, mc.rigging_motor_left);
-        riggingMotorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        riggingMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        riggingMotorLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        riggingMotorLeft.setDirection(DcMotor.Direction.REVERSE);
 
     }
     public boolean isBusy(){
@@ -43,11 +36,9 @@ public class Rigging extends Subsystem{
     }
     public void rigUp(){
         if (first) {
-            riggingMotorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            riggingMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            riggingMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            riggingMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-            riggingMotorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            riggingMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             first = false;
             busy = true;
             setRiggingPower(1);
@@ -71,51 +62,27 @@ public class Rigging extends Subsystem{
         }
     }
     public int getRiggingPosition(){
-        int output = -riggingMotorLeft.getCurrentPosition() + riggingMotorRight.getCurrentPosition();
-        if (riggingMotorRight.getCurrentPosition() == 0){
-            output = -riggingMotorLeft.getCurrentPosition();
-        }
-        if(riggingMotorLeft.getCurrentPosition() == 0){
-            output = riggingMotorRight.getCurrentPosition();
-        }
-        output /= 2;
-        return output;
-    }
-    public int getRiggingLeft(){
-        return riggingMotorLeft.getCurrentPosition();
-    }
-    public int getRiggingRight(){
-        return riggingMotorRight.getCurrentPosition();
+
+        return riggingMotor.getCurrentPosition();
     }
     public void setRiggingPower(double speed){
-        riggingMotorLeft.setPower(speed);
-        riggingMotorRight.setPower(speed);
+        riggingMotor.setPower(speed);
     }
     public void setMotorRightPower(double speed){
-        riggingMotorRight.setPower(speed);
-    }
-    public void setMotorLeftPower(double speed){
-        riggingMotorLeft.setPower(speed);
+        riggingMotor.setPower(speed);
     }
 
     @Override
     public void telemetry() {
-        telemetry.addData("Left Position", getRiggingLeft());
-        telemetry.addData("Right Position", getRiggingRight());
-        telemetry.addData("RiggingOld Position", getRiggingPosition());
+        telemetry.addData("Position", getRiggingPosition());
         telemetry.addData("Busy", isBusy());
     }
 
     @Override
     public void init() {
-        riggingMotorRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        riggingMotorRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        riggingMotorRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        riggingMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        riggingMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        riggingMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        riggingMotorLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        riggingMotorLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        riggingMotorLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        riggingMotorLeft.setDirection(DcMotor.Direction.REVERSE);
     }
 }
