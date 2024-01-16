@@ -27,7 +27,6 @@ public class PlaneLauncherTesting extends LinearOpMode {
         while(opModeIsActive() && !isStopRequested()){
             telemetry.addLine("a to launch");
             telemetry.addLine("b to reset");
-            planeLauncher.moveTo(SERVO_POSITION);
             if (gamepad1.a && timer.time() - currentTime > .5){
                 planeLauncher.launch();
             }

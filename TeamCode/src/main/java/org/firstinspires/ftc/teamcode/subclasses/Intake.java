@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subclasses;
 
+import static java.lang.Thread.sleep;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -67,6 +69,11 @@ public class Intake extends Subsystem{
             counter_roller.setPower(COUNTER_ROLLER_SPEED);
             servoTimer = timer.time();
         }
+    }
+    public void deliver_pixel() throws InterruptedException {
+        set_speed(-0.2, 1);
+        sleep(500);
+        set_speed(0,0);
     }
     public void setServoPower(double power){
         if (timer.time() - move_timer > dt) {

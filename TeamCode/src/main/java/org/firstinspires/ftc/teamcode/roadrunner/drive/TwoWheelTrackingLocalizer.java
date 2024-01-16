@@ -42,14 +42,14 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
     public static double WHEEL_RADIUS = 0.6889764; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
-    public static double PARALLEL_X = -.75; // X is the up and down direction
-    public static double PARALLEL_Y = -6.125; // Y is the strafe direction
+    public static double PARALLEL_X = -2; // X is the up and down direction
+    public static double PARALLEL_Y =  -2.5; // Y is the strafe direction
 
-    public static double PERPENDICULAR_X =4.875;
-    public static double PERPENDICULAR_Y = 1.5;
+    public static double PERPENDICULAR_X = 4.75;
+    public static double PERPENDICULAR_Y = 1.125;
 
-    public static double X_MULTIPLIER = 1.030871484318221; // Multiplier in the X direction
-    public static double Y_MULTIPLIER = 1.02253586983964; // Multiplier in the Y direction
+    public static double X_MULTIPLIER = 1; // Multiplier in the X direction
+    public static double Y_MULTIPLIER = 1; // Multiplier in the Y direction
 
     // Parallel/Perpendicular to the forward axis
     // Parallel wheel is parallel to the forward axis
@@ -63,6 +63,7 @@ public class TwoWheelTrackingLocalizer extends TwoTrackingWheelLocalizer {
             new Pose2d(PARALLEL_X, PARALLEL_Y, 0),
             new Pose2d(PERPENDICULAR_X, PERPENDICULAR_Y, Math.toRadians(90))
         ));
+
 
         this.drive = drive;
         mc = new MecanumBotConstant();

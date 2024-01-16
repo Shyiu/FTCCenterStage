@@ -4,8 +4,8 @@ public class MecanumBotConstant {
     //CHUB
     public String fr = "frontRight";//0 & Perpendicular Deadwheel
     public String br = "backRight";//1
-    public String fl = "frontLeft";//2
-    public String bl = "backLeft";//3 & Parallel Deadwheel
+    public String bl = "backLeft";//2
+    public String fl = "frontLeft";//3 & Parallel Deadwheel
 
     //EHUB
     public String intake_motor = "intakeMotor";
@@ -13,8 +13,8 @@ public class MecanumBotConstant {
     public String servo_right = "servo_right";
     public String counter_roller = "counter_roller";
 
-    public String delivery_left = "delivery_left";
-    public String delivery_right = "delivery_right";
+    public String delivery = "delivery_servo";
+    public String plunger = "plunger_servo";
 //
 //    public double left_closed_position = .5;
 //    public double right_closed_position = .7;
@@ -29,9 +29,12 @@ public class MecanumBotConstant {
 
     public String rigging_motor_right = "rigging_motor_right";
     public String rigging_motor_left = "rigging_motor_left";
-
+    public String rigging_motor = "rigging_motor";
 
     public String slides_motor = "slides_motor";
     public String magnet_sensor = "magnet_sensor";
     public String distance_sensor = "distance_sensor";
+
+    public String rigging_right = "delivery_right";
+    public String rigging_left = "delivery_left";
 }

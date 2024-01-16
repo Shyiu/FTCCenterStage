@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.subclasses.Distance;
+import org.firstinspires.ftc.teamcode.subclasses.Intake;
 import org.firstinspires.ftc.teamcode.subclasses.Lift;
 import org.firstinspires.ftc.teamcode.subclasses.PremPlaneLauncher;
 import org.firstinspires.ftc.teamcode.subclasses.TempDelivery;
@@ -69,6 +70,7 @@ public class MecanumRoadrunner extends LinearOpMode {
     Lift lift;
     TempDelivery delivery;
     Distance distance;
+    Intake intake;
     private boolean exit = false;
     @Override
     public void runOpMode() throws InterruptedException {
@@ -79,6 +81,7 @@ public class MecanumRoadrunner extends LinearOpMode {
         plane = new PremPlaneLauncher(hardwareMap);
         delivery = new TempDelivery(hardwareMap);
         distance = new Distance(hardwareMap, telemetry);
+        intake = new Intake(hardwareMap, telemetry);
 
         plane.moveTo(.1);
 //        intake.open();
@@ -211,11 +214,8 @@ public class MecanumRoadrunner extends LinearOpMode {
                 drive.setPoseEstimate(robotStart);
                 //y = 29 for the right most april tag
                 right = drive.trajectorySequenceBuilder(robotStart)
-                        .lineToLinearHeading(new Pose2d(15.00, 34.00, Math.toRadians(45.00)))
-                        .lineTo(new Vector2d(6.00, 32.00))
-                        .lineTo(new Vector2d(8.00, 34.00))
-                        .splineToSplineHeading(new Pose2d(49, BLUE_SIDE_RIGHT, Math.toRadians(180)), Math.toRadians(0))
-
+                        .lineToLinearHeading(new Pose2d(10, 36, Math.toRadians(225)))
+                        .lineToLinearHeading(new Pose2d(49, BLUE_SIDE_RIGHT, Math.toRadians(180)))
                         .addTemporalMarker(.5, new MarkerCallback() {
                             @Override
                             public void onMarkerReached() {

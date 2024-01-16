@@ -13,28 +13,29 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 import org.firstinspires.ftc.teamcode.MecanumTeleOp;
 import org.firstinspires.ftc.teamcode.autonomous_utilities.MathFunctions;
+import org.firstinspires.ftc.teamcode.subclasses.Delivery;
 import org.firstinspires.ftc.teamcode.subclasses.Intake;
 import org.firstinspires.ftc.teamcode.subclasses.MecaTank;
 
 @Config
-@TeleOp(name = "servo_testing")
+@TeleOp(name = "IntakeTest")
 public class IntakeTest extends LinearOpMode {
 
-    protected Servo turn_left;
-    protected Servo turn_right;
-    protected DcMotor arm;
-    protected DcMotorSimple counter_roller;
+
     protected MecanumBotConstant m;
     public static double SERVO_POSITION = .5;
     public static double COUNTER_ROLLER_SPEED = -1;
     public static double SERVO_TWO_OFFSET = 0.03;
     public static double SERVO_ONE_OFFSET = 0;
     public static double MOTOR_SPEED = .8;
+    public static double DELIVERY_POSITION = 0;
+
 
     public static boolean roller = false;
     public static boolean motor = false;
     protected MecaTank mecatank;
     protected Intake intake;
+    protected Delivery delivery;
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -42,8 +43,8 @@ public class IntakeTest extends LinearOpMode {
 
         intake = new Intake(hardwareMap, telemetry);
         mecatank = new MecaTank(hardwareMap, telemetry);
-
-
+        delivery = new Delivery(hardwareMap, telemetry);
+        delivery.init();
         waitForStart();
         while(!isStopRequested() && opModeIsActive()) {
             intake.set_speed((gamepad1.a || motor) ? MOTOR_SPEED : 0, (gamepad1.b || roller) ? COUNTER_ROLLER_SPEED : 0);
@@ -51,7 +52,10 @@ public class IntakeTest extends LinearOpMode {
             mecatank.setPowers(gamepad1.left_stick_y, gamepad1.right_stick_y, gamepad1.left_trigger, gamepad1.right_trigger);
             intake.setServoPosition(SERVO_POSITION);
 
+            delivery.goToPosition(DELIVERY_POSITION);
+
             intake.telemetry();
+            delivery.telemetry();
             mecatank.telemetry();
             telemetry.update();
 

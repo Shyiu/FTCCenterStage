@@ -10,8 +10,7 @@ import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
 @Config
 public class Delivery extends Subsystem{
-    protected Servo dleft;
-    protected Servo dright;
+    protected Servo delivery, plunger;
     protected MecanumBotConstant m;
     private ElapsedTime timer;
 
@@ -26,10 +25,11 @@ public class Delivery extends Subsystem{
     public double leftTimer = 0;
 
 
-    public static double RIGHT_DUMP = 1;
-    public static double LEFT_DUMP = 1;
-    public static double RIGHT_INTAKE = 0;
     public static double LEFT_INTAKE = 0;
+    public static double PLUNGER_IN = 0;
+
+    private static double plunger_position = 0;
+    private static double delivery_position = 0;
 
     Telemetry telemetry;
     public Delivery(HardwareMap hardwareMap, Telemetry telemetry){
@@ -37,8 +37,8 @@ public class Delivery extends Subsystem{
         this.telemetry = telemetry;
 
 
-        dleft = hardwareMap.get(Servo.class, m.delivery_left);
-        dright = hardwareMap.get(Servo.class, m.delivery_right);
+        delivery = hardwareMap.get(Servo.class, m.delivery);
+        plunger = hardwareMap.get(Servo.class, m.plunger);
         timer = new ElapsedTime();
     }
 
@@ -63,35 +63,26 @@ public class Delivery extends Subsystem{
         if(timer.time() - rightTimer > servoDelay){
             right_toggle = false;
         }
-        if (left_toggle){
-            if(far(dleft.getPosition(), LEFT_INTAKE)) {
-                dleft.setPosition(LEFT_INTAKE);
-            }
-        }else{
-            if(far(dleft.getPosition(), LEFT_DUMP)) {
-                dleft.setPosition(LEFT_DUMP);
-            }
-        }if (right_toggle){
-            if(far(dright.getPosition(), RIGHT_INTAKE)) {
-                dright.setPosition(RIGHT_INTAKE);
-            }
-        }else{
-            if(far(dright.getPosition(), RIGHT_DUMP)) {
-                dright.setPosition(RIGHT_DUMP);
-            }
-        }
+
     }
 
 
     @Override
     public void telemetry() {
-        telemetry.addData("Right Open", right_toggle);
-        telemetry.addData("Left Open", left_toggle);
+        telemetry.addData("Delivery Position: ", delivery_position);
+        telemetry.addData("Plunger Position: ", plunger_position);
+    }
+    public void goToPosition(double position){
+        delivery_position = position;
+        delivery.setPosition(position);
     }
 
     @Override
     public void init() {
-        dleft.setPosition(LEFT_INTAKE);
-        dright.setPosition(RIGHT_INTAKE);
+        delivery_position = LEFT_INTAKE;
+        delivery.setPosition(LEFT_INTAKE);
+        plunger_position = PLUNGER_IN;
+        plunger.setPosition(PLUNGER_IN);
+
     }
 }
