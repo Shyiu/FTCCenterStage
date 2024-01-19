@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subclasses;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -8,12 +9,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
-public class Lift extends Subsystem{
+public class PIDMotor extends Subsystem{
     MecanumBotConstant m = new MecanumBotConstant();
-    DcMotor slides;
+    DcMotorEx slides;
     DigitalChannel magnet_sensor;
     public double targetPos;
-    public static double P = 0.005, I = 0.002, D = 0;
+    public static double P = 0.0005, I = 0.0002, D = 0;
     double error, lastError;
     int startPos = Integer.MAX_VALUE;
     boolean direction = true;
@@ -24,107 +25,69 @@ public class Lift extends Subsystem{
     private boolean reached = false;
     private boolean working_magnet;
     private ElapsedTime timer;
-    private int maxHardstop = 10000;//TODO: ACTUALLY FIND THIS
-
+    private int maxHardstop = 1450;
+    private String name = "";
+    private int minHardstop = 0;
+    private double holding_power = 0;
     HardwareMap hardware;
     Telemetry telemetry;
-    public Lift(HardwareMap hardwareMap, double P, double I, double D, Telemetry telemetry) {
-        this.telemetry = telemetry;
-        this.hardware = hardwareMap;
-        this.P = P;
-        this.I = I;
-        this.D = D;
-        timer = new ElapsedTime();
 
-        slides = hardwareMap.get(DcMotor.class, m.slides_motor);
-        magnet_sensor = hardwareMap.get(DigitalChannel.class, m.magnet_sensor);
-        working_magnet = true;
-        // set the digital channel to input.
-        magnet_sensor.setMode(DigitalChannel.Mode.INPUT);
+    public PIDMotor(HardwareMap hardwareMap, Telemetry telemetry, String name) {
+        this.hardware = hardwareMap;
+        this.telemetry = telemetry;
+        this.name = name;
+        slides = hardwareMap.get(DcMotorEx.class, name);
+
         slides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         slides.setDirection(DcMotor.Direction.FORWARD);
 
     }
-    public Lift(HardwareMap hardwareMap, Telemetry telemetry) {
-        this.hardware = hardwareMap;
-        this.telemetry = telemetry;
-
-        slides = hardwareMap.get(DcMotor.class, m.slides_motor);
-        magnet_sensor = hardwareMap.get(DigitalChannel.class, m.magnet_sensor);
-
-        // set the digital channel to input.
-        magnet_sensor.setMode(DigitalChannel.Mode.INPUT);
-        slides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        slides.setDirection(DcMotor.Direction.FORWARD);
+    public void setDirection(DcMotor.ZeroPowerBehavior power){
+        slides.setZeroPowerBehavior(power);
 
     }
 
+    public void setMin(int min){
+        minHardstop = min;
+    }
+    public void setMax(int max){
+        maxHardstop = max;
+    }
+    public void setHoldingPower(double power){
+        holding_power = power;
+    }
     @Override
     public void init(){
-        timer = new ElapsedTime();
-
-        timer.reset();
-        if(magnet_sensor.getState()){
-            slides.setPower(-.6);
-        }
-        while (!magnet_activated()) {
-            if(timer.time() > 4){
-                telemetry.addLine("Suspecting Disconnected Magnet Sensor. Aborting init.");
-                working_magnet = false;
-                break;
-            }
-            slides.setPower(-.6);
-        }
-
-        slides.setPower(0);
+        slides.setPower(holding_power);
         slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
     @Override
     public void telemetry(){
-        telemetry.addData("Slide Power", getPower());
-        telemetry.addData("Current Position", getCurrentPosition());
-        telemetry.addData("Magnet Sensor", getMagnet());
-        telemetry.addData("Exceeding Constraints", exceedingConstraints());
+        telemetry.addData(name + " Power", getPower());
+        telemetry.addData(name + "'s Position", getCurrentPosition());
     }
 
-    public boolean getMagnet(){
-        return magnet_sensor.getState();
-    }
 
     public boolean exceedingConstraints(){
-        if(slides.getPower() < 0){
-            if (magnet_activated()){
-                slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                slides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            }
-            return working_magnet ? magnet_activated() : slides.getCurrentPosition() < 0;
-        }else{
-            return slides.getCurrentPosition() > maxHardstop;
-        }
+
+            return slides.getPower() > 0 ? slides.getCurrentPosition() > maxHardstop : slides.getCurrentPosition() < minHardstop ;
+
     }
     public boolean exceedingConstraints(double power){
-        if(power < 0){
-            if (magnet_activated()){
-                slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                slides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            }
-            return working_magnet ? magnet_activated() : slides.getCurrentPosition() < 0;
-        }else{
-            return slides.getCurrentPosition() > maxHardstop;
-        }
+
+        return power > 0? slides.getCurrentPosition() > maxHardstop : slides.getCurrentPosition() < minHardstop ;
+
     }
 
     public void setPower(double power) {
         if(!exceedingConstraints(power)) {
             slides.setPower(power);
         }else{
-            slides.setPower(0);
+            slides.setPower(holding_power);
         }
     }
-    private boolean magnet_activated(){
-        return !magnet_sensor.getState();
-    }
+
     public int getCurrentPosition() {
         return slides.getCurrentPosition();
     }
@@ -137,16 +100,25 @@ public class Lift extends Subsystem{
             while (slidesPosition > target && System.currentTimeMillis() - currentTime < timeoutS * 1000 && !exceedingConstraints()) {
                 slidesPosition = slides.getCurrentPosition();
             }
-            slides.setPower(0);
+            slides.setPower(holding_power);
         } else if (slidesPosition < target) {
             slides.setPower(SLIDE_POWER);
             while (slidesPosition < target && System.currentTimeMillis() - currentTime < timeoutS * 1000  && !exceedingConstraints()) {
                 slidesPosition = slides.getCurrentPosition();
             }
-            slides.setPower(0);
+            slides.setPower(holding_power);
         }
     }
-
+    public void bringToHalt(){
+        double power = 0.4;
+        setPower(0.4);
+        double velocity = slides.getVelocity();
+        while (velocity > 1){
+            ;
+        }
+        setPower(0);
+        init();
+    }
     public void moveTo(double target) {
         reached = false;
         targetPos = target;
@@ -160,6 +132,11 @@ public class Lift extends Subsystem{
     public boolean isBusy(){
         return direction ? getCurrentPosition() < targetPos : getCurrentPosition() > targetPos;
 
+    }
+    public boolean inRange(int target, int position, int range){
+        int min = target - range;
+        int max = target + range;
+        return min<=position && position<=max;
     }
     public void update() {
         double Kp = P;
@@ -191,8 +168,8 @@ public class Lift extends Subsystem{
             // reset the timer for next time
             timer.reset();
         }
-        else if(!reached || exceedingConstraints()){
-            slides.setPower(0);
+        else {
+            slides.setPower(holding_power);
             reached = true;
         }
     }

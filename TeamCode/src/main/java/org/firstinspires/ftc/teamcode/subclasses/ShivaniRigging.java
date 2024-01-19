@@ -2,9 +2,9 @@ package org.firstinspires.ftc.teamcode.subclasses;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -12,70 +12,117 @@ import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
 @Config
 public class ShivaniRigging extends Subsystem{
-    DcMotor riggingMotor;
+    PIDMotor riggingMotor;
     DcMotorSimple left_servo, right_servo;
     MecanumBotConstant mc = new MecanumBotConstant();
     private boolean busy = false;
     private boolean first = true;
+    private boolean up = false;
+    double error, lastError;
 
-    private int extension_distance = 14400;//TODO: Find this value
+    public static double P = 8, I = 0, D = 0;
+    public static double target_position = -3000;
     ElapsedTime timer;
     private double delay = .5;
 
-    private double hold_speed = 0;
+    public static double hold_speed = 0.15;
     private String state = "Init";
     Telemetry telemetry;
-    public static double LEFT_OPEN_SERVO_POSITION = 0, RIGHT_OPEN_SERVO_POSITION = 0;
-    public static double LEFT_CLOSED_SERVO_POSITION = 0, RIGHT_CLOSED_SERVO_POSITION = 0;
+    public static double LEFT_OPEN_POWER = .6, RIGHT_OPEN_POWER = .4;
+    public static double LEFT_CLOSE_POWER = .45, RIGHT_CLOSE_POWER = .55;
 
     //>0.5 brings the left arm up and <0.5 brings the right arm up
 
     public ShivaniRigging(HardwareMap hardwareMap, Telemetry telemetry){
         timer = new ElapsedTime();
         this.telemetry = telemetry;
-        riggingMotor = hardwareMap.get(DcMotor.class, mc.rigging_motor);
-        riggingMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        riggingMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        riggingMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        riggingMotor = new PIDMotor(hardwareMap, telemetry, mc.rigging_motor);
+        riggingMotor.setMin(-3000);
+
+
+
+
 
         left_servo = hardwareMap.get(DcMotorSimple.class, mc.rigging_left);
         right_servo = hardwareMap.get(DcMotorSimple.class, mc.rigging_right);
     }
 
-    public void extend(){
-        left_servo.setPower(LEFT_OPEN_SERVO_POSITION);
-        right_servo.setPower(RIGHT_OPEN_SERVO_POSITION);
+    public void open(){
+        left_servo.setPower(LEFT_OPEN_POWER);
+        right_servo.setPower(RIGHT_OPEN_POWER);
         state = "Extended";
     }
-    public void retract(){
-        state = "Retracted";
-        left_servo.setPower(LEFT_CLOSED_SERVO_POSITION);
-        right_servo.setPower(RIGHT_CLOSED_SERVO_POSITION);
+    public void open_left(){
+
+        state = "Left Opening";
+
+        left_servo.setPower(LEFT_OPEN_POWER);
+
     }
-    public int getRiggingPosition(){
-        return riggingMotor.getCurrentPosition();
+    public void open_right(){
+        state = "Right Opening";
+
+        right_servo.setPower(RIGHT_OPEN_POWER);
+    }
+
+    public void close_left(){
+        state = "Left Retracting";
+
+        left_servo.setPower(LEFT_CLOSE_POWER);
+
+    }
+    public void close_right(){
+        state = "Right Retracting";
+        right_servo.setPower(RIGHT_CLOSE_POWER);
+    }
+    public void freeze_right(){
+        state = "Right Frozen";
+        right_servo.setPower(0.5);
+    }
+    public void freeze_left(){
+        state = "Left Frozen";
+        left_servo.setPower(0.5);
+    }
+    public void close(){
+        state = "Retracted";
+        left_servo.setPower(LEFT_CLOSE_POWER);
+        right_servo.setPower(RIGHT_CLOSE_POWER);
     }
     public double getArmPositions(int arm){
 
         return arm == 0 ? left_servo.getPower() : right_servo.getPower();
     }
     public void setRiggingPower(double speed){
-        riggingMotor.setPower(speed);
+        riggingMotor.setPower(speed + hold_speed);
     }
 
+    public void holdRiggingMotors(){
+        riggingMotor.setPower(hold_speed);
+    }
     @Override
     public void telemetry() {
-        telemetry.addData("Position", getRiggingPosition());
+        riggingMotor.telemetry();
         telemetry.addData("State: ", state);
 
     }
+    public boolean isBusy(){
+        return up ? riggingMotor.getCurrentPosition() < target_position : riggingMotor.getCurrentPosition() > target_position;
+    }
+    public void activate(){
+        riggingMotor.moveTo(target_position);
+    }
 
+    public void update(){
+        riggingMotor.update();
+    }
+    public void raise_rigging_motor(){
+        riggingMotor.bringToHalt();
+    }
     @Override
     public void init() {
-        riggingMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        riggingMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        riggingMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        retract();
-
+        riggingMotor.init();
+        riggingMotor.P = P;
+        riggingMotor.I = I;
+        riggingMotor.D = D;
     }
 }

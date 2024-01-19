@@ -23,19 +23,19 @@ public class IntakeTest extends LinearOpMode {
 
 
     protected MecanumBotConstant m;
-    public static double SERVO_POSITION = .5;
-    public static double COUNTER_ROLLER_SPEED = -1;
-    public static double SERVO_TWO_OFFSET = 0.03;
-    public static double SERVO_ONE_OFFSET = 0;
-    public static double MOTOR_SPEED = .8;
-    public static double DELIVERY_POSITION = 0;
 
+    public static double MOTOR_SPEED = 0;
+    public static double SLIDES_SPEED = 0;
+    public static double ARM_POSITION = 0;
 
     public static boolean roller = false;
     public static boolean motor = false;
+    public static boolean reverse = false;
+    public static boolean pid = false;
+
+    public static int target = -1000;
     protected MecaTank mecatank;
     protected Intake intake;
-    protected Delivery delivery;
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -43,19 +43,36 @@ public class IntakeTest extends LinearOpMode {
 
         intake = new Intake(hardwareMap, telemetry);
         mecatank = new MecaTank(hardwareMap, telemetry);
-        delivery = new Delivery(hardwareMap, telemetry);
-        delivery.init();
+        intake.init();
+
+
+        intake.telemetry();
+        mecatank.telemetry();
+        telemetry.update();
+
+        intake.moveRotationTo(target);
+
         waitForStart();
         while(!isStopRequested() && opModeIsActive()) {
-            intake.set_speed((gamepad1.a || motor) ? MOTOR_SPEED : 0, (gamepad1.b || roller) ? COUNTER_ROLLER_SPEED : 0);
+            if (gamepad1.a || roller){
+                intake.forward_rollers();
+            }else if(reverse){
+                intake.reverse_rollers();
+            }else{
+                intake.disable_rollers();
+            }
 
-            mecatank.setPowers(gamepad1.left_stick_y, gamepad1.right_stick_y, gamepad1.left_trigger, gamepad1.right_trigger);
-            intake.setServoPosition(SERVO_POSITION);
+            intake.moveSlides(SLIDES_SPEED==0 ? sameSignSqrt(gamepad1.right_stick_y) : SLIDES_SPEED);
+            intake.rotateSlides(MOTOR_SPEED==0 ? sameSignSqrt(gamepad1.left_stick_y) : MOTOR_SPEED);
+            intake.moveRoller(ARM_POSITION);
+            if (pid){
+                intake.update();
+            }
 
-            delivery.goToPosition(DELIVERY_POSITION);
+
+
 
             intake.telemetry();
-            delivery.telemetry();
             mecatank.telemetry();
             telemetry.update();
 

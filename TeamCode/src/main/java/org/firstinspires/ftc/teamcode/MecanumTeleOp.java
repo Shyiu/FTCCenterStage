@@ -7,26 +7,21 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.autonomous_utilities.MathFunctions;
 import org.firstinspires.ftc.teamcode.pipelines.AprilTagPipeline;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.MecanumDrive;
-import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
-import org.firstinspires.ftc.teamcode.subclasses.Distance;
+import org.firstinspires.ftc.teamcode.subclasses.Intake;
 import org.firstinspires.ftc.teamcode.subclasses.MecaTank;
-import org.firstinspires.ftc.teamcode.subclasses.PremPlaneLauncher;
-import org.firstinspires.ftc.teamcode.subclasses.Rigging;
-import org.firstinspires.ftc.teamcode.subclasses.RiggingOld;
-import org.firstinspires.ftc.teamcode.subclasses.TempDelivery;
+import org.firstinspires.ftc.teamcode.subclasses.PlaneLauncher;
+import org.firstinspires.ftc.teamcode.subclasses.ShivaniRigging;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 @Config
 @TeleOp
@@ -35,11 +30,10 @@ public class MecanumTeleOp extends LinearOpMode {
 
 
 //    VihasIntake arm;
-    PremPlaneLauncher launcher;
-    Rigging rigging;
+    PlaneLauncher launcher;
+    ShivaniRigging rigging;
     IMU imu;
-    TempDelivery delivery;
-    Distance distance;
+    Intake intake;
     MecaTank mecatank;
 
     ElapsedTime timer = new ElapsedTime();
@@ -52,16 +46,16 @@ public class MecanumTeleOp extends LinearOpMode {
     }
     PLANE_STATE plane_state;
 
-    public enum RIGGING_STATE {
-        WAIT, EXTEND, RETRACT
+    public enum DELIVERY_STATE {
+        WAIT, INTAKE, TRANSFER, DELIVERY
     }
 
-    RIGGING_STATE rigging_state;
+    DELIVERY_STATE delivery_state;
     AprilTagPipeline apriltag_pipeline;
     ArrayList<Integer> apriltag_targets;
 
-    public double planeTimer = 0;
-
+    public double delivery_timer = 0;
+    DELIVERY_STATE next_delivery_state = DELIVERY_STATE.INTAKE;
 
     public MecanumBotConstant config = new MecanumBotConstant();
 
@@ -70,10 +64,9 @@ public class MecanumTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        distance = new Distance(hardwareMap,telemetry);
 
 
-        rigging_state = RIGGING_STATE.WAIT;
+        delivery_state = DELIVERY_STATE.TRANSFER;
         plane_state = PLANE_STATE.WAIT;
 
         if(IMUTransfer.init) {
@@ -96,16 +89,20 @@ public class MecanumTeleOp extends LinearOpMode {
 
         mecatank = new MecaTank(hardwareMap, telemetry);
 
-        launcher = new PremPlaneLauncher(hardwareMap);
-        rigging = new Rigging(hardwareMap, telemetry);
+        launcher = new PlaneLauncher(hardwareMap);
+        rigging = new ShivaniRigging(hardwareMap, telemetry);
         apriltag_pipeline = new AprilTagPipeline(hardwareMap);
-        delivery = new TempDelivery(hardwareMap);
+        intake = new Intake(hardwareMap, telemetry);
 
 
-        delivery.setIn();
+        mecatank.init();
+        launcher.init();
+        rigging.init();
+        intake.init();
 
 
 
+        all_to_telemetry();
 
 
         // Makes the Driver Hub output the message "Status: Initialized"
@@ -119,62 +116,112 @@ public class MecanumTeleOp extends LinearOpMode {
             mecatank.setPowers(gamepad1.left_stick_y, gamepad1.right_stick_y, gamepad1.left_trigger, gamepad1.right_trigger);
 
 
-            switch (plane_state){
+//            switch (plane_state){
+//                case WAIT:
+//                    if (gamepad2.y){
+//                        launcher.setLaunchPosition();
+//                        plane_state = PLANE_STATE.LAUNCH;
+//                        planeTimer = timer.time();
+////                        Pose2d start = calculatePose();
+//
+////                        if (start == null){
+////                            running_auto = false;
+////                            break;
+////                        }else{
+////                            running_auto = true;
+////                        }
+////                        running_auto = false;
+//
+//
+//                        break;
+//                    }
+//                    if(gamepad2.x){
+//                        launcher.setFlatPosition();
+//                        plane_state = PLANE_STATE.FLAT;
+//                        planeTimer = timer.time();
+//                        break;
+//                    }
+//                    break;
+//                case LAUNCH:
+//                    if(timer.time() - planeTimer > .300 && !drive.isBusy()){
+//                        launcher.launch();
+//                        plane_state = PLANE_STATE.WAIT;
+//                        break;
+//                    }
+//                    break;
+//                case FLAT:
+//                    if(timer.time() - planeTimer > .300){
+//                        plane_state = PLANE_STATE.WAIT;
+//                        break;
+//                    }
+//                    break;
+//
+//            }
+//            Pose2d temp = calculatePose();
+//            try {
+//                telemetry.addData("Estimate X:", temp.getX());
+//                telemetry.addData("Estimate Y:", temp.getY());
+//                telemetry.addData("Estimate Heading:", temp.getHeading());
+//            }
+//            catch(NullPointerException e){
+//                telemetry.addLine("No April Tag Detected");
+//            }
+//
+//
+//
+//            distance.telemetry();
+
+            switch(delivery_state){
                 case WAIT:
-                    if (gamepad2.y){
-                        launcher.setLaunchPosition();
-                        plane_state = PLANE_STATE.LAUNCH;
-                        planeTimer = timer.time();
-//                        Pose2d start = calculatePose();
-
-//                        if (start == null){
-//                            running_auto = false;
-//                            break;
-//                        }else{
-//                            running_auto = true;
-//                        }
-//                        running_auto = false;
-
-
-                        break;
-                    }
-                    if(gamepad2.x){
-                        launcher.setFlatPosition();
-                        plane_state = PLANE_STATE.FLAT;
-                        planeTimer = timer.time();
-                        break;
-                    }
                     break;
-                case LAUNCH:
-                    if(timer.time() - planeTimer > .300 && !drive.isBusy()){
-                        launcher.launch();
-                        plane_state = PLANE_STATE.WAIT;
-                        break;
-                    }
+                case INTAKE:
+                    intake.pickup();
+                    delivery_state = DELIVERY_STATE.WAIT;
                     break;
-                case FLAT:
-                    if(timer.time() - planeTimer > .300){
-                        plane_state = PLANE_STATE.WAIT;
-                        break;
-                    }
-                    break;
+                case TRANSFER:
+                    intake.go_to_transfer();
+                    delivery_state = DELIVERY_STATE.WAIT;
 
+                    break;
+                case DELIVERY:
+                    intake.delivery();
+                    delivery_state = DELIVERY_STATE.WAIT;
+
+
+                    break;
             }
-            Pose2d temp = calculatePose();
-            try {
-                telemetry.addData("Estimate X:", temp.getX());
-                telemetry.addData("Estimate Y:", temp.getY());
-                telemetry.addData("Estimate Heading:", temp.getHeading());
+
+            intake.increaseRotation(-gamepad2.left_stick_y/6.0);
+            intake.slides.setPower(-gamepad2.right_stick_y/2.0);
+
+            if (gamepad2.a && time.time(TimeUnit.MILLISECONDS) - delivery_timer > 300){
+                delivery_timer = time.time(TimeUnit.MILLISECONDS);
+                switch(next_delivery_state){
+                    case INTAKE:
+                        delivery_state = DELIVERY_STATE.INTAKE;
+                        next_delivery_state = DELIVERY_STATE.TRANSFER;
+                        break;
+                    case TRANSFER:
+                        delivery_state = DELIVERY_STATE.TRANSFER;
+                        next_delivery_state = DELIVERY_STATE.DELIVERY;
+                        break;
+                    case DELIVERY:
+                        delivery_state = DELIVERY_STATE.DELIVERY;
+                        next_delivery_state = DELIVERY_STATE.INTAKE;
+                        break;
+                }
             }
-            catch(NullPointerException e){
-                telemetry.addLine("No April Tag Detected");
+            if (gamepad2.x){
+                intake.enable_rollers();
+            }else{
+                intake.disable_rollers();
             }
 
 
+            intake.update();
 
-            distance.telemetry();
-            rigging.telemetry();
-            mecatank.telemetry();
+
+            all_to_telemetry();
 
             telemetry.addData("Status", "Running");
             telemetry.update();
@@ -205,6 +252,12 @@ public class MecanumTeleOp extends LinearOpMode {
         }
         return null;
 
+    }
+    public void all_to_telemetry(){
+        intake.telemetry();
+        launcher.telemetry();
+        rigging.telemetry();
+        mecatank.telemetry();
     }
 }
 
