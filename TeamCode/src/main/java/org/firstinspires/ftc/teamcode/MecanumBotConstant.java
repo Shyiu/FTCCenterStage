@@ -13,6 +13,9 @@ public class MecanumBotConstant {
     public String rigging_right = "rigging_right";//3
     public String rigging_left = "rigging_left";//2
     public String plane_launcher_pinion_servo = "launcher_servo";//4
+    public String plane_launcher_spring_servo = "spring_servo";//4
+
+
 
     public String magnet_sensor = "magnet_sensor";//0
 
@@ -26,7 +29,6 @@ public class MecanumBotConstant {
 
     //UNUSED
     public String distance_sensor = "distance_sensor";
-    public String plane_launcher_rotation_servo = "rotation_servo";
 
     public String rigging_motor_right = "rigging_motor_right";
     public String rigging_motor_left = "rigging_motor_left";

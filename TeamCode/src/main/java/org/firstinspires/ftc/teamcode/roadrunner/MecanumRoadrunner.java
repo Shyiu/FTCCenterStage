@@ -65,11 +65,7 @@ public class MecanumRoadrunner extends LinearOpMode {
             new Point(700, 300),
             new Point(960, 540));
 
-    PremPlaneLauncher plane;
-//    VihasIntake intake;
-    Lift lift;
-    TempDelivery delivery;
-    Distance distance;
+    PlaneLauncher plane;
     Intake intake;
     private boolean exit = false;
     @Override
@@ -78,9 +74,8 @@ public class MecanumRoadrunner extends LinearOpMode {
 
 
         IMUTransfer.init = false;
-        plane = new PremPlaneLauncher(hardwareMap);
-        delivery = new TempDelivery(hardwareMap);
-        distance = new Distance(hardwareMap, telemetry);
+
+        plane = new PlaneLauncher(hardwareMap);
         intake = new Intake(hardwareMap, telemetry);
 
         plane.moveTo(.1);
@@ -89,11 +84,13 @@ public class MecanumRoadrunner extends LinearOpMode {
 //        lift.reset();
 
         location = BoxDetection.Location.LEFT;
+
         telemetry.addLine("x for Blue Backstage");
         telemetry.addLine("a for Blue Stack");
         telemetry.addLine("y for Red Backstage");
         telemetry.addLine("b for Red Stack");
         telemetry.update();
+        
         while (!isStopRequested()) {
             while (!isStopRequested()) {
                 sleep(20);

@@ -28,8 +28,6 @@ import java.util.concurrent.TimeUnit;
 public class MecanumTeleOp extends LinearOpMode {
     private ElapsedTime time = new ElapsedTime();
 
-
-//    VihasIntake arm;
     PlaneLauncher launcher;
     ShivaniRigging rigging;
     IMU imu;
@@ -38,16 +36,19 @@ public class MecanumTeleOp extends LinearOpMode {
 
     ElapsedTime timer = new ElapsedTime();
 
-
     public enum PLANE_STATE{
         LAUNCH,
         FLAT,
         WAIT
     }
+
     PLANE_STATE plane_state;
 
     public enum DELIVERY_STATE {
-        WAIT, INTAKE, TRANSFER, DELIVERY
+        WAIT, 
+        INTAKE, 
+        TRANSFER, 
+        DELIVERY
     }
 
     DELIVERY_STATE delivery_state;
@@ -100,8 +101,6 @@ public class MecanumTeleOp extends LinearOpMode {
         rigging.init();
         intake.init();
 
-
-
         all_to_telemetry();
 
 
@@ -116,60 +115,26 @@ public class MecanumTeleOp extends LinearOpMode {
             mecatank.setPowers(gamepad1.left_stick_y, gamepad1.right_stick_y, gamepad1.left_trigger, gamepad1.right_trigger);
 
 
-//            switch (plane_state){
-//                case WAIT:
-//                    if (gamepad2.y){
-//                        launcher.setLaunchPosition();
-//                        plane_state = PLANE_STATE.LAUNCH;
-//                        planeTimer = timer.time();
-////                        Pose2d start = calculatePose();
-//
-////                        if (start == null){
-////                            running_auto = false;
-////                            break;
-////                        }else{
-////                            running_auto = true;
-////                        }
-////                        running_auto = false;
-//
-//
-//                        break;
-//                    }
-//                    if(gamepad2.x){
-//                        launcher.setFlatPosition();
-//                        plane_state = PLANE_STATE.FLAT;
-//                        planeTimer = timer.time();
-//                        break;
-//                    }
-//                    break;
-//                case LAUNCH:
-//                    if(timer.time() - planeTimer > .300 && !drive.isBusy()){
-//                        launcher.launch();
-//                        plane_state = PLANE_STATE.WAIT;
-//                        break;
-//                    }
-//                    break;
-//                case FLAT:
-//                    if(timer.time() - planeTimer > .300){
-//                        plane_state = PLANE_STATE.WAIT;
-//                        break;
-//                    }
-//                    break;
-//
-//            }
-//            Pose2d temp = calculatePose();
-//            try {
-//                telemetry.addData("Estimate X:", temp.getX());
-//                telemetry.addData("Estimate Y:", temp.getY());
-//                telemetry.addData("Estimate Heading:", temp.getHeading());
-//            }
-//            catch(NullPointerException e){
-//                telemetry.addLine("No April Tag Detected");
-//            }
-//
-//
-//
-//            distance.telemetry();
+            switch (plane_state){
+               case WAIT:
+                   if (gamepad1.x){
+                       launcher.setLaunchPosition();
+                       plane_state = PLANE_STATE.LAUNCH;
+                       planeTimer = timer.time();
+                       break;
+                   }
+               case LAUNCH:
+                   if(timer.time() - planeTimer > .600 && !drive.isBusy()){
+                       launcher.launch();
+                       rigging.activate();
+                       plane_state = PLANE_STATE.WAIT;
+                       break;
+                   }
+                   break;
+
+               
+
+           }
 
             switch(delivery_state){
                 case WAIT:
@@ -219,10 +184,8 @@ public class MecanumTeleOp extends LinearOpMode {
 
 
             intake.update();
-
-
+            rigging.update();
             all_to_telemetry();
-
             telemetry.addData("Status", "Running");
             telemetry.update();
             drive.update();

@@ -61,13 +61,11 @@ public class ShivaniRigging extends Subsystem{
     }
     public void open_right(){
         state = "Right Opening";
-
         right_servo.setPower(RIGHT_OPEN_POWER);
     }
 
     public void close_left(){
         state = "Left Retracting";
-
         left_servo.setPower(LEFT_CLOSE_POWER);
 
     }
@@ -82,6 +80,10 @@ public class ShivaniRigging extends Subsystem{
     public void freeze_left(){
         state = "Left Frozen";
         left_servo.setPower(0.5);
+    }
+    public void extend_rigging(){
+        activate();
+        //TODO: Extend the arms or something.
     }
     public void close(){
         state = "Retracted";
