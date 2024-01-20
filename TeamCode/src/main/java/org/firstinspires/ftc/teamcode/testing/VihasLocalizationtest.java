@@ -1,0 +1,52 @@
+package org.firstinspires.ftc.teamcode.testing;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities.Robot;
+
+@Disabled
+@Config
+@TeleOp
+public class VihasLocalizationtest extends LinearOpMode {
+    Robot r;
+
+    @Override
+    public void runOpMode() throws InterruptedException {
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        r = new Robot(hardwareMap, telemetry);
+        waitForStart();
+
+        while(!isStopRequested() && opModeIsActive()){
+            double leftpower = sameSignSqrt(-gamepad1.left_stick_y/2);
+            double rightpower = sameSignSqrt(-gamepad1.right_stick_y/2);
+            r.setMotorPowers(rightpower, leftpower);
+
+            r.drawRobot();
+            double[] powers = r.getPowers();
+            r.updatePosition();
+            telemetry.addData("X", r.getCurrentPosition()[0]);
+            telemetry.addData("Y", r.getCurrentPosition()[1]);
+            telemetry.addData("World Angle Radians", r.getWorldAngle_rad());
+            telemetry.addData("First Angle", Math.toDegrees(r.firstAngle));
+            telemetry.addData("Second Angle", Math.toDegrees(r.secondAngle));
+            telemetry.addData("Third Angle", Math.toDegrees(r.thirdAngle));
+            telemetry.addData("LeftPower", leftpower);
+            telemetry.addData("RightPower", rightpower);
+            telemetry.addData("frontLeft", powers[0]);
+            telemetry.addData("frontRight", powers[1]);
+            telemetry.addData("backLeft", powers[2]);
+            telemetry.addData("backRight", powers[3]);
+            telemetry.update();
+        }
+
+    }
+
+    public double sameSignSqrt(double input){
+        return Math.copySign(Math.sqrt(Math.abs(input)), input);
+    }
+}
