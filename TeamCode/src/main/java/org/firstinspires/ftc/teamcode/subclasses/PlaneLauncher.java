@@ -9,7 +9,6 @@ import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 public class PlaneLauncher extends Subsystem{
     Servo launcher;
     Servo rotation;
-<<<<<<< Updated upstream
     private double startPos = 0.1;
     public static double launchPos = .21;
     private double flat = .3;
@@ -37,18 +36,12 @@ public class PlaneLauncher extends Subsystem{
         rotation.setPosition(launchPos);
     }
 
-=======
     public static double spring_stop_position = .07;
     public static double release_position = .4;
     public static double launch_position = .1;
     public static double stow_position = .75;
-    MecanumBotConstant mc = new MecanumBotConstant();
 
-    public PlaneLauncher(HardwareMap hardwareMap){
-        launcher = hardwareMap.get(Servo.class, mc.plane_launcher_pinion_servo);
-        rotation = hardwareMap.get(Servo.class, mc.plane_launcher_rotation_servo);
 
-    }
 
     public void rotateLauncher(double position){
         rotation.setPosition(position);
@@ -59,7 +52,6 @@ public class PlaneLauncher extends Subsystem{
     public void rotate_to_launch(){
         rotation.setPosition(launch_position);
     }
->>>>>>> Stashed changes
     public void launch(){
         launcher.setPosition(1);
     }
@@ -72,12 +64,9 @@ public class PlaneLauncher extends Subsystem{
 
     @Override
     public void init(){
-<<<<<<< Updated upstream
         setStartPos();
-=======
         stow();
         reset();
->>>>>>> Stashed changes
     }
 
     @Override

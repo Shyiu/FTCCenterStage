@@ -49,7 +49,7 @@ public class ShivaniRigging extends Subsystem{
     public void set_left_power(double power){
         left_servo.setPower(power);
     }
-<<<<<<< Updated upstream
+
     public void open_left(){
 
         state = "Left Opening";
@@ -81,66 +81,20 @@ public class ShivaniRigging extends Subsystem{
     }
     public void extend_rigging(){
         activate();
-        //TODO: Extend the arms or something.
     }
     public void close(){
         state = "Retracted";
         left_servo.setPower(LEFT_CLOSE_POWER);
         right_servo.setPower(RIGHT_CLOSE_POWER);
     }
-    public double getArmPositions(int arm){
-
+    public double getArmPositions(int arm) {
         return arm == 0 ? left_servo.getPower() : right_servo.getPower();
-=======
+    }
+
     public void set_right_power(double power){
         right_servo.setPower(power);
->>>>>>> Stashed changes
     }
-//    public void open(){
-//        left_servo.setPower(LEFT_OPEN_POWER);
-//        right_servo.setPower(RIGHT_OPEN_POWER);
-//        state = "Extended";
-//    }
-//    public void open_left(){
-//
-//        state = "Left Opening";
-//
-//        left_servo.setPower(LEFT_OPEN_POWER);
-//
-//    }
-//    public void open_right(){
-//        state = "Right Opening";
-//
-//        right_servo.setPower(RIGHT_OPEN_POWER);
-//    }
-//
-//    public void close_left(){
-//        state = "Left Retracting";
-//
-//        left_servo.setPower(LEFT_CLOSE_POWER);
-//
-//    }
-//    public void close_right(){
-//        state = "Right Retracting";
-//        right_servo.setPower(RIGHT_CLOSE_POWER);
-//    }
-//    public void freeze_right(){
-//        state = "Right Frozen";
-//        right_servo.setPower(0);
-//    }
-//    public void freeze_left(){
-//        state = "Left Frozen";
-//        left_servo.setPower(0);
-//    }
-//    public void close(){
-//        state = "Retracted";
-//        left_servo.setPower(LEFT_CLOSE_POWER);
-//        right_servo.setPower(RIGHT_CLOSE_POWER);
-//    }
-//    public double getArmPositions(int arm){
-//
-//        return arm == 0 ? left_servo.getPower() : right_servo.getPower();
-//    }
+
     public void setRiggingPower(double speed){
         riggingMotor.setPower(speed + hold_speed);
     }

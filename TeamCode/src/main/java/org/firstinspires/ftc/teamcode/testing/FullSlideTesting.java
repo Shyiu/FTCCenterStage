@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.subclasses.Lift;
-import org.firstinspires.ftc.teamcode.subclasses.THEBOOT;
 
 @Config
 @TeleOp
