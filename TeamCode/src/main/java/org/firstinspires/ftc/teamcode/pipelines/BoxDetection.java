@@ -35,11 +35,14 @@ public class BoxDetection extends OpenCvPipeline {
 
 
     static  Rect MIDDLE_TARGET = new Rect(
-            new Point(150, minY),
-            new Point(420, maxY));
-    static  Rect RIGHT_TARGET = new Rect(
-            new Point(700, minY),
-            new Point(maxX, maxY));
+            new Point(540, 320),
+            new Point(700, 470)
+    );
+
+    static Rect OTHER_TARGET = new Rect(
+            new Point(10, 404),
+            new Point(150, 540)
+    );
 
     static double PERCENT_COLOR_THRESHOLD = 0.1;
     public static int S11 = 100;
@@ -49,11 +52,13 @@ public class BoxDetection extends OpenCvPipeline {
     public static int S22 = 150;
     public static int S23 = 95;
     public boolean isRed;
-    public BoxDetection(Telemetry t, Rect mid, Rect right, boolean red) {
+    public boolean isBackdrop;
+    public BoxDetection(Telemetry t, Rect mid, Rect right, boolean red, boolean backdrop) {
         telemetry = t;
         MIDDLE_TARGET = mid;
-        RIGHT_TARGET = right;
+        OTHER_TARGET = right;
         this.isRed = red;
+        this.isBackdrop = backdrop;
     }
     public BoxDetection(Telemetry t) {
         telemetry = t;
@@ -67,43 +72,47 @@ public class BoxDetection extends OpenCvPipeline {
             low = new Scalar(0, 125, 0);
             high = new Scalar(26, 255, 250);
         }else{
-            low = new Scalar(0, 100, 0);
-            high = new Scalar(125, 255, 255);
+            low = new Scalar(0, 0, 0);
+            high = new Scalar(255, 255, 100);
         }
 
 
         Core.inRange(mat, low, high, mat);
 
         Mat middleMat = mat.submat(MIDDLE_TARGET);
-        Mat rightMat = mat.submat(RIGHT_TARGET);
+        Mat otherMat = mat.submat(OTHER_TARGET);
 
         double MIDDLE_VALUE = Core.sumElems(middleMat).val[0] / MIDDLE_TARGET.area() / 255;
-        double RIGHT_VALUE = Core.sumElems(rightMat).val[0] / RIGHT_TARGET.area() / 255;
+        double OTHER_VALUE = Core.sumElems(otherMat).val[0] / OTHER_TARGET.area() / 255;
 
         middleMat.release();
-        rightMat.release();
+        otherMat.release();
 
         telemetry.addData("Middle raw value", (int) Core.sumElems(middleMat).val[0]);
-        telemetry.addData("Right raw value", (int) Core.sumElems(rightMat).val[0]);
+        telemetry.addData("Right raw value", (int) Core.sumElems(otherMat).val[0]);
         telemetry.addData("Middle percentage", Math.round(MIDDLE_VALUE * 100) + "%");
-        telemetry.addData("Right percentage", Math.round(RIGHT_VALUE * 100) + "%");
+        telemetry.addData("Right percentage", Math.round(OTHER_VALUE * 100) + "%");
 
-        boolean middle = MIDDLE_VALUE > RIGHT_VALUE + .1 && MIDDLE_VALUE > PERCENT_COLOR_THRESHOLD;
-        boolean right = RIGHT_VALUE > MIDDLE_VALUE + .1 && RIGHT_VALUE > PERCENT_COLOR_THRESHOLD;
+        boolean middle = MIDDLE_VALUE > OTHER_VALUE + .1 && MIDDLE_VALUE > PERCENT_COLOR_THRESHOLD;
+        boolean other = OTHER_VALUE > MIDDLE_VALUE + .1 && OTHER_VALUE > PERCENT_COLOR_THRESHOLD;
 
 
-        if (right) {
-            location = Location.RIGHT;
-            telemetry.addData("Box Detection", "Right");
+        if (other) {
+            location = isBackdrop ? Location.LEFT : Location.RIGHT;
+            String position = location == Location.RIGHT ? "Right": "Left";
+
+            telemetry.addData("Box Detection", position);
         }
         else if (middle){
             location = Location.MIDDLE;
             telemetry.addData("Box Detection", "Middle");
         }
         else {
-            location = Location.LEFT;
-            telemetry.addData("Box Detection", "No Detection, defaulted to Left");
+            location = isBackdrop ? Location.RIGHT : Location.LEFT;
+            String position = location == Location.RIGHT ? "Right": "Left";
+            telemetry.addData("Box Detection", position);
         }
+
         telemetry.update();
 
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB);
@@ -112,7 +121,7 @@ public class BoxDetection extends OpenCvPipeline {
         Scalar white = new Scalar(255, 255, 255);
 
         Imgproc.rectangle(mat, MIDDLE_TARGET, white);
-        Imgproc.rectangle(mat, RIGHT_TARGET, white);
+        Imgproc.rectangle(mat, OTHER_TARGET, white);
 
         return mat;
 

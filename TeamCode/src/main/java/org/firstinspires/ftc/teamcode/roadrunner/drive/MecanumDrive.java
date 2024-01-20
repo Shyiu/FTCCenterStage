@@ -99,10 +99,10 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
         }
 
         // TODO: adjust the names of the following hardware devices to match your configuration
-        if(IMUTransfer.init) {
-            imu = IMUTransfer.imu;
-
-        }else{
+//        if(IMUTransfer.init) {
+//            imu = IMUTransfer.imu;
+//
+//        }else{
             imu = hardwareMap.get(IMU.class, "imu");
             // Adjust the orientation parameters to match your robot
             IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
@@ -112,37 +112,15 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
             imu.initialize(parameters);
             IMUTransfer.imu = imu;
             IMUTransfer.init = true;
-        }
+//        }
 
 
         leftFront = hardwareMap.get(DcMotorEx.class, "frontLeft");
         leftRear = hardwareMap.get(DcMotorEx.class, "backLeft");
         rightRear = hardwareMap.get(DcMotorEx.class, "backRight");
         rightFront = hardwareMap.get(DcMotorEx.class, "frontRight");
-        leftFrontEncoder = new Encoder(leftFront);
-        leftRearEncoder = new Encoder(leftRear);
-        rightFrontEncoder = new Encoder(rightFront);
-        rightRearEncoder = new Encoder(rightRear);
-
-        if(flReverse)
-            leftFrontEncoder.setDirection(Encoder.Direction.REVERSE);
-        else
-            leftFrontEncoder.setDirection(Encoder.Direction.FORWARD);
-        if(frReverse)
-            rightFrontEncoder.setDirection(Encoder.Direction.REVERSE);
-        else
-            rightFrontEncoder.setDirection(Encoder.Direction.FORWARD);
-        if(blReverse)
-            leftRearEncoder.setDirection(Encoder.Direction.REVERSE);
-        else
-            leftRearEncoder.setDirection(Encoder.Direction.FORWARD);
-        if(brReverse)
-            rightRearEncoder.setDirection(Encoder.Direction.REVERSE);
-        else
-            rightRearEncoder.setDirection(Encoder.Direction.FORWARD);
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
-        encoders = Arrays.asList(leftFrontEncoder, leftRearEncoder, rightRearEncoder, rightFrontEncoder);
 
         for (DcMotorEx motor : motors) {
             MotorConfigurationType motorConfigurationType = motor.getMotorType().clone();
@@ -161,8 +139,11 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
         }
 
         // TODO: reverse any motors using DcMotor.setDirection()
-        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
+        rightRear.setDirection(DcMotorSimple.Direction.FORWARD);
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
+
         List<Integer> lastTrackingEncPositions = new ArrayList<>();
         List<Integer> lastTrackingEncVels = new ArrayList<>();
 

@@ -9,6 +9,7 @@ import com.acmerobotics.roadrunner.trajectory.MarkerCallback;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.IMUTransfer;
@@ -20,13 +21,19 @@ import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySe
 import org.firstinspires.ftc.teamcode.subclasses.Distance;
 import org.firstinspires.ftc.teamcode.subclasses.Intake;
 import org.firstinspires.ftc.teamcode.subclasses.Lift;
+import org.firstinspires.ftc.teamcode.subclasses.PlaneLauncher;
 import org.firstinspires.ftc.teamcode.subclasses.PremPlaneLauncher;
+import org.firstinspires.ftc.teamcode.subclasses.ShivaniRigging;
 import org.firstinspires.ftc.teamcode.subclasses.TempDelivery;
+import org.firstinspires.ftc.teamcode.subclasses.Unicorn;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
+
+import java.util.concurrent.TimeUnit;
+
 //Todo: when retuning define the front of the robot to be the intake/rollers.
 //Todo: rewrite the paths to match that as well.
 @Config
@@ -38,7 +45,7 @@ public class MecanumRoadrunner extends LinearOpMode {
     MecanumDrive drive;
     BoxDetection.Location location;
     TrajectorySequence middle, left, right;
-    Trajectory intoBackdrop;
+    TrajectorySequence intoBackdrop;
     enum START{
         RED_BACKDROP,
         RED_STACK,
@@ -56,17 +63,26 @@ public class MecanumRoadrunner extends LinearOpMode {
 
 
     private boolean red = false;
-    private boolean far = false;
+    private boolean stack = false;
+
     START position;
     public static Rect MIDDLE_TARGET = new Rect(
             new Point(150, 300),
             new Point(420, 540));
-    public static Rect RIGHT_TARGET = new Rect(
+    public static Rect OTHER_TARGET = new Rect(
             new Point(700, 300),
             new Point(960, 540));
 
     PlaneLauncher plane;
+<<<<<<< Updated upstream
+=======
+//    VihasIntake intake;
+    Lift lift;
+    Unicorn delivery;
+    Distance distance;
+>>>>>>> Stashed changes
     Intake intake;
+    ShivaniRigging rigging;
     private boolean exit = false;
     @Override
     public void runOpMode() throws InterruptedException {
@@ -74,14 +90,26 @@ public class MecanumRoadrunner extends LinearOpMode {
 
 
         IMUTransfer.init = false;
+<<<<<<< Updated upstream
 
         plane = new PlaneLauncher(hardwareMap);
+=======
+        plane = new PlaneLauncher(hardwareMap);
+        delivery = new Unicorn(hardwareMap, telemetry);
+        distance = new Distance(hardwareMap, telemetry);
+>>>>>>> Stashed changes
         intake = new Intake(hardwareMap, telemetry);
+        rigging = new ShivaniRigging(hardwareMap, telemetry);
 
-        plane.moveTo(.1);
-//        intake.open();
-        delivery.setUp();
-//        lift.reset();
+        intake.init();
+        plane.init();
+        delivery.init();
+        rigging.init();
+        distance.init();
+
+
+
+
 
         location = BoxDetection.Location.LEFT;
 
@@ -98,7 +126,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                     telemetry.clear();
                     telemetry.addLine("Selected Blue Backstage");
                     red = false;
-                    far = false;
+                    stack = false;
                     position = START.BLUE_BACKDROP;
                     break;
                 }
@@ -106,7 +134,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                     telemetry.clear();
                     telemetry.addLine("Selected Red Backstage");
                     telemetry.update();
-                    far = false;
+                    stack = false;
                     red = true;
                     position = START.RED_BACKDROP;
 
@@ -115,7 +143,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                     telemetry.clear();
                     telemetry.addLine("Selected Blue Stack");
                     position = START.BLUE_STACK;
-                    far = true;
+                    stack = true;
                     red = false;
 
                     break;
@@ -125,7 +153,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                     telemetry.addLine("Selected Red Stack");
                     telemetry.update();
                     position = START.RED_STACK;
-                    far = true;
+                    stack = true;
                     red = true;
                     break;
                 }
@@ -162,25 +190,35 @@ public class MecanumRoadrunner extends LinearOpMode {
             //(640,404), (900, 544) BLUE BACKDROP AND RED STACK
             case BLUE_BACKDROP:
             case RED_STACK:
+//                MIDDLE_TARGET = new Rect(
+//                    new Point(220, 404),
+//                    new Point(440, 544));
+//                RIGHT_TARGET = new Rect(
+//                        new Point(640, 404),
+//                        new Point(900, 540));
                 MIDDLE_TARGET = new Rect(
-                    new Point(220, 404),
-                    new Point(440, 544));
-                RIGHT_TARGET = new Rect(
-                        new Point(640, 404),
-                        new Point(900, 540));
+                        new Point(540, 320),
+                        new Point(700, 470)
+                );
+                OTHER_TARGET = new Rect(
+                        new Point(10, 404),
+                        new Point(150, 540)
+                );
                 break;
             case BLUE_STACK:
             case RED_BACKDROP:
                 MIDDLE_TARGET = new Rect(
-                        new Point(60, 404),
-                        new Point(230, 544));
-                RIGHT_TARGET = new Rect(
-                        new Point(450, 404),
-                        new Point(640, 540));
+                        new Point(280, 284),
+                        new Point(480, 424)
+                );
+                OTHER_TARGET = new Rect(
+                    new Point(640, 404),
+                    new Point(900, 540)
+            );
                 break;
 
         }
-        boxDetection = new BoxDetection(telemetry, MIDDLE_TARGET, RIGHT_TARGET,red);
+        boxDetection = new BoxDetection(telemetry, MIDDLE_TARGET, OTHER_TARGET, red, !stack);
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, mc.camera), cameraMonitorViewId);
 
@@ -205,192 +243,126 @@ public class MecanumRoadrunner extends LinearOpMode {
 
 
 
-        switch(position){
+        switch(position) {
             case BLUE_BACKDROP:
-                robotStart = new Pose2d(15, 63, Math.toRadians(270));
+                robotStart = new Pose2d(16.5, 63, Math.toRadians(90));
                 drive.setPoseEstimate(robotStart);
                 //y = 29 for the right most april tag
                 right = drive.trajectorySequenceBuilder(robotStart)
-                        .lineToLinearHeading(new Pose2d(10, 36, Math.toRadians(225)))
+                        .lineToLinearHeading(new Pose2d(7, 32, Math.toRadians(45)))
+                        .lineTo(new Vector2d(25, 44))
                         .lineToLinearHeading(new Pose2d(49, BLUE_SIDE_RIGHT, Math.toRadians(180)))
-                        .addTemporalMarker(.5, new MarkerCallback() {
-                            @Override
-                            public void onMarkerReached() {
-                                plane.setFlatPosition();
-                            }
-                        })
                         .build();
                 //y = 35 for the middle april tag
                 middle = drive.trajectorySequenceBuilder(robotStart)
-                        .lineTo(new Vector2d(13.00, 30.00))
-                        .lineTo(new Vector2d(13.00, 32.00))
-                        .splineToConstantHeading(new Vector2d(16.00, 34.00), Math.toRadians(0.00))
+                        .lineToLinearHeading(new Pose2d(17.00, 32, Math.toRadians(90)))
 
-                        .addTemporalMarker(.5, new MarkerCallback() {
-                            @Override
-                            public void onMarkerReached() {
-                                plane.setFlatPosition();
-                            }
-                        })
-                        .splineToSplineHeading(new Pose2d(49, BLUE_SIDE_MIDDLE, Math.toRadians(180)), Math.toRadians(0))
+                        .lineTo(new Vector2d(17, 43))
+                        .lineToLinearHeading(new Pose2d(49, 32, Math.toRadians(180)))
                         .build();
                 //y = 41 for the left april tag
-                left =  drive.trajectorySequenceBuilder(robotStart)
-                        .lineTo(new Vector2d(28.00, 36.00))
-                        .lineToLinearHeading(new Pose2d(25.00, 45.00, Math.toRadians(90.00)))
-                        .addTemporalMarker(.5, new MarkerCallback() {
-                            @Override
-                            public void onMarkerReached() {
-                                plane.setFlatPosition();
-                            }
-                        })
-                        .splineToSplineHeading(new Pose2d(49, BLUE_SIDE_LEFT, Math.toRadians(180)), Math.toRadians(0))
+                left = drive.trajectorySequenceBuilder(robotStart)
+                        .lineToLinearHeading(new Pose2d(22.00, 38, Math.toRadians(90)))
+
+                        .lineTo(new Vector2d(22, 49))
+                        .lineToLinearHeading(new Pose2d(49, 38, Math.toRadians(180)))
+
                         .build();
                 break;
+
             case BLUE_STACK:
                 robotStart = new Pose2d(-37.5, 63, Math.toRadians(90));
                 drive.setPoseEstimate(robotStart);
-
-
                 middle = drive.trajectorySequenceBuilder(robotStart)
-                        .lineToLinearHeading(new Pose2d(-33.5, 29, Math.toRadians(90)))
-                        .lineTo(new Vector2d(-33.5, 34))
+                        .lineTo(new Vector2d(-37.5, 62.5))
 
-                        .splineToLinearHeading(new Pose2d(-39,34, Math.toRadians(90)), Math.toRadians(180))
-                        .splineToSplineHeading(new Pose2d(-54, 16, Math.toRadians(180)), Math.toRadians(270))
-                        .splineToLinearHeading(new Pose2d(-24, 9.2, Math.toRadians(180)), Math.toRadians(0))
-                        .lineTo(new Vector2d(20,10))
-                        .splineToConstantHeading(new Vector2d(49,BLUE_SIDE_MIDDLE+3), Math.toRadians(0))
-                        .addTemporalMarker(.5, new MarkerCallback() {
-                            @Override
-                            public void onMarkerReached() {
-                                plane.setFlatPosition();
-                            }
-                        })
+                        .lineToLinearHeading(new Pose2d(-33.5, 29, Math.toRadians(98)))
+                        .lineTo(new Vector2d(-34.5, 30))
+                        .lineTo(new Vector2d(-33.5, 31))
+//                        .splineTo(new Vector2d(-17,35), Math.toRadians(0))
+//                        .splineTo(new Vector2d(49, BLUE_SIDE_MIDDLE), 0)
                         .build();
                 right = drive.trajectorySequenceBuilder(robotStart)
+                        .lineTo(new Vector2d(-37.5, 62.5))
+
                         .lineToLinearHeading(new Pose2d(-39.5, 30, Math.toRadians(0)))
                         .lineTo(new Vector2d(-34.5, 30))
-                        .lineToLinearHeading(new Pose2d(-34.5, 24, Math.toRadians(0)))
-                        .splineToSplineHeading(new Pose2d(25,9.2, Math.toRadians(180)), Math.toRadians(0))
-                        .splineToConstantHeading(new Vector2d(49,BLUE_SIDE_RIGHT+3), Math.toRadians(0))
-                        .addTemporalMarker(.5, new MarkerCallback() {
-                            @Override
-                            public void onMarkerReached() {
-                                plane.setFlatPosition();
-                            }
-                        })
-
+                        .lineTo(new Vector2d(-35, 34))
+//                        .splineToConstantHeading(new Vector2d(-37.5, 58), Math.toRadians(0))
+//                        .turn(Math.toRadians(180))
+//                        .lineTo(new Vector2d(5,59))
+//                        .splineTo(new Vector2d(20, 38), 0)
+//                        .splineTo(new Vector2d(49, 28.5), 0)
                         .build();
-                left =  drive.trajectorySequenceBuilder(robotStart)
-                        .lineTo(new Vector2d(-37.5, 57))
-
-                        .splineToSplineHeading(new Pose2d(-29,36, Math.toRadians(180)), Math.toRadians(0))
-                        .lineTo(new Vector2d(-33, 36))
-                        .splineToConstantHeading(new Vector2d(-25, 9.5), Math.toRadians(0))
-                        .lineToSplineHeading(new Pose2d(25,9.2, Math.toRadians(180)))
-                        .splineToConstantHeading(new Vector2d(49,BLUE_SIDE_LEFT+3),Math.toRadians(0))
-                        .addTemporalMarker(.5, new MarkerCallback() {
-                            @Override
-                            public void onMarkerReached() {
-                                plane.setFlatPosition();
-                            }
-                        })
+                left = drive.trajectorySequenceBuilder(robotStart)
+                        .lineTo(new Vector2d(-37.5, 52.5))
+                        .splineTo(new Vector2d(-30, 28), 0)
+                        .lineTo(new Vector2d(-35, 28))
+//                        .splineToConstantHeading(new Vector2d(-37.5, 59), Math.toRadians(0))
+//                        .lineTo(new Vector2d(5,59))
+//                        .splineTo(new Vector2d(20, 38), 0)
+//                        .splineTo(new Vector2d(49, 38), 0)
                         .build();
                 break;
-            case RED_BACKDROP:
-                robotStart = new Pose2d(15, -63, Math.toRadians(270));
-                drive.setPoseEstimate(robotStart);
-                left = drive.trajectorySequenceBuilder(robotStart)
-                        .addTemporalMarker(.5, new MarkerCallback() {
-                            @Override
-                            public void onMarkerReached() {
-                                plane.setFlatPosition();
-                            }
-                        })
-                        .lineToLinearHeading(new Pose2d(15.00, -39.00, Math.toRadians(325.00)))
-                        .lineTo(new Vector2d(4.00, -38.00))
-                        .lineTo(new Vector2d(20.00, -40.00))
-                        .splineToSplineHeading(new Pose2d(49, RED_SIDE_LEFT, Math.toRadians(180)), Math.toRadians(0))
-                        .build();
-                middle = drive.trajectorySequenceBuilder(robotStart)
-                        .addTemporalMarker(.5, new MarkerCallback() {
-                            @Override
-                            public void onMarkerReached() {
-                                plane.setFlatPosition();
-                            }
-                        })
-                        .lineTo(new Vector2d(13, -29))
 
-                        .lineTo(new Vector2d(13,-34))
-                        .splineToConstantHeading(new Vector2d(16, -36), Math.toRadians(0))
-                        .splineToSplineHeading(new Pose2d(49, RED_SIDE_MIDDLE, Math.toRadians(180)), Math.toRadians(0))
+
+            case RED_BACKDROP:
+                robotStart = new Pose2d(-37.5, 63, Math.toRadians(90));
+                drive.setPoseEstimate(robotStart);
+                middle = drive.trajectorySequenceBuilder(robotStart)
+                        .lineTo(new Vector2d(-37.5, 62.5))
+
+                        .lineToLinearHeading(new Pose2d(-33.5, 29, Math.toRadians(98)))
+                        .lineTo(new Vector2d(-34.5, 30))
+                        .lineTo(new Vector2d(-33.5, 31))
+//                        .splineTo(new Vector2d(-17,35), Math.toRadians(0))
+//                        .splineTo(new Vector2d(49, BLUE_SIDE_MIDDLE), 0)
                         .build();
-                //y = 41 for the left april tag
-                right =  drive.trajectorySequenceBuilder(robotStart)
-                        .addTemporalMarker(.5, new MarkerCallback() {
-                            @Override
-                            public void onMarkerReached() {
-                                plane.setFlatPosition();
-                            }
-                        })
-                        .lineTo(new Vector2d(20.00, -36.00))
-                        .lineToLinearHeading(new Pose2d(19.00, -45.00, Math.toRadians(270.00)))
-                        .splineToSplineHeading(new Pose2d(49, RED_SIDE_RIGHT, Math.toRadians(180)), Math.toRadians(0))
+                right = drive.trajectorySequenceBuilder(robotStart)
+                        .lineTo(new Vector2d(-37.5, 62.5))
+
+                        .lineToLinearHeading(new Pose2d(-39.5, 30, Math.toRadians(0)))
+                        .lineTo(new Vector2d(-34.5, 30))
+                        .lineTo(new Vector2d(-35, 34))
+//                        .splineToConstantHeading(new Vector2d(-37.5, 58), Math.toRadians(0))
+//                        .turn(Math.toRadians(180))
+//                        .lineTo(new Vector2d(5,59))
+//                        .splineTo(new Vector2d(20, 38), 0)
+//                        .splineTo(new Vector2d(49, 28.5), 0)
+                        .build();
+                left = drive.trajectorySequenceBuilder(robotStart)
+                        .lineTo(new Vector2d(-37.5, 52.5))
+                        .splineTo(new Vector2d(-30, 34), 0)
+                        .lineTo(new Vector2d(-35, 34))
+//                        .splineToConstantHeading(new Vector2d(-37.5, 59), Math.toRadians(0))
+//                        .lineTo(new Vector2d(5,59))
+//                        .splineTo(new Vector2d(20, 38), 0)
+//                        .splineTo(new Vector2d(49, 38), 0)
                         .build();
                 break;
             case RED_STACK:
-                robotStart = new Pose2d(-37.5, -63, Math.toRadians(270));
+                robotStart = new Pose2d(16.5, 63, Math.toRadians(90));
                 drive.setPoseEstimate(robotStart);
-
-
-                middle = drive.trajectorySequenceBuilder(robotStart)
-                        .addTemporalMarker(.5, new MarkerCallback() {
-                            @Override
-                            public void onMarkerReached() {
-                                plane.setFlatPosition();
-                            }
-                        })
-                        .lineToLinearHeading(new Pose2d(-33.50, -29.00, Math.toRadians(270.00)))
-                        .lineTo(new Vector2d(-33.50, -34.00))
-                        .splineToLinearHeading(new Pose2d(-39.00, -34.00, Math.toRadians(270.00)), Math.toRadians(180.00))
-                        .splineToSplineHeading(new Pose2d(-54.00, -16.00, Math.toRadians(180.00)), Math.toRadians(90.00))
-                        .splineToLinearHeading(new Pose2d(-24.00, -9.20, Math.toRadians(180.00)), Math.toRadians(360.00))
-                        .lineTo(new Vector2d(20.00, -10.00))
-
-                        .splineToConstantHeading(new Vector2d(49.00, RED_SIDE_MIDDLE - 3), Math.toRadians(360.00))
-                        .build();
+                //y = 29 for the right most april tag
                 right = drive.trajectorySequenceBuilder(robotStart)
-                        .addTemporalMarker(.5, new MarkerCallback() {
-                            @Override
-                            public void onMarkerReached() {
-                                plane.setFlatPosition();
-                            }
-                        })
-                        .lineTo(new Vector2d(-37.50, -50.00))
-                        .lineToLinearHeading(new Pose2d(-29.00, -36.00, Math.toRadians(215.00)))
-                        .lineTo(new Vector2d(-37.00, -39.00))
-                        .splineToConstantHeading(new Vector2d(-25.00, -9.50), Math.toRadians(360.00))
-                        .lineToSplineHeading(new Pose2d(25.00, -9.20, Math.toRadians(180.00)))
-                        .splineToConstantHeading(new Vector2d(49.00, RED_SIDE_RIGHT - 3), Math.toRadians(360.00))
+                        .lineToLinearHeading(new Pose2d(7, 30, Math.toRadians(45)))
+                        .lineTo(new Vector2d(25, 44))
                         .build();
-                left =  drive.trajectorySequenceBuilder(robotStart)
-                        .addTemporalMarker(.5, new MarkerCallback() {
-                            @Override
-                            public void onMarkerReached() {
-                                plane.setFlatPosition();
-                            }
-                        })
-                        .lineToLinearHeading(new Pose2d(-39.50, -30.00, Math.toRadians(360.00)))
-                        .lineTo(new Vector2d(-34.50, -30.00))
-                        .lineToLinearHeading(new Pose2d(-36.50, -24.00, Math.toRadians(360.00)))
-                        .splineToSplineHeading(new Pose2d(25.00, -9.20, Math.toRadians(180.00)), Math.toRadians(360.00))
-                        .splineToConstantHeading(new Vector2d(49.00, RED_SIDE_LEFT - 3), Math.toRadians(360.00))
+                //y = 35 for the middle april tag
+                middle = drive.trajectorySequenceBuilder(robotStart)
+                        .lineToLinearHeading(new Pose2d(17.00, 32, Math.toRadians(90)))
+                        .lineTo(new Vector2d(17, 43))
+                        .build();
+                //y = 41 for the left april tag
+                left = drive.trajectorySequenceBuilder(robotStart)
+                        .lineToLinearHeading(new Pose2d(25.00, 38, Math.toRadians(90)))
+                        .lineTo(new Vector2d(25, 49))
                         .build();
                 break;
         }
 
-
+        ElapsedTime timer = new ElapsedTime();
+        double delay = 500;
         while (!isStarted()) {
             telemetry.addData("Location", boxDetection.getLocation());
             telemetry.update();
@@ -401,6 +373,7 @@ public class MecanumRoadrunner extends LinearOpMode {
             }
 
         }
+
         switch (location){
             case LEFT:
                 drive.followTrajectorySequenceAsync(left);
@@ -412,41 +385,39 @@ public class MecanumRoadrunner extends LinearOpMode {
                 drive.followTrajectorySequenceAsync(middle);
                 break;
         }
+        timer.reset();
         while(!isStopRequested() && opModeIsActive()){
             drive.update();
+            if (timer.time(TimeUnit.MILLISECONDS) - delay > 0){
+                intake.moveRotationTo(.7);
+            }
             if(!drive.isBusy()){
                 sleep(500);
                 Pose2d startPose = drive.getPoseEstimate();
-                intoBackdrop = drive.trajectoryBuilder(startPose)
+                intoBackdrop = drive.trajectorySequenceBuilder(startPose)
                                 .lineToLinearHeading(new Pose2d(startPose.getX() + getAdjustedDistance() + 0.5, startPose.getY(), Math.toRadians(180)),
                                 drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                                 drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                        )
-                        .build();
-                drive.followTrajectory(intoBackdrop);
-                startPose = drive.getPoseEstimate();
-                intoBackdrop = drive.trajectoryBuilder(startPose)
-                        .lineToLinearHeading(new Pose2d(startPose.getX() + getAdjustedDistance() + 0.5, startPose.getY(), Math.toRadians(180)),
-                                drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                                drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                        )
-                        .build();
-                drive.followTrajectory(intoBackdrop);
-                sleep(500);
-                delivery.dropPixel();
 
-                if(!far) {
+                        )
+                        .waitSeconds(1)
+                        .build();
+                drive.followTrajectorySequence(intoBackdrop);
+
+                delivery.deliver();
+                sleep(500);
+                if(!stack) {
                     startPose = drive.getPoseEstimate();
                     Vector2d endPose = new Vector2d();
                     if (red) {
                         endPose = new Vector2d(60, -61);
                     } else {
-                        endPose = new Vector2d(60, 61);
+                        endPose = new Vector2d(58, 64);
                     }
                     TrajectorySequence intoPark = drive.trajectorySequenceBuilder(startPose)
                             .forward(6)
                             .splineToConstantHeading(endPose, Math.toRadians(0))
-                            .back(10,
+                            .back(6,
                                     drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                                     drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                             .build();

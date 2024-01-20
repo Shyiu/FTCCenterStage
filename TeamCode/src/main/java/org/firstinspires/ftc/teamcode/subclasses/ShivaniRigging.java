@@ -25,13 +25,13 @@ public class ShivaniRigging extends Subsystem{
     ElapsedTime timer;
     private double delay = .5;
 
-    public static double hold_speed = 0.15;
+    public static double hold_speed = 0;
     private String state = "Init";
     Telemetry telemetry;
     public static double LEFT_OPEN_POWER = .6, RIGHT_OPEN_POWER = .4;
     public static double LEFT_CLOSE_POWER = .45, RIGHT_CLOSE_POWER = .55;
 
-    //>0.5 brings the left arm up and <0.5 brings the right arm up
+    //-1 to rig left, 1 to rig right.
 
     public ShivaniRigging(HardwareMap hardwareMap, Telemetry telemetry){
         timer = new ElapsedTime();
@@ -46,12 +46,10 @@ public class ShivaniRigging extends Subsystem{
         left_servo = hardwareMap.get(DcMotorSimple.class, mc.rigging_left);
         right_servo = hardwareMap.get(DcMotorSimple.class, mc.rigging_right);
     }
-
-    public void open(){
-        left_servo.setPower(LEFT_OPEN_POWER);
-        right_servo.setPower(RIGHT_OPEN_POWER);
-        state = "Extended";
+    public void set_left_power(double power){
+        left_servo.setPower(power);
     }
+<<<<<<< Updated upstream
     public void open_left(){
 
         state = "Left Opening";
@@ -93,14 +91,61 @@ public class ShivaniRigging extends Subsystem{
     public double getArmPositions(int arm){
 
         return arm == 0 ? left_servo.getPower() : right_servo.getPower();
+=======
+    public void set_right_power(double power){
+        right_servo.setPower(power);
+>>>>>>> Stashed changes
     }
+//    public void open(){
+//        left_servo.setPower(LEFT_OPEN_POWER);
+//        right_servo.setPower(RIGHT_OPEN_POWER);
+//        state = "Extended";
+//    }
+//    public void open_left(){
+//
+//        state = "Left Opening";
+//
+//        left_servo.setPower(LEFT_OPEN_POWER);
+//
+//    }
+//    public void open_right(){
+//        state = "Right Opening";
+//
+//        right_servo.setPower(RIGHT_OPEN_POWER);
+//    }
+//
+//    public void close_left(){
+//        state = "Left Retracting";
+//
+//        left_servo.setPower(LEFT_CLOSE_POWER);
+//
+//    }
+//    public void close_right(){
+//        state = "Right Retracting";
+//        right_servo.setPower(RIGHT_CLOSE_POWER);
+//    }
+//    public void freeze_right(){
+//        state = "Right Frozen";
+//        right_servo.setPower(0);
+//    }
+//    public void freeze_left(){
+//        state = "Left Frozen";
+//        left_servo.setPower(0);
+//    }
+//    public void close(){
+//        state = "Retracted";
+//        left_servo.setPower(LEFT_CLOSE_POWER);
+//        right_servo.setPower(RIGHT_CLOSE_POWER);
+//    }
+//    public double getArmPositions(int arm){
+//
+//        return arm == 0 ? left_servo.getPower() : right_servo.getPower();
+//    }
     public void setRiggingPower(double speed){
         riggingMotor.setPower(speed + hold_speed);
     }
 
-    public void holdRiggingMotors(){
-        riggingMotor.setPower(hold_speed);
-    }
+
     @Override
     public void telemetry() {
         riggingMotor.telemetry();
@@ -117,14 +162,16 @@ public class ShivaniRigging extends Subsystem{
     public void update(){
         riggingMotor.update();
     }
-    public void raise_rigging_motor(){
-        riggingMotor.bringToHalt();
-    }
     @Override
     public void init() {
-        riggingMotor.init();
         riggingMotor.P = P;
         riggingMotor.I = I;
         riggingMotor.D = D;
+        riggingMotor.setMax(100);
+        riggingMotor.setHoldingPower(hold_speed);
+        set_left_power(-0.2);
+        set_right_power(0.2);
+        riggingMotor.init();
+
     }
 }

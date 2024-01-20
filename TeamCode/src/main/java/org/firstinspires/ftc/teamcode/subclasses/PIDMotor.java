@@ -42,8 +42,8 @@ public class PIDMotor extends Subsystem{
         slides.setDirection(DcMotor.Direction.FORWARD);
 
     }
-    public void setDirection(DcMotor.ZeroPowerBehavior power){
-        slides.setZeroPowerBehavior(power);
+    public void setDirection(DcMotor.Direction power){
+        slides.setDirection(power);
 
     }
 
@@ -66,12 +66,18 @@ public class PIDMotor extends Subsystem{
     public void telemetry(){
         telemetry.addData(name + " Power", getPower());
         telemetry.addData(name + "'s Position", getCurrentPosition());
+        telemetry.addData(name + "'s Target Position", targetPos);
+        telemetry.addData(name + "'s Busy Status", isBusy());
+        telemetry.addData(name + "'s Max Hardstop", maxHardstop);
+        telemetry.addData(name + "'s Min Hardstop", minHardstop);
+        telemetry.addData(name + "'s direction", direction);
+
     }
 
 
     public boolean exceedingConstraints(){
 
-            return slides.getPower() > 0 ? slides.getCurrentPosition() > maxHardstop : slides.getCurrentPosition() < minHardstop ;
+            return slides.getPower() > 0 ? slides.getCurrentPosition() > maxHardstop : slides.getCurrentPosition() < minHardstop;
 
     }
     public boolean exceedingConstraints(double power){
@@ -120,7 +126,6 @@ public class PIDMotor extends Subsystem{
         init();
     }
     public void moveTo(double target) {
-        reached = false;
         targetPos = target;
         direction = getCurrentPosition() < target;
     }
@@ -170,7 +175,6 @@ public class PIDMotor extends Subsystem{
         }
         else {
             slides.setPower(holding_power);
-            reached = true;
         }
     }
 

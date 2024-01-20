@@ -7,8 +7,10 @@
 //
 //@Disabled
 //public class PathFlipper {
-//    middle = drive.trajectorySequenceBuilder(new Pose2d(-37.5, 63, Math.toRadians(90)))
-//            .lineTo(new Vector2d(28.00, 36.00))
-//            .lineToLinearHeading(new Pose2d(25.00, 45.00, Math.toRadians(90.00)))
-//            .splineToConstantHeading(new Vector2d(16.00, -34.00), Math.toRadians(360.00)).build();
+//    middle = drive.trajectorySequenceBuilder(new Pose2d(16.5, 63, Math.toRadians(90)))
+//            .lineTo(new Vector2d(17, 60))
+//            .lineToLinearHeading(new Pose2d(17.00, 27, Math.toRadians(270)))
+//            .lineTo(new Vector2d(17, 33))
+//            .splineToSplineHeading(new Pose2d(49, 28.5, Math.toRadians(180)), Math.toRadians(0))
+//            .build();
 //}

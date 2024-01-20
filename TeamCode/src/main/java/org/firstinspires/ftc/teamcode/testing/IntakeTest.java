@@ -32,6 +32,8 @@ public class IntakeTest extends LinearOpMode {
     public static boolean motor = false;
     public static boolean reverse = false;
     public static boolean pid = false;
+    public static boolean change = false;
+
 
     public static int target = -1000;
     protected MecaTank mecatank;
@@ -67,6 +69,10 @@ public class IntakeTest extends LinearOpMode {
             intake.moveRoller(ARM_POSITION);
             if (pid){
                 intake.update();
+            }
+            if(change){
+                intake.moveRotationTo(target);
+                change = false;
             }
 
 

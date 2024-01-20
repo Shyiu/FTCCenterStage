@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.testing;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.subclasses.THEBOOT;
 import org.firstinspires.ftc.teamcode.subclasses.TempDelivery;
 
+@Disabled
 @TeleOp(name="THE BOOT Testing")
 @Config
 public class THEBOOTTest extends LinearOpMode {

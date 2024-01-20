@@ -16,6 +16,7 @@ public class PlaneLauncherTesting extends LinearOpMode {
     ElapsedTime timer;
     double currentTime = 0;
     public static double SERVO_POSITION = .4;
+    public static double HOLD_POSITION = .4;
     PlaneLauncher planeLauncher;
     @Override
     public void runOpMode(){
@@ -34,6 +35,8 @@ public class PlaneLauncherTesting extends LinearOpMode {
                 planeLauncher.reset();
                 currentTime= timer.time();
             }
+            planeLauncher.rotateLauncher(SERVO_POSITION);
+            planeLauncher.moveLauncher(HOLD_POSITION);
             telemetry.update();
         }
     }

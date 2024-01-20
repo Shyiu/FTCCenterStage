@@ -39,16 +39,20 @@ public class MecanumTeleOp extends LinearOpMode {
     public enum PLANE_STATE{
         LAUNCH,
         FLAT,
-        WAIT
+        STOW_ARM, LOWER_ARM, WAIT
     }
 
     PLANE_STATE plane_state;
 
     public enum DELIVERY_STATE {
+<<<<<<< Updated upstream
         WAIT, 
         INTAKE, 
         TRANSFER, 
         DELIVERY
+=======
+        WAIT, INTAKE, TRANSFER, RETURN, DELIVERY
+>>>>>>> Stashed changes
     }
 
     DELIVERY_STATE delivery_state;
@@ -56,6 +60,11 @@ public class MecanumTeleOp extends LinearOpMode {
     ArrayList<Integer> apriltag_targets;
 
     public double delivery_timer = 0;
+    public double plane_timer = 0;
+    public double endgame_timer = 0;
+
+    private boolean endgame = false;
+
     DELIVERY_STATE next_delivery_state = DELIVERY_STATE.INTAKE;
 
     public MecanumBotConstant config = new MecanumBotConstant();
@@ -116,6 +125,7 @@ public class MecanumTeleOp extends LinearOpMode {
 
 
             switch (plane_state){
+<<<<<<< Updated upstream
                case WAIT:
                    if (gamepad1.x){
                        launcher.setLaunchPosition();
@@ -135,6 +145,42 @@ public class MecanumTeleOp extends LinearOpMode {
                
 
            }
+=======
+                case WAIT:
+                    if (gamepad1.y){
+                        launcher.rotate_to_launch();
+                        plane_state = PLANE_STATE.LOWER_ARM;
+                        plane_timer = timer.time();
+                        break;
+                    }
+                    break;
+                case LOWER_ARM:
+                    if (timer.time() - plane_timer > .300 && !drive.isBusy()){
+                        intake.pickup();
+                        plane_state = PLANE_STATE.LAUNCH;
+                        plane_timer = timer.time();
+
+                        break;
+                    }
+                case LAUNCH:
+                    if(timer.time() - plane_timer > .300 && !drive.isBusy()){
+                        launcher.launch();
+                        plane_state = PLANE_STATE.STOW_ARM;
+                        plane_timer = timer.time();
+
+                        break;
+                    }
+                case STOW_ARM:
+                    if (timer.time() - plane_timer > .300){
+                        intake.go_to_transfer();
+                        plane_state = PLANE_STATE.WAIT;
+                        plane_timer = timer.time();
+                        break;
+                    }
+            }
+
+
+>>>>>>> Stashed changes
 
             switch(delivery_state){
                 case WAIT:
@@ -144,20 +190,33 @@ public class MecanumTeleOp extends LinearOpMode {
                     delivery_state = DELIVERY_STATE.WAIT;
                     break;
                 case TRANSFER:
+                case RETURN:
                     intake.go_to_transfer();
                     delivery_state = DELIVERY_STATE.WAIT;
-
                     break;
                 case DELIVERY:
                     intake.delivery();
                     delivery_state = DELIVERY_STATE.WAIT;
-
-
                     break;
             }
 
-            intake.increaseRotation(-gamepad2.left_stick_y/6.0);
-            intake.slides.setPower(-gamepad2.right_stick_y/2.0);
+            if (gamepad2.left_trigger == 0 && gamepad2.right_trigger == 0){
+                intake.rotateSlides(sameSignSqrt(gamepad2.left_stick_y/10.0));
+                intake.slides.setPower(sameSignSqrt(-gamepad2.right_stick_y/2.0));
+            }else{
+                rigging.set_right_power(sameSignSqrt(gamepad2.right_stick_y));
+                rigging.set_left_power(sameSignSqrt(-gamepad2.left_stick_y));
+            }
+
+            if (gamepad2.right_bumper) {
+                rigging.setRiggingPower(-1);
+            }else if(gamepad2.left_bumper){
+                rigging.setRiggingPower(.5);
+            }else{
+                rigging.setRiggingPower(0);
+            }
+
+
 
             if (gamepad2.a && time.time(TimeUnit.MILLISECONDS) - delivery_timer > 300){
                 delivery_timer = time.time(TimeUnit.MILLISECONDS);
@@ -172,8 +231,11 @@ public class MecanumTeleOp extends LinearOpMode {
                         break;
                     case DELIVERY:
                         delivery_state = DELIVERY_STATE.DELIVERY;
-                        next_delivery_state = DELIVERY_STATE.INTAKE;
+                        next_delivery_state = DELIVERY_STATE.RETURN;
                         break;
+                    case RETURN:
+                        delivery_state = DELIVERY_STATE.RETURN;
+                        next_delivery_state = DELIVERY_STATE.INTAKE;
                 }
             }
             if (gamepad2.x){
@@ -183,8 +245,15 @@ public class MecanumTeleOp extends LinearOpMode {
             }
 
 
+<<<<<<< Updated upstream
             intake.update();
             rigging.update();
+=======
+
+//            intake.update();
+
+
+>>>>>>> Stashed changes
             all_to_telemetry();
             telemetry.addData("Status", "Running");
             telemetry.update();
@@ -221,6 +290,9 @@ public class MecanumTeleOp extends LinearOpMode {
         launcher.telemetry();
         rigging.telemetry();
         mecatank.telemetry();
+    }
+    public double sameSignSqrt(double number){
+        return Math.copySign(Math.sqrt(Math.abs(number)), number);
     }
 }
 

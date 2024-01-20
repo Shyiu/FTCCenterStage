@@ -24,7 +24,7 @@ public class Lift extends Subsystem{
     private boolean reached = false;
     private boolean working_magnet;
     private ElapsedTime timer;
-    private int maxHardstop = 10000;//TODO: ACTUALLY FIND THIS
+    private int maxHardstop = 1900;
 
     HardwareMap hardware;
     Telemetry telemetry;
@@ -108,6 +108,7 @@ public class Lift extends Subsystem{
             if (magnet_activated()){
                 slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 slides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                slides.setPower(0);
             }
             return working_magnet ? magnet_activated() : slides.getCurrentPosition() < 0;
         }else{

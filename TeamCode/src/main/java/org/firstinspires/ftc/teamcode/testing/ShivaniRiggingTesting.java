@@ -17,7 +17,8 @@ public class ShivaniRiggingTesting extends LinearOpMode {
     public static boolean raise_rigging_wheels = false;
 
     public static double motor_power = 0;
-
+    public static double right_power = 0;
+    public static double left_power = 0;
     ShivaniRigging rigging;
     @Override
     public void runOpMode(){
@@ -29,31 +30,11 @@ public class ShivaniRiggingTesting extends LinearOpMode {
 
 
         while(!isStopRequested() && opModeIsActive()){
-            if (!left_lock){
-                if (retracted_left || gamepad1.x) {
-                    rigging.close_left();
-                }else{
-                    rigging.open_left();
-                }
-            }else{
-                rigging.freeze_left();
-            }
-            if (!right_lock) {
-                if (retracted_right || gamepad1.x) {
-                    rigging.close_right();
-                } else {
-                    rigging.open_right();
-                }
-            }else{
-                rigging.freeze_right();
-            }
+            rigging.set_right_power(right_power);
+            rigging.set_left_power(left_power);
             if (raise_wheels){
                 rigging.update();
             }
-            if (raise_rigging_wheels){
-                rigging.raise_rigging_motor();
-            }
-
 
             rigging.setRiggingPower(motor_power == 0 ? -gamepad1.left_stick_y : motor_power);
             rigging.telemetry();

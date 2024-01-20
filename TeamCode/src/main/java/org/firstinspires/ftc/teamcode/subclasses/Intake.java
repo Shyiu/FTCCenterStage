@@ -45,7 +45,7 @@ public class Intake extends Subsystem{
     private static double truss_position = 0.85;
     private static double delivery_position = 0.85;
 
-    public static double P = 0, I = 0, D = 0;
+    public static double P = 0.0005, I = 0.0002, D = 0;
     public static double ROLLER_SPEED;
     //rotation intake position = 0.65
     //rotation parallel to slides = 0.70
@@ -84,7 +84,7 @@ public class Intake extends Subsystem{
         rotation.setPosition(position);
     }
     public void rotateSlides(double power){
-        slide_rotation.setPower(power + holding_speed);
+        slide_rotation.setPower(power);
     }
 
     public void moveSlidesTo(double position){
@@ -103,10 +103,10 @@ public class Intake extends Subsystem{
         rotation.setPosition(truss_position);
     }
     public void go_to_transfer(){
-        rotation.setPosition(1);
+        rotation.setPosition(truss_position);
         moveSlidesTo(slide_pickup);
         moveRotationTo(rotation_pickup);
-        ROLLER_SPEED = -1;
+        ROLLER_SPEED = 1;
     }
     public void increaseRotation(double power){
         slide_rotation.setPower(slide_rotation.getPower() + power);
@@ -119,6 +119,7 @@ public class Intake extends Subsystem{
     }
 
     public void delivery(){
+        ROLLER_SPEED = -1;
         moveRotationTo(-2150);
         rotation.setPosition(delivery_position);
 
