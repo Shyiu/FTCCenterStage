@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.subclasses;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -110,7 +108,7 @@ public class ShivaniRigging extends Subsystem{
         return up ? riggingMotor.getCurrentPosition() < target_position : riggingMotor.getCurrentPosition() > target_position;
     }
     public void activate(){
-        riggingMotor.moveTo(target_position);
+        riggingMotor.move_async(target_position);
     }
 
     public void update(){
@@ -122,7 +120,6 @@ public class ShivaniRigging extends Subsystem{
         riggingMotor.I = I;
         riggingMotor.D = D;
         riggingMotor.setMax(100);
-        riggingMotor.setHoldingPower(hold_speed);
         set_left_power(-0.2);
         set_right_power(0.2);
         riggingMotor.init();

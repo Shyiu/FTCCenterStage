@@ -11,10 +11,11 @@ import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
 public class PIDMotor extends Subsystem{
     MecanumBotConstant m = new MecanumBotConstant();
-    DcMotorEx slides;
+    DcMotorEx pid_motor;
     DigitalChannel magnet_sensor;
     public double targetPos;
     public static double P = 0.0005, I = 0.0002, D = 0;
+    public static double F = 0;
     double error, lastError;
     int startPos = Integer.MAX_VALUE;
     boolean direction = true;
@@ -29,6 +30,7 @@ public class PIDMotor extends Subsystem{
     private String name = "";
     private int minHardstop = 0;
     private double holding_power = 0;
+    private double max_integral = 0;
     HardwareMap hardware;
     Telemetry telemetry;
 
@@ -36,113 +38,110 @@ public class PIDMotor extends Subsystem{
         this.hardware = hardwareMap;
         this.telemetry = telemetry;
         this.name = name;
-        slides = hardwareMap.get(DcMotorEx.class, name);
+        pid_motor = hardwareMap.get(DcMotorEx.class, name);
 
-        slides.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        slides.setDirection(DcMotor.Direction.FORWARD);
+        pid_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        pid_motor.setDirection(DcMotor.Direction.FORWARD);
 
     }
+    public void setPID(double P, double I, double D){
+        this.P = P;
+        this.I = I;
+        this.D = D;
+        this.F = 0;
+    }
+    public void setPIDF(double P, double I, double D, double F){
+        setPID(P,I,D);
+        this.F = F;
+    }
+    public void setMaxIntegral(double max_integral){
+        this.max_integral = max_integral;
+    }
     public void setDirection(DcMotor.Direction power){
-        slides.setDirection(power);
-
+        pid_motor.setDirection(power);
     }
 
     public void setMin(int min){
         minHardstop = min;
     }
+
     public void setMax(int max){
         maxHardstop = max;
     }
-    public void setHoldingPower(double power){
-        holding_power = power;
-    }
+
+
+
     @Override
     public void init(){
-        slides.setPower(holding_power);
-        slides.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        slides.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        setPower(0);
+        pid_motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        pid_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
     @Override
     public void telemetry(){
         telemetry.addData(name + " Power", getPower());
         telemetry.addData(name + "'s Position", getCurrentPosition());
         telemetry.addData(name + "'s Target Position", targetPos);
-        telemetry.addData(name + "'s Busy Status", isBusy());
         telemetry.addData(name + "'s Max Hardstop", maxHardstop);
         telemetry.addData(name + "'s Min Hardstop", minHardstop);
         telemetry.addData(name + "'s direction", direction);
+        telemetry.addData(name + " Exceeding Constraints", exceedingConstraints());
 
     }
 
 
     public boolean exceedingConstraints(){
-
-            return slides.getPower() > 0 ? slides.getCurrentPosition() > maxHardstop : slides.getCurrentPosition() < minHardstop;
+            boolean over_max = getCurrentPosition() > maxHardstop;
+            boolean under_min = getCurrentPosition() < minHardstop;
+            return getPower() > 0 ? over_max : under_min;
 
     }
     public boolean exceedingConstraints(double power){
-
-        return power > 0? slides.getCurrentPosition() > maxHardstop : slides.getCurrentPosition() < minHardstop ;
+        boolean over_max = getCurrentPosition() > maxHardstop;
+        boolean under_min = getCurrentPosition() < minHardstop;
+        return power > 0 ? over_max : under_min;
 
     }
 
     public void setPower(double power) {
         if(!exceedingConstraints(power)) {
-            slides.setPower(power);
+            pid_motor.setPower(power + holding_power);
         }else{
-            slides.setPower(holding_power);
+            pid_motor.setPower(holding_power);
         }
     }
 
     public int getCurrentPosition() {
-        return slides.getCurrentPosition();
+        return pid_motor.getCurrentPosition();
     }
 
-    public void control(double target, double timeoutS, double SLIDE_POWER) {
+    public void move_sync(double target, double timeoutS, double MOTOR_POWER) {
         double currentTime = System.currentTimeMillis();
-        double slidesPosition = slides.getCurrentPosition();
+        double slidesPosition = getCurrentPosition();
         if (slidesPosition > target) {
-            slides.setPower(-SLIDE_POWER);
+            setPower(-MOTOR_POWER);
             while (slidesPosition > target && System.currentTimeMillis() - currentTime < timeoutS * 1000 && !exceedingConstraints()) {
-                slidesPosition = slides.getCurrentPosition();
+                slidesPosition = getCurrentPosition();
             }
-            slides.setPower(holding_power);
+            setPower(0);
         } else if (slidesPosition < target) {
-            slides.setPower(SLIDE_POWER);
+            setPower(MOTOR_POWER);
             while (slidesPosition < target && System.currentTimeMillis() - currentTime < timeoutS * 1000  && !exceedingConstraints()) {
-                slidesPosition = slides.getCurrentPosition();
+                slidesPosition = getCurrentPosition();
             }
-            slides.setPower(holding_power);
+            setPower(0);
         }
     }
-    public void bringToHalt(){
-        double power = 0.4;
-        setPower(0.4);
-        double velocity = slides.getVelocity();
-        while (velocity > 1){
-            ;
-        }
-        setPower(0);
-        init();
-    }
-    public void moveTo(double target) {
+
+    public void move_async(double target) {
         targetPos = target;
-        direction = getCurrentPosition() < target;
     }
+
+
     public double getPower(){
-        return slides.getPower();
+        return pid_motor.getPower();
     }
 
-
-    public boolean isBusy(){
-        return direction ? getCurrentPosition() < targetPos : getCurrentPosition() > targetPos;
-
-    }
-    public boolean inRange(int target, int position, int range){
-        int min = target - range;
-        int max = target + range;
-        return min<=position && position<=max;
-    }
     public void update() {
         double Kp = P;
         double Ki = I;
@@ -151,31 +150,34 @@ public class PIDMotor extends Subsystem{
         double reference = targetPos;
 
         double integralSum = 0;
-        if (isBusy() && !reached && !exceedingConstraints()) {
-// Elapsed timer class from SDK, please use it, it's epic
-            ElapsedTime timer = new ElapsedTime();
+        ElapsedTime timer = new ElapsedTime();
 
-            // obtain the encoder position
-            double encoderPosition = slides.getCurrentPosition();
-            // calculate the error
-            error = reference - encoderPosition;
+        // obtain the encoder position
+        double currentPosition = getCurrentPosition();
+        // calculate the error
+        error = reference - currentPosition;
 
-            // rate of change of the error
+        // rate of change of the error
+
+        // sum of all error over time
+        double out = (Kp * error);
+        integralSum = integralSum + (error * timer.seconds());
+        if (integralSum <= max_integral){
+            out += (Ki * integralSum) ;
+        }
+
+
+
+        if(timer.seconds() != 0) {
             double derivative = (error - lastError) / timer.seconds();
-
-            // sum of all error over time
-            integralSum = integralSum + (error * timer.seconds());
-
-            double out = (Kp * error) + (Ki * integralSum) + (Kd * derivative);
-
-            slides.setPower(out/powerReduction);
-
-            // reset the timer for next time
-            timer.reset();
+            out += Kd * derivative;
         }
-        else {
-            slides.setPower(holding_power);
-        }
+        setPower(out + Math.copySign(F, out));
+        lastError = error;
+        // reset the timer for next time
+        timer.reset();
+
+
     }
 
 

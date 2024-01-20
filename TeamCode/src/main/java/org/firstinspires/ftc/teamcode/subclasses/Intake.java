@@ -45,7 +45,7 @@ public class Intake extends Subsystem{
     private static double truss_position = 0.85;
     private static double delivery_position = 0.85;
 
-    public static double P = 0.0005, I = 0.0002, D = 0;
+    public static double P = 0.0005, I = 0.0002, D = 0, F = 0.0005;
     public static double ROLLER_SPEED;
     //rotation intake position = 0.65
     //rotation parallel to slides = 0.70
@@ -68,6 +68,8 @@ public class Intake extends Subsystem{
         slide_rotation.P = P;
         slide_rotation.I = I;
         slide_rotation.D = D;
+        slide_rotation.F =F;
+
         timer = new ElapsedTime();
     }
     public void moveSlides(double power){
@@ -91,7 +93,7 @@ public class Intake extends Subsystem{
         slides.moveTo(position);
     }
     public void moveRotationTo(double position){
-        slide_rotation.moveTo(position);
+        slide_rotation.move_async(position);
     }
 
     public void update(){
@@ -151,10 +153,9 @@ public class Intake extends Subsystem{
         timer.reset();
         slide_rotation.setMax(0);
         slide_rotation.setMin(-3600);
-        slide_rotation.setHoldingPower(0.0005);
         moveSlides(0);
         disable_rollers();
-        slide_rotation.control(rotation_init, 5, .1);
+        slide_rotation.move_sync(rotation_init, 5, .1);
         moveRoller(init_position);
         slides.init();
     }
