@@ -68,7 +68,7 @@ public class Intake extends Subsystem{
         slide_rotation.P = P;
         slide_rotation.I = I;
         slide_rotation.D = D;
-        slide_rotation.F =F;
+        slide_rotation.F =  F;
 
         timer = new ElapsedTime();
     }
