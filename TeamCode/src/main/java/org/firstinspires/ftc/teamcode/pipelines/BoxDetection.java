@@ -35,13 +35,13 @@ public class BoxDetection extends OpenCvPipeline {
 
 
     static  Rect MIDDLE_TARGET = new Rect(
-            new Point(540, 320),
-            new Point(700, 470)
+            new Point(520, 356),
+            new Point(680, 500)
     );
 
     static Rect OTHER_TARGET = new Rect(
-            new Point(10, 404),
-            new Point(150, 540)
+            new Point(120, 356),
+            new Point(300, 520)
     );
 
     static double PERCENT_COLOR_THRESHOLD = 0.1;
@@ -52,13 +52,21 @@ public class BoxDetection extends OpenCvPipeline {
     public static int S22 = 150;
     public static int S23 = 95;
     public boolean isRed;
-    public boolean isBackdrop;
+    public boolean isLeft;
     public BoxDetection(Telemetry t, Rect mid, Rect right, boolean red, boolean backdrop) {
         telemetry = t;
         MIDDLE_TARGET = mid;
         OTHER_TARGET = right;
         this.isRed = red;
-        this.isBackdrop = backdrop;
+        if (backdrop == true && red == true){
+            this.isLeft = false;
+        }else if(backdrop == false && red == true){
+            this.isLeft = true;
+        }else if(backdrop == true){
+            this.isLeft = true;
+        }else {
+            this.isLeft = false;
+        }
     }
     public BoxDetection(Telemetry t) {
         telemetry = t;
@@ -72,8 +80,8 @@ public class BoxDetection extends OpenCvPipeline {
             low = new Scalar(0, 125, 0);
             high = new Scalar(26, 255, 250);
         }else{
-            low = new Scalar(0, 0, 0);
-            high = new Scalar(255, 255, 100);
+            low = new Scalar(65, 100, 0);
+            high = new Scalar(140, 255, 100);
         }
 
 
@@ -98,7 +106,7 @@ public class BoxDetection extends OpenCvPipeline {
 
 
         if (other) {
-            location = isBackdrop ? Location.LEFT : Location.RIGHT;
+            location = isLeft ? Location.LEFT : Location.RIGHT;
             String position = location == Location.RIGHT ? "Right": "Left";
 
             telemetry.addData("Box Detection", position);
@@ -108,7 +116,7 @@ public class BoxDetection extends OpenCvPipeline {
             telemetry.addData("Box Detection", "Middle");
         }
         else {
-            location = isBackdrop ? Location.RIGHT : Location.LEFT;
+            location = isLeft ? Location.RIGHT : Location.LEFT;
             String position = location == Location.RIGHT ? "Right": "Left";
             telemetry.addData("Box Detection", position);
         }

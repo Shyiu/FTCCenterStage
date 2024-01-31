@@ -40,7 +40,7 @@ public class MecanumRoadrunner extends LinearOpMode {
     BoxDetection boxDetection;
     MecanumDrive drive;
     BoxDetection.Location location;
-    TrajectorySequence middle, left, right;
+    TrajectorySequence middle, left, right, intermediate, score;
     TrajectorySequence intoBackdrop;
     enum START{
         RED_BACKDROP,
@@ -57,6 +57,13 @@ public class MecanumRoadrunner extends LinearOpMode {
     private final double RED_SIDE_RIGHT = -38;
 
 
+    private Vector2d left_blue = new Vector2d(49,38);
+    private Vector2d middle_blue = new Vector2d(49,32);
+    private Vector2d right_blue = new Vector2d(49, 26);
+
+    private Vector2d left_red = new Vector2d(49, -26);
+    private Vector2d middle_red = new Vector2d(49,-32);
+    private Vector2d right_red = new Vector2d(49,-38);
 
     private boolean red = false;
     private boolean stack = false;
@@ -70,13 +77,11 @@ public class MecanumRoadrunner extends LinearOpMode {
             new Point(960, 540));
 
     PlaneLauncher plane;
-<<<<<<< Updated upstream
-=======
+
 //    VihasIntake intake;
     Lift lift;
     Unicorn delivery;
     Distance distance;
->>>>>>> Stashed changes
     Intake intake;
     ShivaniRigging rigging;
     private boolean exit = false;
@@ -86,14 +91,12 @@ public class MecanumRoadrunner extends LinearOpMode {
 
 
         IMUTransfer.init = false;
-<<<<<<< Updated upstream
 
         plane = new PlaneLauncher(hardwareMap);
-=======
+
         plane = new PlaneLauncher(hardwareMap);
         delivery = new Unicorn(hardwareMap, telemetry);
         distance = new Distance(hardwareMap, telemetry);
->>>>>>> Stashed changes
         intake = new Intake(hardwareMap, telemetry);
         rigging = new ShivaniRigging(hardwareMap, telemetry);
 
@@ -186,31 +189,27 @@ public class MecanumRoadrunner extends LinearOpMode {
             //(640,404), (900, 544) BLUE BACKDROP AND RED STACK
             case BLUE_BACKDROP:
             case RED_STACK:
-//                MIDDLE_TARGET = new Rect(
-//                    new Point(220, 404),
-//                    new Point(440, 544));
-//                RIGHT_TARGET = new Rect(
-//                        new Point(640, 404),
-//                        new Point(900, 540));
                 MIDDLE_TARGET = new Rect(
-                        new Point(540, 320),
-                        new Point(700, 470)
+                        new Point(520, 356),
+                        new Point(680, 500)
                 );
+
                 OTHER_TARGET = new Rect(
-                        new Point(10, 404),
-                        new Point(150, 540)
+                        new Point(120, 356),
+                        new Point(300, 520)
                 );
                 break;
             case BLUE_STACK:
             case RED_BACKDROP:
                 MIDDLE_TARGET = new Rect(
-                        new Point(280, 284),
-                        new Point(480, 424)
+                        new Point(360, 356),
+                        new Point(520, 500)
                 );
-                OTHER_TARGET = new Rect(
-                    new Point(640, 404),
-                    new Point(900, 540)
-            );
+
+                 OTHER_TARGET = new Rect(
+                        new Point(780, 356),
+                        new Point(960, 520)
+                );
                 break;
 
         }
@@ -245,23 +244,32 @@ public class MecanumRoadrunner extends LinearOpMode {
                 drive.setPoseEstimate(robotStart);
                 //y = 29 for the right most april tag
                 right = drive.trajectorySequenceBuilder(robotStart)
-                        .lineToLinearHeading(new Pose2d(7, 32, Math.toRadians(45)))
-                        .lineTo(new Vector2d(25, 44))
-                        .lineToLinearHeading(new Pose2d(49, BLUE_SIDE_RIGHT, Math.toRadians(180)))
+                        .setReversed(true)
+                        .splineToLinearHeading(new Pose2d(8.50, 34.5, Math.toRadians(45)), Math.toRadians(270))
+                        .setReversed(false)
+                        .splineToLinearHeading(new Pose2d(right_blue, Math.toRadians(180)), Math.toRadians(0))
                         .build();
                 //y = 35 for the middle april tag
                 middle = drive.trajectorySequenceBuilder(robotStart)
-                        .lineToLinearHeading(new Pose2d(17.00, 32, Math.toRadians(90)))
+                        .setReversed(true)
+                        .splineToLinearHeading(new Pose2d(16.50, 30.5, Math.toRadians(90)), Math.toRadians(270))
+                        .forward(3)
+                        .splineToConstantHeading(new Vector2d(25.50, 48.5), Math.toRadians(0))
 
-                        .lineTo(new Vector2d(17, 43))
-                        .lineToLinearHeading(new Pose2d(49, 32, Math.toRadians(180)))
+                        .splineToConstantHeading(new Vector2d(32.50, 44.5), Math.toRadians(270))
+
+                        .splineTo(middle_blue, Math.toRadians(0))
                         .build();
                 //y = 41 for the left april tag
                 left = drive.trajectorySequenceBuilder(robotStart)
-                        .lineToLinearHeading(new Pose2d(22.00, 38, Math.toRadians(90)))
+                        .setReversed(true)
+                        .splineToLinearHeading(new Pose2d(25.50, 36.5, Math.toRadians(90)), Math.toRadians(270))
+                        .forward(3)
+                        .splineToConstantHeading(new Vector2d(25.50, 60.5), Math.toRadians(0))
 
-                        .lineTo(new Vector2d(22, 49))
-                        .lineToLinearHeading(new Pose2d(49, 38, Math.toRadians(180)))
+                        .splineToConstantHeading(new Vector2d(32.50, 56.5), Math.toRadians(270))
+
+                        .splineTo(left_blue, Math.toRadians(0))
 
                         .build();
                 break;
@@ -270,34 +278,40 @@ public class MecanumRoadrunner extends LinearOpMode {
                 robotStart = new Pose2d(-37.5, 63, Math.toRadians(90));
                 drive.setPoseEstimate(robotStart);
                 middle = drive.trajectorySequenceBuilder(robotStart)
-                        .lineTo(new Vector2d(-37.5, 62.5))
+                        .lineToLinearHeading(new Pose2d(-34.00, 29.5, Math.toRadians(90)))
+                        .lineTo(new Vector2d(-34, 33))
+                        .splineTo(new Vector2d(-45,45), Math.toRadians(180))
+                        .splineToConstantHeading(new Vector2d(-52,24), Math.toRadians(270))
+                        .strafeTo(new Vector2d(-52,20))
+                        .splineToConstantHeading(new Vector2d(-36,12), Math.toRadians(0))
+                        .back(64)
+                        .splineToConstantHeading(middle_blue, Math.toRadians(0))
 
-                        .lineToLinearHeading(new Pose2d(-33.5, 29, Math.toRadians(98)))
-                        .lineTo(new Vector2d(-34.5, 30))
-                        .lineTo(new Vector2d(-33.5, 31))
-//                        .splineTo(new Vector2d(-17,35), Math.toRadians(0))
-//                        .splineTo(new Vector2d(49, BLUE_SIDE_MIDDLE), 0)
                         .build();
                 right = drive.trajectorySequenceBuilder(robotStart)
-                        .lineTo(new Vector2d(-37.5, 62.5))
+                        .setReversed(true)
+                        .splineToLinearHeading(new Pose2d(-27.00, 35.5, Math.toRadians(135)), Math.toRadians(359))
+                        .setReversed(false)
+                        .forward(12)
+                        .splineTo(new Vector2d(-45,45), Math.toRadians(180))
+                        .splineToConstantHeading(new Vector2d(-52,24), Math.toRadians(270))
+                        .strafeTo(new Vector2d(-52,20))
+                        .splineToConstantHeading(new Vector2d(-36,12), Math.toRadians(0))
+                        .back(64)
+                        .splineToConstantHeading(right_blue, Math.toRadians(0))
 
-                        .lineToLinearHeading(new Pose2d(-39.5, 30, Math.toRadians(0)))
-                        .lineTo(new Vector2d(-34.5, 30))
-                        .lineTo(new Vector2d(-35, 34))
-//                        .splineToConstantHeading(new Vector2d(-37.5, 58), Math.toRadians(0))
-//                        .turn(Math.toRadians(180))
-//                        .lineTo(new Vector2d(5,59))
-//                        .splineTo(new Vector2d(20, 38), 0)
-//                        .splineTo(new Vector2d(49, 28.5), 0)
                         .build();
                 left = drive.trajectorySequenceBuilder(robotStart)
-                        .lineTo(new Vector2d(-37.5, 52.5))
-                        .splineTo(new Vector2d(-30, 28), 0)
-                        .lineTo(new Vector2d(-35, 28))
-//                        .splineToConstantHeading(new Vector2d(-37.5, 59), Math.toRadians(0))
-//                        .lineTo(new Vector2d(5,59))
-//                        .splineTo(new Vector2d(20, 38), 0)
-//                        .splineTo(new Vector2d(49, 38), 0)
+                        .setReversed(true)
+                        .splineToLinearHeading(new Pose2d(-42.00, 32.5, Math.toRadians(90)), Math.toRadians(270))
+                        .setReversed(false)
+                        .splineToConstantHeading(new Vector2d(-42,45), Math.toRadians(90))
+                        .splineToConstantHeading(new Vector2d(-35, 42), Math.toRadians(270))
+                        .splineTo(new Vector2d(-28,12), Math.toRadians(0))
+                        .back(66)
+
+                        .splineToConstantHeading(left_blue, Math.toRadians(0))
+
                         .build();
                 break;
 
@@ -306,34 +320,32 @@ public class MecanumRoadrunner extends LinearOpMode {
                 robotStart = new Pose2d(-37.5, 63, Math.toRadians(90));
                 drive.setPoseEstimate(robotStart);
                 middle = drive.trajectorySequenceBuilder(robotStart)
-                        .lineTo(new Vector2d(-37.5, 62.5))
+                        .setReversed(true)
+                        .splineToLinearHeading(new Pose2d(16.50, -30.5, Math.toRadians(270)), Math.toRadians(90))
+                        .forward(3)
+                        .splineToConstantHeading(new Vector2d(25.50, -48.5), Math.toRadians(0))
 
-                        .lineToLinearHeading(new Pose2d(-33.5, 29, Math.toRadians(98)))
-                        .lineTo(new Vector2d(-34.5, 30))
-                        .lineTo(new Vector2d(-33.5, 31))
-//                        .splineTo(new Vector2d(-17,35), Math.toRadians(0))
-//                        .splineTo(new Vector2d(49, BLUE_SIDE_MIDDLE), 0)
+                        .splineToConstantHeading(new Vector2d(32.50, -44.5), Math.toRadians(90))
+
+                        .splineTo(middle_red, Math.toRadians(0))
+
                         .build();
                 right = drive.trajectorySequenceBuilder(robotStart)
-                        .lineTo(new Vector2d(-37.5, 62.5))
+                        .setReversed(true)
+                        .splineToLinearHeading(new Pose2d(25.50, -36.5, Math.toRadians(270)), Math.toRadians(90))
+                        .forward(3)
+                        .splineToConstantHeading(new Vector2d(25.50, -60.5), Math.toRadians(0))
 
-                        .lineToLinearHeading(new Pose2d(-39.5, 30, Math.toRadians(0)))
-                        .lineTo(new Vector2d(-34.5, 30))
-                        .lineTo(new Vector2d(-35, 34))
-//                        .splineToConstantHeading(new Vector2d(-37.5, 58), Math.toRadians(0))
-//                        .turn(Math.toRadians(180))
-//                        .lineTo(new Vector2d(5,59))
-//                        .splineTo(new Vector2d(20, 38), 0)
-//                        .splineTo(new Vector2d(49, 28.5), 0)
+                        .splineToConstantHeading(new Vector2d(32.50, -56.5), Math.toRadians(90))
+
+                        .splineTo(right_red, Math.toRadians(0))
                         .build();
                 left = drive.trajectorySequenceBuilder(robotStart)
-                        .lineTo(new Vector2d(-37.5, 52.5))
-                        .splineTo(new Vector2d(-30, 34), 0)
-                        .lineTo(new Vector2d(-35, 34))
-//                        .splineToConstantHeading(new Vector2d(-37.5, 59), Math.toRadians(0))
-//                        .lineTo(new Vector2d(5,59))
-//                        .splineTo(new Vector2d(20, 38), 0)
-//                        .splineTo(new Vector2d(49, 38), 0)
+                        .setReversed(true)
+                        .splineToLinearHeading(new Pose2d(8.50, -34.5, Math.toRadians(315)), Math.toRadians(90))
+                        .setReversed(false)
+                        .splineToLinearHeading(new Pose2d(left_red, Math.toRadians(180)), Math.toRadians(0))
+
                         .build();
                 break;
             case RED_STACK:
@@ -341,18 +353,39 @@ public class MecanumRoadrunner extends LinearOpMode {
                 drive.setPoseEstimate(robotStart);
                 //y = 29 for the right most april tag
                 right = drive.trajectorySequenceBuilder(robotStart)
-                        .lineToLinearHeading(new Pose2d(7, 30, Math.toRadians(45)))
-                        .lineTo(new Vector2d(25, 44))
+                        .setReversed(true)
+                        .splineToLinearHeading(new Pose2d(-42.00, -32.5, Math.toRadians(270)), Math.toRadians(90))
+                        .setReversed(false)
+                        .splineToConstantHeading(new Vector2d(-42,-45), Math.toRadians(270))
+                        .splineToConstantHeading(new Vector2d(-35, -42), Math.toRadians(90))
+                        .splineTo(new Vector2d(-28,-12), Math.toRadians(0))
+                        .back(66)
+
+                        .splineToConstantHeading(right_red, Math.toRadians(0))
                         .build();
                 //y = 35 for the middle april tag
                 middle = drive.trajectorySequenceBuilder(robotStart)
-                        .lineToLinearHeading(new Pose2d(17.00, 32, Math.toRadians(90)))
-                        .lineTo(new Vector2d(17, 43))
+                        .lineToLinearHeading(new Pose2d(-34.00, -29.5, Math.toRadians(270)))
+                        .lineTo(new Vector2d(-34, -33))
+                        .splineTo(new Vector2d(-45,-45), Math.toRadians(180))
+                        .splineToConstantHeading(new Vector2d(-52,-24), Math.toRadians(90))
+                        .strafeTo(new Vector2d(-52,-20))
+                        .splineToConstantHeading(new Vector2d(-36,-12), Math.toRadians(0))
+                        .back(64)
+                        .splineToConstantHeading(middle_red, Math.toRadians(0))
                         .build();
                 //y = 41 for the left april tag
                 left = drive.trajectorySequenceBuilder(robotStart)
-                        .lineToLinearHeading(new Pose2d(25.00, 38, Math.toRadians(90)))
-                        .lineTo(new Vector2d(25, 49))
+                        .setReversed(true)
+                        .splineToLinearHeading(new Pose2d(-27.00, -35.5, Math.toRadians(225)), Math.toRadians(359))
+                        .setReversed(false)
+                        .forward(12)
+                        .splineTo(new Vector2d(-45,-45), Math.toRadians(180))
+                        .splineToConstantHeading(new Vector2d(-52,-24), Math.toRadians(90))
+                        .strafeTo(new Vector2d(-52,-20))
+                        .splineToConstantHeading(new Vector2d(-36,-12), Math.toRadians(0))
+                        .back(64)
+                        .splineToConstantHeading(left_red, Math.toRadians(0))
                         .build();
                 break;
         }

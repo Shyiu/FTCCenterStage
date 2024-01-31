@@ -13,15 +13,13 @@ public class MecanumBotConstant {
     public String rigging_left = "rigging_left";//2
     public String rigging_right = "rigging_right";//3
     public String plane_launcher_pinion_servo = "launcher_servo";//4
-<<<<<<< Updated upstream
+
+
     public String plane_launcher_spring_servo = "spring_servo";//4
-=======
     public String delivery = "delivery_servo";//5
 
 
     public String distance_sensor = "distance_sensor";//I2C 2
-
->>>>>>> Stashed changes
 
 
 
@@ -41,10 +39,7 @@ public class MecanumBotConstant {
 
 
     //UNUSED
-<<<<<<< Updated upstream
-    public String distance_sensor = "distance_sensor";
-=======
->>>>>>> Stashed changes
+
 
     public String rigging_motor_right = "rigging_motor_right";
     public String rigging_motor_left = "rigging_motor_left";
