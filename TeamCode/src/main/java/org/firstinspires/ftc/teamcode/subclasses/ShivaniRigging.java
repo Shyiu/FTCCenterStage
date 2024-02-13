@@ -94,7 +94,7 @@ public class ShivaniRigging extends Subsystem{
     }
 
     public void setRiggingPower(double speed){
-        riggingMotor.setPower(speed + hold_speed);
+        riggingMotor.setPower(speed);
     }
 
 

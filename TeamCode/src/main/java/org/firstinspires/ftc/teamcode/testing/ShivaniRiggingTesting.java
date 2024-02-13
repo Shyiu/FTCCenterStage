@@ -28,14 +28,12 @@ public class ShivaniRiggingTesting extends LinearOpMode {
         waitForStart();
         rigging.activate();
 
-
         while(!isStopRequested() && opModeIsActive()){
             rigging.set_right_power(right_power);
             rigging.set_left_power(left_power);
             if (raise_wheels){
                 rigging.update();
             }
-
             rigging.setRiggingPower(motor_power == 0 ? -gamepad1.left_stick_y : motor_power);
             rigging.telemetry();
             telemetry.update();

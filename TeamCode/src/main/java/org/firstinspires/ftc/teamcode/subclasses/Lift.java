@@ -35,7 +35,6 @@ public class Lift extends Subsystem{
         this.I = I;
         this.D = D;
         timer = new ElapsedTime();
-
         slides = hardwareMap.get(DcMotor.class, m.slides_motor);
         magnet_sensor = hardwareMap.get(DigitalChannel.class, m.magnet_sensor);
         working_magnet = true;

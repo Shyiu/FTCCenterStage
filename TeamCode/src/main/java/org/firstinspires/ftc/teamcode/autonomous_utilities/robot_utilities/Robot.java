@@ -213,46 +213,6 @@ public class Robot {
 
         updatePosition();
     }
-    public void GFupdate(){
-        long currTime = SystemClock.uptimeMillis();
-        if(currTime - lastUpdateTime < 16){
-            return;
-        }
-        lastUpdateTime = currTime;
-
-
-        //figre out the signs with shreyas
-        double tl_power_raw = movement_y-movement_turn +movement_x*1.1;
-        double bl_power_raw = movement_y - movement_turn - movement_x*1.1;
-        double br_power_raw = -movement_y- movement_turn- movement_x*1.1;
-        double tr_power_raw = -movement_y- movement_turn + movement_x*1.1;
-
-
-        //find the maximum of the powers
-        double maxRawPower = Math.abs(tl_power_raw);
-        if(Math.abs(bl_power_raw) > maxRawPower){ maxRawPower = Math.abs(bl_power_raw);}
-        if(Math.abs(br_power_raw) > maxRawPower){ maxRawPower = Math.abs(br_power_raw);}
-        if(Math.abs(tr_power_raw) > maxRawPower){ maxRawPower = Math.abs(tr_power_raw);}
-
-        //if the maximum is greater than 1, scale all the powers down to preserve the shape
-        double scaleDownAmount = 1.0;
-        if(maxRawPower > 1.0){
-            //when max power is multiplied by this ratio, it will be 1.0, and others less
-            scaleDownAmount = 1.0/maxRawPower;
-        }
-        tl_power_raw *= scaleDownAmount;
-        bl_power_raw *= scaleDownAmount;
-        br_power_raw *= scaleDownAmount;
-        tr_power_raw *= scaleDownAmount;
-
-
-        //now we can set the powers ONLY IF THEY HAVE CHANGED TO AVOID SPAMMING USB COMMUNICATIONS
-        frontLeft.setPower(tl_power_raw);
-        backLeft.setPower(bl_power_raw);
-        backRight.setPower(br_power_raw);
-        frontRight.setPower(tr_power_raw);
-
-    }
 
 
 }

@@ -5,18 +5,15 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.autonomous_utilities.RobotMovement;
 import org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities.MovementVars;
-import org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities.Robot;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.MecanumDrive;
-import org.firstinspires.ftc.teamcode.subclasses.Encoder;
 
 @Disabled
 @Autonomous(name = "PurelyPursuiting")
-public class MecanumAutonomous extends LinearOpMode {
+public class MoveToPoint extends LinearOpMode {
     @Override
     public void runOpMode() {
 

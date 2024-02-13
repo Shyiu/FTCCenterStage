@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.roadrunner.drive;
 
+import static org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities.MovementVars.movement_turn;
+import static org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities.MovementVars.movement_x;
+import static org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities.MovementVars.movement_y;
 import static org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants.MAX_ACCEL;
 import static org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants.MAX_ANG_ACCEL;
 import static org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants.MAX_ANG_VEL;
@@ -11,6 +14,8 @@ import static org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants.enc
 import static org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants.kA;
 import static org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants.kV;
+
+import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 
@@ -65,6 +70,7 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
     public static double VX_WEIGHT = 1;
     public static double VY_WEIGHT = 1;
     public static double OMEGA_WEIGHT = 1;
+    private long lastUpdateTime = 0L;
 
     private TrajectorySequenceRunner trajectorySequenceRunner;
 
@@ -317,6 +323,46 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
     @Override
     public Double getExternalHeadingVelocity() {
         return (double) imu.getRobotAngularVelocity(AngleUnit.RADIANS).zRotationRate;
+    }
+    public void followPurePursuit(){
+        long currTime = SystemClock.uptimeMillis();
+        if(currTime - lastUpdateTime < 16){
+            return;
+        }
+        lastUpdateTime = currTime;
+
+
+        //figre out the signs with shreyas
+        double tl_power_raw = movement_y-movement_turn +movement_x*1.1;
+        double bl_power_raw = movement_y - movement_turn - movement_x*1.1;
+        double br_power_raw = -movement_y- movement_turn- movement_x*1.1;
+        double tr_power_raw = -movement_y- movement_turn + movement_x*1.1;
+
+
+        //find the maximum of the powers
+        double maxRawPower = Math.abs(tl_power_raw);
+        if(Math.abs(bl_power_raw) > maxRawPower){ maxRawPower = Math.abs(bl_power_raw);}
+        if(Math.abs(br_power_raw) > maxRawPower){ maxRawPower = Math.abs(br_power_raw);}
+        if(Math.abs(tr_power_raw) > maxRawPower){ maxRawPower = Math.abs(tr_power_raw);}
+
+        //if the maximum is greater than 1, scale all the powers down to preserve the shape
+        double scaleDownAmount = 1.0;
+        if(maxRawPower > 1.0){
+            //when max power is multiplied by this ratio, it will be 1.0, and others less
+            scaleDownAmount = 1.0/maxRawPower;
+        }
+        tl_power_raw *= scaleDownAmount;
+        bl_power_raw *= scaleDownAmount;
+        br_power_raw *= scaleDownAmount;
+        tr_power_raw *= scaleDownAmount;
+
+
+        //now we can set the powers ONLY IF THEY HAVE CHANGED TO AVOID SPAMMING USB COMMUNICATIONS
+        leftFront.setPower(tl_power_raw);
+        leftRear.setPower(bl_power_raw);
+        rightRear.setPower(br_power_raw);
+        rightFront.setPower(tr_power_raw);
+
     }
 
     public static TrajectoryVelocityConstraint getVelocityConstraint(double maxVel, double maxAngularVel, double trackWidth) {

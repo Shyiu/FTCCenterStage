@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subclasses;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -9,6 +10,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
+@Config
 public class PIDMotor extends Subsystem{
     MecanumBotConstant m = new MecanumBotConstant();
     DcMotorEx pid_motor;

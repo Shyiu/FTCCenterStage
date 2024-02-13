@@ -67,41 +67,7 @@ public class LineSegment {
         }
         return startLine;
     }
-    public static CurvePoint closestPoint(CurvePoint startLine, CurvePoint endLine, Point target){
-        double changeX = startLine.x - endLine.x;
-        changeX = Math.max(0.003, changeX);
-        double m = (startLine.y - endLine.y)/(changeX);
-        double x1 = startLine.x;
-        double y1 = startLine.y;
-        double x2 = endLine.x;
-        double y2 = endLine.y;
-        double m2 = -1/m;
-        try{
 
-            double intersectX = (y1 -y2 + m2 * x2 - m*x1)/(m2-m);
-            double intersectY = m* (intersectX - x1) + y1;
-            CurvePoint output = new CurvePoint(startLine);
-            output.x = intersectX;
-            output.y = intersectY;
-            if (intersectX >= x1 && intersectX <= x2 && intersectY >= y1 && intersectY <= y2){
-                return output;
-            }
-            else{
-                if (MathFunctions.distanceBetweenPoints(startLine.toPoint(), target) < MathFunctions.distanceBetweenPoints(endLine.toPoint(), target)){
-                    return new CurvePoint(startLine);
-                }
-                else{
-                    return new CurvePoint(endLine);
-                }
-            }
-
-
-
-        }
-        catch(Exception e){
-        }
-        return startLine;
-    }
     public double distToPoint(Point target){
         double x2 = target.x;
         double y2 = target.y;
