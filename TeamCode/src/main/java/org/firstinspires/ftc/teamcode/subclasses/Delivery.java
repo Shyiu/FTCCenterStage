@@ -38,7 +38,7 @@ public class Delivery extends Subsystem{
 
 
         delivery = hardwareMap.get(Servo.class, m.delivery);
-        plunger = hardwareMap.get(Servo.class, m.plunger);
+        plunger = hardwareMap.get(Servo.class, m.clutch);
         timer = new ElapsedTime();
     }
 

@@ -1,8 +1,13 @@
 package org.firstinspires.ftc.teamcode.subclasses;
 
+import static java.lang.Thread.sleep;
+
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -11,15 +16,18 @@ import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 @Config
 public class ShivaniRigging extends Subsystem{
     PIDMotor riggingMotor;
-    DcMotorSimple left_servo, right_servo;
+    Servo left_servo, right_servo;
+    TouchSensor touchSensor;  // Touch sensor Object
+
     MecanumBotConstant mc = new MecanumBotConstant();
     private boolean busy = false;
     private boolean first = true;
     private boolean up = false;
+    private boolean touchSensorLimit = true;
     double error, lastError;
 
-    public static double P = 8, I = 0, D = 0;
-    public static double target_position = -3000;
+    public static double P = 20, I = 3, D = 0;
+    public static double target_position = -2000;
     ElapsedTime timer;
     private double delay = .5;
 
@@ -27,7 +35,7 @@ public class ShivaniRigging extends Subsystem{
     private String state = "Init";
     Telemetry telemetry;
     public static double LEFT_OPEN_POWER = .6, RIGHT_OPEN_POWER = .4;
-    public static double LEFT_CLOSE_POWER = .45, RIGHT_CLOSE_POWER = .55;
+    public static double LEFT_CLOSE_POWER = 0, RIGHT_CLOSE_POWER = 0;
 
     //-1 to rig left, 1 to rig right.
 
@@ -35,66 +43,35 @@ public class ShivaniRigging extends Subsystem{
         timer = new ElapsedTime();
         this.telemetry = telemetry;
         riggingMotor = new PIDMotor(hardwareMap, telemetry, mc.rigging_motor);
-        riggingMotor.setMin(-3000);
+        touchSensor = hardwareMap.get(TouchSensor.class, mc.limit_switch);
+
+        riggingMotor.setDirection(DcMotor.Direction.FORWARD);
+        riggingMotor.setMin(-2200);
+        riggingMotor.setReversedEncoder(true);
+        riggingMotor.setMaxIntegral(1);
 
 
 
 
 
-        left_servo = hardwareMap.get(DcMotorSimple.class, mc.rigging_left);
-        right_servo = hardwareMap.get(DcMotorSimple.class, mc.rigging_right);
+        left_servo = hardwareMap.get(Servo.class, mc.rigging_left);
+        right_servo = hardwareMap.get(Servo.class, mc.rigging_right);
     }
-    public void set_left_power(double power){
-        left_servo.setPower(power);
-    }
-
-    public void open_left(){
-
-        state = "Left Opening";
-
-        left_servo.setPower(LEFT_OPEN_POWER);
-
-    }
-    public void open_right(){
-        state = "Right Opening";
-        right_servo.setPower(RIGHT_OPEN_POWER);
+    public void set_left_position(double power){
+        left_servo.setPosition(power);
     }
 
-    public void close_left(){
-        state = "Left Retracting";
-        left_servo.setPower(LEFT_CLOSE_POWER);
 
-    }
-    public void close_right(){
-        state = "Right Retracting";
-        right_servo.setPower(RIGHT_CLOSE_POWER);
-    }
-    public void freeze_right(){
-        state = "Right Frozen";
-        right_servo.setPower(0.5);
-    }
-    public void freeze_left(){
-        state = "Left Frozen";
-        left_servo.setPower(0.5);
-    }
-    public void extend_rigging(){
-        activate();
-    }
-    public void close(){
-        state = "Retracted";
-        left_servo.setPower(LEFT_CLOSE_POWER);
-        right_servo.setPower(RIGHT_CLOSE_POWER);
-    }
-    public double getArmPositions(int arm) {
-        return arm == 0 ? left_servo.getPower() : right_servo.getPower();
-    }
-
-    public void set_right_power(double power){
-        right_servo.setPower(power);
+    public void set_right_position(double power){
+        right_servo.setPosition(power);
     }
 
     public void setRiggingPower(double speed){
-        riggingMotor.setPower(speed);
+        if (touchSensorLimit && touchSensor.isPressed() && speed < 0){
+            riggingMotor.setPower(0);
+        }else {
+            riggingMotor.setPower(speed);
+        }
     }
 
 
@@ -112,17 +89,41 @@ public class ShivaniRigging extends Subsystem{
     }
 
     public void update(){
-        riggingMotor.update();
+        if (touchSensorLimit && touchSensor.isPressed() && riggingMotor.getPower() < 0){
+            riggingMotor.setPower(0);
+        }else {
+            riggingMotor.update();
+        }
+    }
+    public void resetEncoder() {
+        timer = new ElapsedTime();
+
+        timer.reset();
+        if(touchSensor.isPressed()){
+            riggingMotor.init();
+            return;
+        }
+        while (!touchSensor.isPressed()) {
+            if(timer.time() > 4){
+                telemetry.addLine("Suspecting Disconnected Touch Sensor. Aborting init.");
+                touchSensorLimit = false;
+                break;
+            }
+            riggingMotor.setAbsPower(-0.4);
+        }
+        riggingMotor.setPower(0);
+        riggingMotor.init();
+
     }
     @Override
     public void init() {
         riggingMotor.P = P;
         riggingMotor.I = I;
         riggingMotor.D = D;
-        riggingMotor.setMax(100);
-        set_left_power(-0.2);
-        set_right_power(0.2);
-        riggingMotor.init();
+        riggingMotor.setMax(0);
+        set_left_position(0.94);
+        set_right_position(0.87);
+        resetEncoder();
 
     }
 }

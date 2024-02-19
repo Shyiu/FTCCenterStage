@@ -6,10 +6,10 @@ package org.firstinspires.ftc.teamcode.pipelines;
 
 import static java.lang.Thread.sleep;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
@@ -38,14 +38,17 @@ public class AprilTagPipeline {
     public AprilTagPipeline(HardwareMap hardwareMap) throws InterruptedException {
         // Create the AprilTag processor by using a builder.
         timer = new ElapsedTime();
-        aprilTag = new AprilTagProcessor.Builder().build();
         // Create the vision portal by using a builder.
+        aprilTag = new AprilTagProcessor.Builder().build();
         visionPortal = new VisionPortal.Builder()
                     .setCamera(hardwareMap.get(WebcamName.class, mc.camera))
                     .addProcessor(aprilTag)
                     .build();
         setManualExposure(5, 200);
+    }
 
+    public VisionPortal getVisionPortal() {
+        return visionPortal;
     }
 
     public AprilTagDetection getDetectionsForTargets(ArrayList<Integer> targets){
@@ -57,6 +60,24 @@ public class AprilTagPipeline {
             }
         }
         return null;
+    }
+
+    public Pose2d getTargetPos(AprilTagDetection detection, double DESIRED_DISTANCE){
+
+        if(detection == null){
+            return new Pose2d(0.5,0,0);
+        }
+
+//        telemetry.addData("Target", "ID %d (%s)", detection.id, detection.metadata.name);
+//        telemetry.addData("Range", "%5.1f inches", detection.ftcPose.range);//35 in
+//        telemetry.addData("Bearing", "%3.0f degrees", detection.ftcPose.bearing);//12 degress
+//        telemetry.addData("Yaw", "%3.0f degrees", detection.ftcPose.yaw);
+//        telemetry.addData("X", detection.center.x);
+//        telemetry.addData("Y", detection.center.y);
+        double  rangeError      = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
+        double  headingError    = desiredTag.ftcPose.bearing;
+        double  yawError        = desiredTag.ftcPose.yaw;
+        return new Pose2d(-rangeError, yawError, Math.toRadians(headingError));
     }
     /*
      Manually set the camera gain and exposure.

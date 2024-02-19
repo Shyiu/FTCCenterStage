@@ -185,25 +185,27 @@ public class MecanumRoadrunner extends LinearOpMode {
             case BLUE_BACKDROP:
             case RED_STACK:
                 MIDDLE_TARGET = new Rect(
-                        new Point(520, 356),
-                        new Point(680, 500)
+                        new Point(440, 250),
+                        new Point(580, 406)
                 );
 
                 OTHER_TARGET = new Rect(
-                        new Point(120, 356),
-                        new Point(300, 520)
+                        new Point(50, 250),
+                        new Point(160, 406)
                 );
                 break;
             case BLUE_STACK:
             case RED_BACKDROP:
                 MIDDLE_TARGET = new Rect(
-                        new Point(360, 356),
-                        new Point(520, 500)
+                        new Point(820, 270),
+                        new Point(960, 406)
                 );
 
-                 OTHER_TARGET = new Rect(
-                        new Point(780, 356),
-                        new Point(960, 520)
+                OTHER_TARGET = new Rect(
+
+
+                        new Point(310, 250),
+                        new Point(480, 406)
                 );
                 break;
 
@@ -235,7 +237,7 @@ public class MecanumRoadrunner extends LinearOpMode {
 
         switch(position) {
             case BLUE_BACKDROP:
-                robotStart = new Pose2d(16.5, 63, Math.toRadians(90));
+                robotStart = new Pose2d(16.5, 61, Math.toRadians(90));
                 drive.setPoseEstimate(robotStart);
                 //y = 29 for the right most april tag
                 right = drive.trajectorySequenceBuilder(robotStart)
@@ -270,7 +272,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                 break;
 
             case BLUE_STACK:
-                robotStart = new Pose2d(-37.5, 63, Math.toRadians(90));
+                robotStart = new Pose2d(-37.5, 61, Math.toRadians(90));
                 drive.setPoseEstimate(robotStart);
                 middle = drive.trajectorySequenceBuilder(robotStart)
                         .lineToLinearHeading(new Pose2d(-34.00, 29.5, Math.toRadians(90)))
@@ -311,7 +313,7 @@ public class MecanumRoadrunner extends LinearOpMode {
 
 
             case RED_BACKDROP:
-                robotStart = new Pose2d(-37.5, 63, Math.toRadians(90));
+                robotStart = new Pose2d(-37.5, -61, Math.toRadians(90));
                 drive.setPoseEstimate(robotStart);
                 middle = drive.trajectorySequenceBuilder(robotStart)
                         .setReversed(true)
@@ -343,7 +345,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .build();
                 break;
             case RED_STACK:
-                robotStart = new Pose2d(16.5, 63, Math.toRadians(90));
+                robotStart = new Pose2d(16.5, -61, Math.toRadians(90));
                 drive.setPoseEstimate(robotStart);
                 //y = 29 for the right most april tag
                 right = drive.trajectorySequenceBuilder(robotStart)

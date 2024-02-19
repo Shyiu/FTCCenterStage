@@ -8,11 +8,10 @@ public class MecanumBotConstant {
     public String bl = "backLeft";//2
     public String fl = "frontLeft";//3 & Parallel Deadwheel
 
-    public String plane_launcher_pinion_servo = "launcher_servo";//0
-    public String intake_rotation_servo = "rotation_servo";//1
-    public String rigging_right = "rigging_right";//3
-    public String plunger = "plunger_servo";//4
-    public String rigging_left = "rigging_left";//5
+    public String bucket_servo = "rotation_servo";//0
+    public String rigging_right = "rigging_right";//1
+    public String clutch = "plunger_servo";//2
+
 
 
 
@@ -35,7 +34,13 @@ public class MecanumBotConstant {
     //servos
 
     public String distance_sensor = "distance_sensor";//I2C 2
+    public String gyro = "gyro"; //I2C 3
 
+
+    public String rigging_left = "rigging_left";//0
+    public String plane_launcher_pinion_servo = "launcher_servo";//1
+
+    public String limit_switch = "sensor_touch";//Digital 1 on config (1,3,5,7 are the options)
 
 
     //UNUSED
@@ -50,8 +55,6 @@ public class MecanumBotConstant {
     public String servo_right = "servo_right";
     public String counter_roller = "counter_roller";
     public String intake_servo = "intake_servo";
-
-
 
 
 }

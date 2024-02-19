@@ -1,10 +1,8 @@
-package org.firstinspires.ftc.teamcode.pipelines;
+package org.firstinspires.ftc.teamcode.easyopencv;
 
 
 
 //import com.acmerobotics.dashboard.config.Config;
-
-import static java.lang.Thread.sleep;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.opencv.core.Core;
@@ -17,7 +15,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 //for dashboard
 //@Config
-public class BoxDetection extends OpenCvPipeline {
+public class BoxDetectionEOCV extends OpenCvPipeline {
     Telemetry telemetry;
     Mat mat = new Mat();
     public enum Location {
@@ -35,14 +33,14 @@ public class BoxDetection extends OpenCvPipeline {
 
 
     static  Rect MIDDLE_TARGET = new Rect(
-            new Point(520, 356),
-            new Point(680, 500)
-    );
+                        new Point(440, 250),
+                        new Point(580, 406)
+                );
 
-    static Rect OTHER_TARGET = new Rect(
-            new Point(120, 356),
-            new Point(300, 520)
-    );
+    static  Rect  OTHER_TARGET = new Rect(
+                        new Point(50, 250),
+                        new Point(160, 406)
+                );
 
     static double PERCENT_COLOR_THRESHOLD = 0.1;
     public static int S11 = 100;
@@ -53,7 +51,7 @@ public class BoxDetection extends OpenCvPipeline {
     public static int S23 = 95;
     public boolean isRed;
     public boolean isLeft;
-    public BoxDetection(Telemetry t, Rect mid, Rect right, boolean red, boolean backdrop) {
+    public BoxDetectionEOCV(Telemetry t, Rect mid, Rect right, boolean red, boolean backdrop) {
         telemetry = t;
         MIDDLE_TARGET = mid;
         OTHER_TARGET = right;
@@ -61,14 +59,14 @@ public class BoxDetection extends OpenCvPipeline {
         if (backdrop == true && red == true){
             this.isLeft = false;
         }else if(backdrop == false && red == true){
-            this.isLeft = false;
+            this.isLeft = true;
         }else if(backdrop == true){
-            this.isLeft = false;
+            this.isLeft = true;
         }else {
             this.isLeft = false;
         }
     }
-    public BoxDetection(Telemetry t) {
+    public BoxDetectionEOCV(Telemetry t) {
         telemetry = t;
         this.isRed = false;
     }
@@ -82,6 +80,7 @@ public class BoxDetection extends OpenCvPipeline {
         }else{
             low = new Scalar(65, 100, 0);
             high = new Scalar(140, 255, 100);
+
         }
 
 

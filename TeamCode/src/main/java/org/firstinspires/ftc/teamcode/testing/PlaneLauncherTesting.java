@@ -16,7 +16,8 @@ public class PlaneLauncherTesting extends LinearOpMode {
     ElapsedTime timer;
     double currentTime = 0;
     public static double SERVO_POSITION = .4;
-    public static double HOLD_POSITION = .4;
+    public static double ACTIVE_POSITION = .4;
+    public static boolean dashboard = false;
     PlaneLauncher planeLauncher;
     @Override
     public void runOpMode(){
@@ -31,12 +32,13 @@ public class PlaneLauncherTesting extends LinearOpMode {
             if (gamepad1.a && timer.time() - currentTime > .5){
                 planeLauncher.launch();
             }
-            if (gamepad1.b && timer.time() - currentTime > .5){
+            else if (gamepad1.b && timer.time() - currentTime > .5){
                 planeLauncher.reset();
                 currentTime= timer.time();
             }
-            planeLauncher.rotateLauncher(SERVO_POSITION);
-            planeLauncher.moveLauncher(HOLD_POSITION);
+            if(dashboard) {
+                planeLauncher.moveLauncher(ACTIVE_POSITION);
+            }
             telemetry.update();
         }
     }

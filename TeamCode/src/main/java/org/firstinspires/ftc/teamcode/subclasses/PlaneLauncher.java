@@ -14,7 +14,7 @@ public class PlaneLauncher extends Subsystem{
     MecanumBotConstant mc = new MecanumBotConstant();
 
     public PlaneLauncher(HardwareMap hardwareMap){
-        launcher = hardwareMap.get(Servo.class, mc.plane_launcher_spring_servo);
+        launcher = hardwareMap.get(Servo.class, mc.plane_launcher_pinion_servo);
 
         launcher.setPosition(0);
     }
@@ -30,10 +30,10 @@ public class PlaneLauncher extends Subsystem{
         launcher.setPosition(position);
     }
     public void launch(){
-        launcher.setPosition(1);
+        launcher.setPosition(0);
     }
     public void reset(){
-        launcher.setPosition(0);
+        launcher.setPosition(.65);
     }
 
     @Override

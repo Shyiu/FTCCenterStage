@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
+import java.util.concurrent.TimeUnit;
+
 @Config
 public class PIDMotor extends Subsystem{
     MecanumBotConstant m = new MecanumBotConstant();
@@ -22,17 +24,22 @@ public class PIDMotor extends Subsystem{
     int startPos = Integer.MAX_VALUE;
     boolean direction = true;
     double GAIN = 30;
+    private boolean reversed_encoder = false;
     public boolean stopped = false;
     private double powerReduction = 1;
     private double conversion = -1;
     private boolean reached = false;
     private boolean working_magnet;
     private ElapsedTime timer;
+    private ElapsedTime total_time;
     private int maxHardstop = 1450;
     private String name = "";
     private int minHardstop = 0;
     private double holding_power = 0;
     private double max_integral = 0;
+    private double out = 0;
+    private double completed_time = 0;
+
     HardwareMap hardware;
     Telemetry telemetry;
 
@@ -44,6 +51,8 @@ public class PIDMotor extends Subsystem{
 
         pid_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         pid_motor.setDirection(DcMotor.Direction.FORWARD);
+
+        total_time = new ElapsedTime();
 
     }
     public void setPID(double P, double I, double D){
@@ -71,11 +80,14 @@ public class PIDMotor extends Subsystem{
         maxHardstop = max;
     }
 
-
+    public boolean isBusy(){
+        return reached && total_time.time(TimeUnit.SECONDS) - completed_time > 0.500;
+    }
 
     @Override
     public void init(){
         setPower(0);
+        total_time.reset();
         pid_motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         pid_motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
@@ -88,6 +100,8 @@ public class PIDMotor extends Subsystem{
         telemetry.addData(name + "'s Min Hardstop", minHardstop);
         telemetry.addData(name + "'s direction", direction);
         telemetry.addData(name + " Exceeding Constraints", exceedingConstraints());
+        telemetry.addData("Out Power", out);
+
 
     }
 
@@ -101,7 +115,10 @@ public class PIDMotor extends Subsystem{
     public boolean exceedingConstraints(double power){
         boolean over_max = getCurrentPosition() > maxHardstop;
         boolean under_min = getCurrentPosition() < minHardstop;
-        return power > 0 ? over_max : under_min;
+        if (!reversed_encoder) {
+            return power > 0 ? over_max : under_min;
+        }
+        return power < 0 ? over_max : under_min;
 
     }
 
@@ -112,9 +129,15 @@ public class PIDMotor extends Subsystem{
             pid_motor.setPower(holding_power);
         }
     }
-
+    public void setReversedEncoder(boolean reversed){
+        this.reversed_encoder = reversed;
+    }
     public int getCurrentPosition() {
         return pid_motor.getCurrentPosition();
+    }
+    public void setAbsPower(double power){
+        pid_motor.setPower(power);
+
     }
 
     public void move_sync(double target, double timeoutS, double MOTOR_POWER) {
@@ -137,6 +160,7 @@ public class PIDMotor extends Subsystem{
 
     public void move_async(double target) {
         targetPos = target;
+        reached = false;
     }
 
 
@@ -152,7 +176,7 @@ public class PIDMotor extends Subsystem{
         double reference = targetPos;
 
         double integralSum = 0;
-        ElapsedTime timer = new ElapsedTime();
+        timer = new ElapsedTime();
 
         // obtain the encoder position
         double currentPosition = getCurrentPosition();
@@ -162,7 +186,7 @@ public class PIDMotor extends Subsystem{
         // rate of change of the error
 
         // sum of all error over time
-        double out = (Kp * error);
+        out = (Kp * error);
         integralSum = integralSum + (error * timer.seconds());
         if (integralSum <= max_integral){
             out += (Ki * integralSum) ;
@@ -174,7 +198,13 @@ public class PIDMotor extends Subsystem{
             double derivative = (error - lastError) / timer.seconds();
             out += Kd * derivative;
         }
-        setPower(out + Math.copySign(F, out));
+        out += Math.copySign(F, out) ;
+        out *= (reversed_encoder ? -1 : 1);
+        setPower(out);
+        if(Math.abs(out) < 0.01){
+            reached = true;
+            completed_time = total_time.time(TimeUnit.SECONDS);
+        }
         lastError = error;
         // reset the timer for next time
         timer.reset();

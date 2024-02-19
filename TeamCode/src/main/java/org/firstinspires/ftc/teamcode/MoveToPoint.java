@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.autonomous_utilities.robot_utilities.Movem
 import org.firstinspires.ftc.teamcode.roadrunner.drive.MecanumDrive;
 
 @Disabled
-@Autonomous(name = "PurelyPursuiting")
+@Autonomous(name = "Move To point?")
 public class MoveToPoint extends LinearOpMode {
     @Override
     public void runOpMode() {

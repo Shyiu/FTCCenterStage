@@ -1,6 +1,6 @@
 {
   "sourcesPath": ".",
   "resourcesPath": ".",
-  "excludedPaths": ["AprilTagPipeline.java, BoxProcessor.java"],
+  "excludedPaths": [],
   "excludedFileExtensions": []
 }

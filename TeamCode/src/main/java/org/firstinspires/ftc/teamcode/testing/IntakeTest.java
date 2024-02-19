@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
+import org.firstinspires.ftc.teamcode.subclasses.Distance;
 import org.firstinspires.ftc.teamcode.subclasses.Intake;
 import org.firstinspires.ftc.teamcode.subclasses.MecaTank;
 
@@ -24,12 +25,14 @@ public class IntakeTest extends LinearOpMode {
     public static boolean reverse = false;
     public static boolean pid = false;
     public static boolean change = false;
+    public static boolean compensation = false;
 
 
     public static int target = -1000;
 
     protected MecaTank mecatank;
     protected Intake intake;
+    protected Distance distance;
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -37,14 +40,16 @@ public class IntakeTest extends LinearOpMode {
 
         intake = new Intake(hardwareMap, telemetry);
         mecatank = new MecaTank(hardwareMap, telemetry);
+        distance = new Distance(hardwareMap,telemetry);
         intake.init();
+        distance.init();
 
 
         intake.telemetry();
         mecatank.telemetry();
         telemetry.update();
 
-        intake.moveRotationTo(target);
+        intake.moveArm(target);
 
         waitForStart();
         while(!isStopRequested() && opModeIsActive()) {
@@ -52,16 +57,23 @@ public class IntakeTest extends LinearOpMode {
                 intake.update();
             }
             if(change){
-                intake.moveRotationTo(target);
+                intake.moveArm(target);
                 change = false;
             }
-            intake.movePlate(PLATE_POSITION);
-            intake.movePlunger(PLUNGER_POSITION);
+            if(compensation){
+                intake.bucket_compensation();
+            }else{
+                intake.moveBucket(PLATE_POSITION);
+
+            }
+            intake.calculate_robot_distance_limit();
+            intake.moveClutch(PLUNGER_POSITION);
             intake.setPower(-gamepad1.left_stick_y);
 
 
             intake.telemetry();
             mecatank.telemetry();
+            distance.telemetry();
             telemetry.update();
 
         }

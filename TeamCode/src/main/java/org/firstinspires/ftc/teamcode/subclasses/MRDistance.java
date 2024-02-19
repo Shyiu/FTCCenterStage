@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subclasses;
 
+import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -7,19 +8,19 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
-public class Distance extends Subsystem{
-    private DistanceSensor sensorDistance;
+public class MRDistance extends Subsystem{
 
+    private ModernRoboticsI2cRangeSensor rangeSensor;
     private MecanumBotConstant mc;
-    private double offset = 1.5;
+    private double offset = 6;
     Telemetry telemetry;
-    public Distance(HardwareMap hardwareMap, Telemetry telemetry){
+    public MRDistance(HardwareMap hardwareMap, Telemetry telemetry){
         this.telemetry = telemetry;
         mc = new MecanumBotConstant();
-        sensorDistance = hardwareMap.get(DistanceSensor.class, mc.distance_sensor);
+        rangeSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class, mc.distance_sensor);
     }
     public double getDist() {
-        return sensorDistance.getDistance(DistanceUnit.INCH);
+        return rangeSensor.getDistance(DistanceUnit.INCH);
     }
     public double getDistFromRobotEdge(){
         return getDist() - offset;

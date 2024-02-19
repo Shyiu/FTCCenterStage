@@ -64,10 +64,10 @@ public class WheelTesting extends LinearOpMode {
 
         while (!isStopRequested() && opModeIsActive()) {
 
-            backLeft.setPower(bl ? 1 : 0);
-            backRight.setPower(br ? 1 : 0);
-            frontLeft.setPower(fl ? 1 : 0);
-            frontRight.setPower(fr ? 1 : 0);
+            backLeft.setPower(bl ? MAX_SPEED : 0);
+            backRight.setPower(br ? MAX_SPEED : 0);
+            frontLeft.setPower(fl ? MAX_SPEED : 0);
+            frontRight.setPower(fr ? MAX_SPEED : 0);
 
             telemetry.addData("Left Target Power", leftTgtPower);
             telemetry.addData("Right Target Power", rightTgtPower);
