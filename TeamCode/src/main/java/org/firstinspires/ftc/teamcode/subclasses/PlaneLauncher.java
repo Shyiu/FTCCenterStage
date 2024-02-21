@@ -16,7 +16,7 @@ public class PlaneLauncher extends Subsystem{
     public PlaneLauncher(HardwareMap hardwareMap){
         launcher = hardwareMap.get(Servo.class, mc.plane_launcher_pinion_servo);
 
-        launcher.setPosition(0);
+//        launcher.setPosition(0);
     }
 
     public static double spring_stop_position = .07;

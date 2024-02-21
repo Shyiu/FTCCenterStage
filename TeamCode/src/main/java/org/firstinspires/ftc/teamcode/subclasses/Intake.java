@@ -28,9 +28,9 @@ public class Intake extends Subsystem{
     public static double servo_rotation_pickup = 0.6;
     private static double anchor_position = 0;
 
-    public static double clutch_in = .2;
-    public static double clutch_one = .3;
-    public static double clutch_two = .4;
+    public static double clutch_in = 0;
+    public static double clutch_one = .13;
+    public static double clutch_two = .25;
 
 //    public static double deg_per_tick = 90.0/(1700 - 603);//will replace with gyro
 //    public static double level_position = 603;
@@ -214,6 +214,20 @@ public class Intake extends Subsystem{
             double b = 3.3;
             robot_dist = m * (slide_rotation.getCurrentPosition() - 2300) + b;
            
+        }
+        telemetry.addData("Robot Distance", robot_dist);
+        return robot_dist;
+    }
+    public double calculate_robot_distance_limit(boolean use_target_position){
+        double robot_dist = 0;
+        if(!use_target_position){
+            return calculate_robot_distance_limit();
+        }
+        if(slide_rotation.targetPos > 2000) {
+            double m = (5.4 - 2.3)/(2400 - 2200);
+            double b = 3.3;
+            robot_dist = m * (slide_rotation.getCurrentPosition() - 2300) + b;
+
         }
         telemetry.addData("Robot Distance", robot_dist);
         return robot_dist;

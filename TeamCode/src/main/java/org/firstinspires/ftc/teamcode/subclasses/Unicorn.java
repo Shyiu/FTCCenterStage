@@ -32,7 +32,6 @@ public class Unicorn extends Subsystem{
     public static double RIGGING = .6;
 
 
-    private static double plunger_position = 0;
     private static double delivery_position = 0;
 
     Telemetry telemetry;
@@ -60,7 +59,7 @@ public class Unicorn extends Subsystem{
         delivery.setPosition(STOW_AWAY);
         update_position();
     }
-    public void move_slowly_to(double position, double increments) throws InterruptedException {
+    public void move_slowly_to(double position, double increments, int sleep) throws InterruptedException {
         update_position();
         if (delivery_position == position){
             return;
@@ -76,7 +75,7 @@ public class Unicorn extends Subsystem{
                 break;
             }
             delivery.setPosition(temp_position);
-            sleep(400);
+            sleep(sleep);
         }
         delivery.setPosition(position);
     }

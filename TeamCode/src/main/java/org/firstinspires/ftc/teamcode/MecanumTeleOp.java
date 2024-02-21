@@ -40,17 +40,27 @@ public class MecanumTeleOp extends LinearOpMode {
     public enum DELIVERY_STATE {
         WAIT,  INTAKE,PLUNGER_DOWN, TRANSFER, RETURN, DELIVERY, D1, RAISE_PLUNGER, D2
     }
-
+    public enum THROW_STATE{
+        WAIT, OPEN_PLUNGER, MOVE_ARM, RETURN_ARM
+    }
+    public enum RIGGING_STATE{
+        WAIT, EXTEND, ADD_SLACK
+    }
+    THROW_STATE throw_state;
     DELIVERY_STATE delivery_state;
+    RIGGING_STATE rigging_state;
     AprilTagPipeline apriltag_pipeline;
     ArrayList<Integer> apriltag_targets;
 
     public double delivery_timer = 0;
     public static int plane_launch_height = 260;
-    public boolean aarushi_being_useful = true;
+    public static boolean aarushi_being_useful = true;
     private boolean move_next = false;
     private boolean plane_launcher = false;
+    public static boolean active_telemetry = false;
     private double plane_time = 0;
+    private double throw_time = 0;
+    private double rigging_time = 0;
     private boolean bucket_compensation = false;
     DELIVERY_STATE next_delivery_state = DELIVERY_STATE.INTAKE;
 
@@ -64,6 +74,8 @@ public class MecanumTeleOp extends LinearOpMode {
 
 
         delivery_state = DELIVERY_STATE.TRANSFER;
+        throw_state = THROW_STATE.WAIT;
+        rigging_state = RIGGING_STATE.WAIT;
 
 
         if(IMUTransfer.init) {
@@ -191,9 +203,55 @@ public class MecanumTeleOp extends LinearOpMode {
 
             if(bbutton){
                 bucket_compensation = false;
-                delivery_state = DELIVERY_STATE.INTAKE;
-                next_delivery_state = DELIVERY_STATE.RAISE_PLUNGER;
+                if(delivery_state == DELIVERY_STATE.DELIVERY){
+                    delivery_state = DELIVERY_STATE.TRANSFER;
+                    next_delivery_state = DELIVERY_STATE.DELIVERY;
+                }else {
+                    delivery_state = DELIVERY_STATE.INTAKE;
+                    next_delivery_state = DELIVERY_STATE.RAISE_PLUNGER;
+                }
             }
+            switch(throw_state){
+                case WAIT:
+
+
+
+
+
+
+
+
+                    if(gamepad1.right_bumper) {
+                        intake.moveClutch(0.25);
+                        throw_state = THROW_STATE.OPEN_PLUNGER;
+                        throw_time = timer.seconds();
+                        break;
+                    }
+                    break;
+                case OPEN_PLUNGER:
+                    if (timer.seconds() - throw_time > 0.3){
+                            intake.moveArm(2000);
+                            throw_state = THROW_STATE.MOVE_ARM;
+                            break;
+                    }
+                    break;
+                case MOVE_ARM:
+                    if(!intake.isBusy()){
+                        intake.moveClutch(0);
+                        intake.moveBucket(0);
+                        intake.moveArm(0);
+                        throw_state = THROW_STATE.RETURN_ARM;
+                        break;
+                    }
+                    break;
+                case RETURN_ARM:
+                    if (!intake.isBusy()) {
+                        throw_state = THROW_STATE.WAIT;
+                        break;
+                    }
+                    break;
+            }
+
             if(bucket_compensation){
                 intake.bucket_compensation();
             }
@@ -205,23 +263,53 @@ public class MecanumTeleOp extends LinearOpMode {
             if(plane_launcher && !intake.isBusy() && timer.seconds() - plane_time > 0.4){
                 planeLauncher.launch();
             }
+//            switch(rigging_state){
+//                case WAIT:
+//                    if(gamepad2.x){
+//                        shivaniRigging.openBoth();
+//                        rigging_time = timer.time();
+//                        rigging_state = RIGGING_STATE.EXTEND;
+//                        break;
+//                    }
+//                    if(gamepad2.y){
+//                        shivaniRigging.addSlack();
+//                        rigging_state = RIGGING_STATE.ADD_SLACK;
+//                        break;
+//                    }
+//                    break;
+//                case EXTEND:
+//                    if(timer.time() - rigging_time > .8){
+//                        shivaniRigging.stop();
+//                        rigging_state = RIGGING_STATE.WAIT;
+//                        break;
+//                    }
+//                    break;
+//                case ADD_SLACK:
+//                    if(timer.time() - rigging_time > 0.1){
+//                        shivaniRigging.stop();
+//                        rigging_state = RIGGING_STATE.WAIT;
+//                        break;
+//                    }
+//                    break;
+//
+//
+//
+//            }
 
-            mecatank.set_min_distance(intake.calculate_robot_distance_limit());
-
+            mecatank.set_min_distance(intake.calculate_robot_distance_limit(true));//sets the hardstop faster.
             shivaniRigging.setRiggingPower(sameSignSqrt(-gamepad2.right_stick_y));
+
             if(gamepad2.x){
-                shivaniRigging.set_right_position(0);
-                shivaniRigging.set_left_position(0);
-            }else if(gamepad2.y){
-                shivaniRigging.set_left_position(0.87);
-                shivaniRigging.set_right_position(0.94);
+                shivaniRigging.stop();
+            }
+            if(gamepad2.y){
+                shivaniRigging.openBoth();
             }
             if(gamepad1.left_bumper){
                 intake.addBucketPos(sameSignSqrt(gamepad1.left_trigger) / 4);
             }else{
                 intake.addBucketPos(0);
             }
-
 
 
 
@@ -258,9 +346,11 @@ public class MecanumTeleOp extends LinearOpMode {
 
     }
     public void all_to_telemetry(){
-        intake.telemetry();
-        mecatank.telemetry();
-        shivaniRigging.telemetry();
+        if(active_telemetry) {
+            intake.telemetry();
+            mecatank.telemetry();
+            shivaniRigging.telemetry();
+        }
     }
     public double sameSignSqrt(double number){
         return Math.copySign(Math.sqrt(Math.abs(number)), number);

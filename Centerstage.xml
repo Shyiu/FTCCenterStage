@@ -1,25 +1,30 @@
 <?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
 <Robot type="FirstInspires-FTC">
+    <Webcam name="Webcam 1" serialNumber="4C5E8E40" />
     <LynxUsbDevice name="Control Hub Portal" serialNumber="(embedded)" parentModuleAddress="173">
         <LynxModule name="Expansion Hub 3" port="3">
-            <NeveRest40Gearmotor name="rigging_motor_right" port="0" />
-            <NeveRest20Gearmotor name="slides_motor" port="1" />
-            <NeveRest60Gearmotor name="intakeMotor" port="2" />
-            <NeveRest60Gearmotor name="rigging_motor_left" port="3" />
-            <DigitalDevice name="magnet_sensor" port="0" />
+            <NeveRest20Gearmotor name="slides_motor" port="0" />
+            <NeveRest60Gearmotor name="slides_rotation_motor" port="1" />
+            <NeveRest60Gearmotor name="rigging_motor" port="2" />
+            <Servo name="launcher_servo" port="1" />
+            <ContinuousRotationServo name="rigging_left" port="2" />
+            <ContinuousRotationServo name="test" port="5" />
+            <RevTouchSensor name="sensor_touch" port="1" />
+            <REV_VL53L0X_RANGE_SENSOR name="distance_sensor" port="0" bus="2" />
+            <Gyro name="gyro" port="0" bus="3" />
         </LynxModule>
         <LynxModule name="Control Hub" port="173">
-            <NeveRest20Gearmotor name="frontRight" port="0" />
-            <NeveRest20Gearmotor name="backRight" port="1" />
-            <NeveRest20Gearmotor name="backLeft" port="2" />
-            <NeveRest20Gearmotor name="frontLeft" port="3" />
-            <Servo name="servo1" port="0" />
-            <Servo name="servo2" port="1" />
-            <ContinuousRotationServo name="counter_roller" port="3" />
-            <Servo name="launcher_servo" port="4" />
-            <Servo name="rotation_servo" port="5" />
+            <NeveRest40Gearmotor name="frontRight" port="0" />
+            <NeveRest40Gearmotor name="backRight" port="1" />
+            <NeveRest40Gearmotor name="backLeft" port="2" />
+            <NeveRest40Gearmotor name="frontLeft" port="3" />
+            <Servo name="rotation_servo" port="0" />
+            <ContinuousRotationServo name="rigging_right" port="1" />
+            <Servo name="plunger_servo" port="2" />
+            <Servo name="delivery_servo" port="5" />
+            <DigitalDevice name="magnet_sensor" port="0" />
             <LynxEmbeddedIMU name="imu" port="0" bus="0" />
+            <ModernRoboticsI2cRangeSensor name="sensor_range" port="0" bus="1" />
         </LynxModule>
     </LynxUsbDevice>
-    <Webcam name="Webcam 1" serialNumber="AC14CEA0" />
 </Robot>
