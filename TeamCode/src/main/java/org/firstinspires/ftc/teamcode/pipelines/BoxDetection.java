@@ -34,12 +34,12 @@ public class BoxDetection extends OpenCvPipeline {
     public static int x1 = maxX/2;
 
 
-    static  Rect MIDDLE_TARGET = new Rect(
+    public static  Rect MIDDLE_TARGET = new Rect(
             new Point(520, 356),
             new Point(680, 500)
     );
 
-    static Rect OTHER_TARGET = new Rect(
+    public static Rect OTHER_TARGET = new Rect(
             new Point(120, 356),
             new Point(300, 520)
     );

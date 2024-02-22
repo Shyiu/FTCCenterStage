@@ -46,7 +46,7 @@ import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigu
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-import org.firstinspires.ftc.teamcode.IMUTransfer;
+import org.firstinspires.ftc.teamcode.DataTransfer;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequenceRunner;
@@ -63,7 +63,7 @@ import java.util.List;
 @Config
 public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive {
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(8.4, 0, 0);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(8, 0, 0);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(8.1, 0, 0);
 
     public static double LATERAL_MULTIPLIER = 1.275;
 
@@ -105,8 +105,8 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
         }
 
         // TODO: adjust the names of the following hardware devices to match your configuration
-//        if(IMUTransfer.init) {
-//            imu = IMUTransfer.imu;
+//        if(DataTransfer.init) {
+//            imu = DataTransfer.imu;
 //
 //        }else{
             imu = hardwareMap.get(IMU.class, "imu");
@@ -116,8 +116,8 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
                     DriveConstants.USB_FACING_DIR));
             // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
             imu.initialize(parameters);
-            IMUTransfer.imu = imu;
-            IMUTransfer.init = true;
+            DataTransfer.imu = imu;
+            DataTransfer.init = true;
 //        }
 
 
@@ -160,9 +160,11 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
                 follower, HEADING_PID, batteryVoltageSensor,
                 lastEncPositions, lastEncVels, lastTrackingEncPositions, lastTrackingEncVels
         );
-        IMUTransfer.imu = imu;
+        DataTransfer.imu = imu;
     }
-
+    public void breakFollowing(){
+        trajectorySequenceRunner.breakFollowing();
+    }
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
         return new TrajectoryBuilder(startPose, VEL_CONSTRAINT, ACCEL_CONSTRAINT);
     }

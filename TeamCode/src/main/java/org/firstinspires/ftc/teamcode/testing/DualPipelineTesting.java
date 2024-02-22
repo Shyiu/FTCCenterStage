@@ -1,26 +1,18 @@
 package org.firstinspires.ftc.teamcode.testing;
 
 import static org.firstinspires.ftc.teamcode.pipelines.BoxDetection.Location.LEFT;
-import static org.firstinspires.ftc.teamcode.pipelines.BoxDetection.Location.MIDDLE;
-import static org.firstinspires.ftc.teamcode.pipelines.BoxDetection.Location.RIGHT;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.IMUTransfer;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
-import org.firstinspires.ftc.teamcode.pipelines.AprilTagPipeline;
 import org.firstinspires.ftc.teamcode.pipelines.BoxDetection;
-import org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.subclasses.Distance;
@@ -30,14 +22,9 @@ import org.firstinspires.ftc.teamcode.subclasses.Lift;
 import org.firstinspires.ftc.teamcode.subclasses.PlaneLauncher;
 import org.firstinspires.ftc.teamcode.subclasses.ShivaniRigging;
 import org.firstinspires.ftc.teamcode.subclasses.Unicorn;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
-
-import java.util.concurrent.TimeUnit;
 
 
 @Config

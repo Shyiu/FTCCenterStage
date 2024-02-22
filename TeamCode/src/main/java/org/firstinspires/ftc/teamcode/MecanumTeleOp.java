@@ -13,10 +13,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.pipelines.AprilTagPipeline;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.MecanumDrive;
+import org.firstinspires.ftc.teamcode.subclasses.Delivery;
 import org.firstinspires.ftc.teamcode.subclasses.Intake;
 import org.firstinspires.ftc.teamcode.subclasses.MecaTank;
 import org.firstinspires.ftc.teamcode.subclasses.PlaneLauncher;
 import org.firstinspires.ftc.teamcode.subclasses.ShivaniRigging;
+import org.firstinspires.ftc.teamcode.subclasses.Unicorn;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ public class MecanumTeleOp extends LinearOpMode {
     Intake intake;
     MecaTank mecatank;
     MecanumDrive drive;
+    Unicorn unicorn;
     ShivaniRigging shivaniRigging;
     PlaneLauncher planeLauncher;
 
@@ -46,9 +49,13 @@ public class MecanumTeleOp extends LinearOpMode {
     public enum RIGGING_STATE{
         WAIT, EXTEND, ADD_SLACK
     }
+    public enum UNICORN_STATE{
+        WAIT, DELIVER, RETRACT,EXTEND
+    }
     THROW_STATE throw_state;
     DELIVERY_STATE delivery_state;
     RIGGING_STATE rigging_state;
+    UNICORN_STATE unicorn_state;
     AprilTagPipeline apriltag_pipeline;
     ArrayList<Integer> apriltag_targets;
 
@@ -61,6 +68,7 @@ public class MecanumTeleOp extends LinearOpMode {
     private double plane_time = 0;
     private double throw_time = 0;
     private double rigging_time = 0;
+    private double unicorn_time = 0;
     private boolean bucket_compensation = false;
     DELIVERY_STATE next_delivery_state = DELIVERY_STATE.INTAKE;
 
@@ -76,10 +84,10 @@ public class MecanumTeleOp extends LinearOpMode {
         delivery_state = DELIVERY_STATE.TRANSFER;
         throw_state = THROW_STATE.WAIT;
         rigging_state = RIGGING_STATE.WAIT;
+        unicorn_state = UNICORN_STATE.WAIT;
 
-
-        if(IMUTransfer.init) {
-            imu = IMUTransfer.imu;
+        if(DataTransfer.init) {
+            imu = DataTransfer.imu;
         }else{
             imu = hardwareMap.get(IMU.class, "imu");
             // Adjust the orientation parameters to match your robot
@@ -88,8 +96,8 @@ public class MecanumTeleOp extends LinearOpMode {
                     DriveConstants.USB_FACING_DIR));
             // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
             imu.initialize(parameters);
-            IMUTransfer.imu = imu;
-            IMUTransfer.init = true;
+            DataTransfer.imu = imu;
+            DataTransfer.init = true;
         }
         drive = new MecanumDrive(hardwareMap);
 
@@ -102,10 +110,13 @@ public class MecanumTeleOp extends LinearOpMode {
 
         shivaniRigging = new ShivaniRigging(hardwareMap, telemetry);
 
+        unicorn = new Unicorn(hardwareMap, telemetry);
+
         mecatank.init();
         shivaniRigging.init();
         intake.init();
         planeLauncher.init();
+
 
         all_to_telemetry();
 
@@ -211,16 +222,39 @@ public class MecanumTeleOp extends LinearOpMode {
                     next_delivery_state = DELIVERY_STATE.RAISE_PLUNGER;
                 }
             }
+            switch(unicorn_state){
+                case WAIT:
+                    if(gamepad1.dpad_up && !DataTransfer.delivered ){
+                        unicorn_state = UNICORN_STATE.DELIVER;
+                        unicorn.deliver();
+                        unicorn_time = timer.time();
+                    }
+                    break;
+                case DELIVER:
+                    if(timer.time() - unicorn_time > 0.3){
+                        unicorn.stow();
+                        unicorn_time = timer.time();
+                        unicorn_state  = UNICORN_STATE.RETRACT;
+                    }
+                    break;
+                case RETRACT:
+                    if(timer.time() - unicorn_time > 0.3){
+                        unicorn_state = UNICORN_STATE.WAIT;
+                        DataTransfer.delivered = true;
+                    }
+                    break;
+                case EXTEND:
+                    if(timer.time() - unicorn_time > 0.3){
+                        unicorn_state = UNICORN_STATE.WAIT;
+                    }
+                    break;
+            }
+
+
+
+
             switch(throw_state){
                 case WAIT:
-
-
-
-
-
-
-
-
                     if(gamepad1.right_bumper) {
                         intake.moveClutch(0.25);
                         throw_state = THROW_STATE.OPEN_PLUNGER;
@@ -297,7 +331,19 @@ public class MecanumTeleOp extends LinearOpMode {
 //            }
 
             mecatank.set_min_distance(intake.calculate_robot_distance_limit(true));//sets the hardstop faster.
-            shivaniRigging.setRiggingPower(sameSignSqrt(-gamepad2.right_stick_y));
+            double rigging_power = sameSignSqrt(-gamepad2.right_stick_y);
+            if(rigging_power == 0){
+                unicorn.stow();
+            }else{
+                unicorn.rigging();
+                unicorn_time = timer.time();
+            }
+            if(!unicorn.isStowed() && timer.time() - unicorn_time > 0.3) {
+                shivaniRigging.setRiggingPower(rigging_power);
+            }else{
+                shivaniRigging.setRiggingPower(0);
+            }
+
 
             if(gamepad2.x){
                 shivaniRigging.stop();

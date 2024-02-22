@@ -14,22 +14,14 @@ import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 public class Unicorn extends Subsystem{
     protected Servo delivery;
     protected MecanumBotConstant m;
-    private ElapsedTime timer;
 
-    private double servoTimer1 = 0;
-    private double servoTimer2 = 0;
-
-    private boolean left_toggle = false;
-    private boolean right_toggle = false;
-
-    public double servoDelay = .5;
-    public double rightTimer = 0;
-    public double leftTimer = 0;
+    private boolean stowed = false;
 
 
-    public static double DELIVER = 0;
-    public static double STOW_AWAY = 1;
-    public static double RIGGING = .6;
+    public static double DELIVER = 0.38;
+    public static double STOW_AWAY = 0;
+    public static double RIGGING = 1;
+    public static double TRAVEL_POSITION = 0.6;
 
 
     private static double delivery_position = 0;
@@ -38,26 +30,33 @@ public class Unicorn extends Subsystem{
     public Unicorn(HardwareMap hardwareMap, Telemetry telemetry){
         m = new MecanumBotConstant();
         this.telemetry = telemetry;
-
-
         delivery = hardwareMap.get(Servo.class, m.delivery);
-        timer = new ElapsedTime();
     }
 
-
+    public boolean isStowed(){
+        return !stowed;
+    }
 
     public void deliver(){
         delivery.setPosition(DELIVER);
         update_position();
+        stowed = false;
     }
 
     public void rigging(){
         delivery.setPosition(RIGGING);
         update_position();
+        stowed = false;
     }
     public void stow(){
         delivery.setPosition(STOW_AWAY);
         update_position();
+        stowed = true;
+    }
+    public void travel(){
+        delivery.setPosition(TRAVEL_POSITION);
+        update_position();
+        stowed = false;
     }
     public void move_slowly_to(double position, double increments, int sleep) throws InterruptedException {
         update_position();
@@ -80,7 +79,9 @@ public class Unicorn extends Subsystem{
         delivery.setPosition(position);
     }
     public void update_position(){
+
         delivery_position = delivery.getPosition();
+
     }
     @Override
     public void telemetry() {
@@ -89,11 +90,12 @@ public class Unicorn extends Subsystem{
     public void goToPosition(double position){
         delivery_position = position;
         delivery.setPosition(position);
+        stowed = position == STOW_AWAY;
     }
 
     @Override
     public void init() {
-        stow();
+        rigging();
 
 
     }
