@@ -28,9 +28,9 @@ public class Intake extends Subsystem{
     public static double servo_rotation_pickup = 0.6;
     private static double anchor_position = 0;
 
-    public static double clutch_in = 0;
-    public static double clutch_one = .13;
-    public static double clutch_two = .25;
+    public static double clutch_in = .58;
+    public static double clutch_one = .71;
+    public static double clutch_two = .83;
 
 //    public static double deg_per_tick = 90.0/(1700 - 603);//will replace with gyro
 //    public static double level_position = 603;

@@ -57,9 +57,9 @@ public class MecanumRoadrunner extends LinearOpMode {
     private Vector2d middle_blue = new Vector2d(49,34);
     private Vector2d right_blue = new Vector2d(49, 27.5);
 
-    private Vector2d left_red = new Vector2d(49, -26);
-    private Vector2d middle_red = new Vector2d(49,-32);
-    private Vector2d right_red = new Vector2d(49,-38);
+    private Vector2d left_red = new Vector2d(49, -31);
+    private Vector2d middle_red = new Vector2d(49,-37);
+    private Vector2d right_red = new Vector2d(49,-42);
 
     private boolean red = false;
     private boolean stack = false;
@@ -274,15 +274,15 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .build();
                 break;
             case RED_BACKDROP:
-                robotStart = new Pose2d(16.5, -63, Math.toRadians(90));
+                robotStart = new Pose2d(16.5, -63, Math.toRadians(270));
                 drive.setPoseEstimate(robotStart);
                 right = drive.trajectorySequenceBuilder(robotStart)
                         .setReversed(true)
                         .splineToLinearHeading(new Pose2d(25.50, -36.5, Math.toRadians(270)), Math.toRadians(90))
                         .forward(3)
-                        .splineToConstantHeading(new Vector2d(25.50, -60.5), Math.toRadians(0))
+                        .splineToConstantHeading(new Vector2d(25.50, -48.5), Math.toRadians(0))
 
-                        .splineToConstantHeading(new Vector2d(32.50, -56.5), Math.toRadians(90))
+                        .splineToConstantHeading(new Vector2d(32.50, -44.5), Math.toRadians(90))
 
                         .splineTo(right_red, Math.toRadians(0))
                         .build();
@@ -299,7 +299,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .build();
                 left = drive.trajectorySequenceBuilder(robotStart)
                         .setReversed(true)
-                        .splineToLinearHeading(new Pose2d(8.00, -35.5, Math.toRadians(0)), Math.toRadians(180))
+                        .splineToLinearHeading(new Pose2d(8.00, -33.5, Math.toRadians(315)), Math.toRadians(180))
                         .setReversed(false)
                         .forward(3)
                         .splineTo(new Vector2d(20.50, -40.5), Math.toRadians(270))
@@ -353,25 +353,25 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .build();
                 break;
             case RED_STACK:
-                robotStart = new Pose2d(-37.5, -63, Math.toRadians(90));
+                robotStart = new Pose2d(-37.5, -63, Math.toRadians(270));
                 drive.setPoseEstimate(robotStart);
                 //y = 41 for the left april tag
-                left = drive.trajectorySequenceBuilder(robotStart)
+                right = drive.trajectorySequenceBuilder(robotStart)
                         .setReversed(true)
-                        .splineToLinearHeading(new Pose2d(-27.00, -35.5, Math.toRadians(225)), Math.toRadians(359))
+                        .splineToLinearHeading(new Pose2d(-26.50, -35.5, Math.toRadians(200)), Math.toRadians(359))
                         .setReversed(false)
                         .forward(12)
                         .splineTo(new Vector2d(-45,-45), Math.toRadians(180))
                         .splineToConstantHeading(new Vector2d(-48,-50), Math.toRadians(270))
                         .strafeTo(new Vector2d(-48,-54))
-                        .splineToConstantHeading(new Vector2d(-36,-61), Math.toRadians(0))
+                        .splineToConstantHeading(new Vector2d(-36,-59), Math.toRadians(0))
                         .back(64)
-                        .splineToConstantHeading(left_red, Math.toRadians(0))
+                        .splineToConstantHeading(right_red, Math.toRadians(0))
                         .build();
                 //y = 29 for the right most april tag
-                right = drive.trajectorySequenceBuilder(robotStart)
+                left = drive.trajectorySequenceBuilder(robotStart)
                         .setReversed(true)
-                        .splineToLinearHeading(new Pose2d(-30.00, -35.5, Math.toRadians(270)), Math.toRadians(90))
+                        .splineToLinearHeading(new Pose2d(-42.00, -35.5, Math.toRadians(270)), Math.toRadians(90))
                         .setReversed(false)
 
                         .splineTo(new Vector2d(-47,-50), Math.toRadians(180))
@@ -379,7 +379,7 @@ public class MecanumRoadrunner extends LinearOpMode {
 
                         .back(66)
 
-                        .splineToConstantHeading(right_red, Math.toRadians(0))
+                        .splineToConstantHeading(left_red, Math.toRadians(0))
                         .build();
                 //y = 35 for the middle april tag
                 middle = drive.trajectorySequenceBuilder(robotStart)
@@ -422,19 +422,21 @@ public class MecanumRoadrunner extends LinearOpMode {
         timer.reset();
         while(!isStopRequested() && opModeIsActive()){
             drive.update();
-            if(Math.abs(drive.getLastError().getX()) > 15 || Math.abs(drive.getLastError().getY()) > 15){
+            if(Math.abs(drive.getLastError().getX()) > 8 || Math.abs(drive.getLastError().getY()) > 8){
 
                 drive.breakFollowing();
                 drive.setDrivePower(new Pose2d());
+                crashed = true;
+
+
                 if(red){
                     return;
                 }
-                crashed = true;
                 //Initialize the recovery sequence
                 double angle = drive.getExternalHeading();
 
                 TrajectorySequence center = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                        .forward(15)
+                        .forward(5)
                         .turn(-angle)
                         .build();
                 drive.followTrajectorySequence(center);
@@ -457,6 +459,10 @@ public class MecanumRoadrunner extends LinearOpMode {
                     drive.followTrajectorySequence(intoBackdrop);
                     sleep(500);
                     delivery.deliver();
+                    sleep(500);
+                    delivery.goToPosition(0.45);
+                    sleep(500);
+                    delivery.goToPosition(0.36);
                     sleep(500);
                     if (!stack) {
                         startPose = drive.getPoseEstimate();
@@ -483,6 +489,8 @@ public class MecanumRoadrunner extends LinearOpMode {
                                 .build();
                         drive.followTrajectory(last);
 
+                    }else{
+                        delivery.stow();
                     }
                     return;
                 }

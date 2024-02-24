@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 @Config
 public class ShivaniRigging extends Subsystem{
     PIDMotor riggingMotor;
-    DcMotorSimple left_servo, right_servo;
+    PIDMotor hookMotor;
     TouchSensor touchSensor;  // Touch sensor Object
     DigitalChannel magnet_sensor;
 
@@ -25,32 +25,36 @@ public class ShivaniRigging extends Subsystem{
     private boolean busy = false;
     private boolean first = true;
     private boolean up = false;
+    private boolean activated = false;
     private boolean touchSensorLimit = true;
-    double error, lastError;
 
-    public static double P = 20, I = 3, D = 0;
-    public static double target_position = -2000;
+    public static double P = 0.0025, I = 1/(210.0 * 2), D = 0;
+    public static double target_position = 162;
     ElapsedTime timer;
     private double delay = .5;
 
     public static double hold_speed = 0;
     private String state = "Init";
     Telemetry telemetry;
-    public static double LEFT_OPEN_POWER = .6, RIGHT_OPEN_POWER = -0.1;
-    public static double LEFT_CLOSE_POWER = 0, RIGHT_CLOSE_POWER = 0;
-
-    //-1 to rig left, 1 to rig right.
 
     public ShivaniRigging(HardwareMap hardwareMap, Telemetry telemetry){
         timer = new ElapsedTime();
         this.telemetry = telemetry;
         riggingMotor = new PIDMotor(hardwareMap, telemetry, mc.rigging_motor);
+        hookMotor = new PIDMotor(hardwareMap, telemetry, mc.hook_motor);
         touchSensor = hardwareMap.get(TouchSensor.class, mc.limit_switch);
+
 
         riggingMotor.setDirection(DcMotor.Direction.FORWARD);
         riggingMotor.setMin(-2200);
         riggingMotor.setReversedEncoder(true);
         riggingMotor.setMaxIntegral(1);
+
+        hookMotor.setDirection(DcMotor.Direction.REVERSE);
+        hookMotor.setMin(-60);
+        hookMotor.setMax(270);
+        hookMotor.pid_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
 
 //        magnet_sensor = hardwareMap.get(DigitalChannel.class, mc.magnet_sensor);
 //        // set the digital channel to input.
@@ -60,20 +64,15 @@ public class ShivaniRigging extends Subsystem{
 
 
 
-        left_servo = hardwareMap.get(DcMotorSimple.class, mc.rigging_left);
-        right_servo = hardwareMap.get(DcMotorSimple.class, mc.rigging_right);
     }
-    public void set_left_power(double power){
-        left_servo.setPower(power);
+    public void setHookPower(double power){
+        hookMotor.setPower(power);
     }
 
     private boolean magnet_activated(){
         return !magnet_sensor.getState();
     }
 
-    public void set_right_power(double power){
-        right_servo.setPower(power);
-    }
 
     public void setRiggingPower(double speed){
         if (touchSensorLimit && touchSensor.isPressed() && speed < 0){
@@ -86,34 +85,35 @@ public class ShivaniRigging extends Subsystem{
 
     @Override
     public void telemetry() {
+        hookMotor.telemetry();
         riggingMotor.telemetry();
         telemetry.addData("State: ", state);
 
     }
     public boolean isBusy(){
-        return up ? riggingMotor.getCurrentPosition() < target_position : riggingMotor.getCurrentPosition() > target_position;
+        return activated && hookMotor.isBusy();
+    }
+    public boolean isCompletedFor(double time){
+        return activated && hookMotor.isCompletedFor(time);
     }
     public void activate(){
-        riggingMotor.move_async(target_position);
+        hookMotor.move_async(target_position);
+        activated = true;
     }
 
+    public void release_motor(){
+        hookMotor.pid_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+    }
     public void update(){
-        if(magnet_activated()){
-            set_left_power(0);
-            set_right_power(0);
-        }
+        hookMotor.update();
     }
-    public void openBoth(){
-        set_right_power(RIGHT_OPEN_POWER);
-        set_left_power(LEFT_OPEN_POWER);
+    public void set_hook_target_position(double target_position){
+        hookMotor.move_async(target_position);
+        activated= true;
     }
-    public void stop(){
-        set_right_power(0);
-        set_left_power(0);
-    }
-    public void addSlack(){
-        set_right_power(RIGHT_CLOSE_POWER);
-        set_left_power(LEFT_CLOSE_POWER);
+    public void release_hooks(){
+        hookMotor.move_sync(120,3,0.6);
+        hookMotor.move_sync(-60 ,3,0.2);
     }
 
     public void resetEncoder() {
@@ -136,21 +136,16 @@ public class ShivaniRigging extends Subsystem{
         riggingMotor.init();
 
     }
-    public void raise_hooks() throws InterruptedException {
-        set_left_power(LEFT_OPEN_POWER);
-        set_right_power(RIGHT_OPEN_POWER);
-        sleep(500);
-        set_left_power(0);
-        set_right_power(0);
-    }
+
     @Override
     public void init() {
-        riggingMotor.P = P;
-        riggingMotor.I = I;
-        riggingMotor.D = D;
+        hookMotor.I = I;
+        hookMotor.P = P;
+        hookMotor.D = D;
         riggingMotor.setMax(0);
-        set_left_power(0);
-        set_right_power(0);
+        hookMotor.init();
+
+
         resetEncoder();
 
     }

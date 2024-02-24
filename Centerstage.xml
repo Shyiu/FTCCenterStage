@@ -6,6 +6,8 @@
             <NeveRest20Gearmotor name="slides_motor" port="0" />
             <NeveRest60Gearmotor name="slides_rotation_motor" port="1" />
             <NeveRest60Gearmotor name="rigging_motor" port="2" />
+            <NeveRest40Gearmotor name="hook_motor" port="3" />
+
             <Servo name="launcher_servo" port="1" />
             <ContinuousRotationServo name="rigging_left" port="2" />
             <ContinuousRotationServo name="test" port="5" />
@@ -14,10 +16,10 @@
             <Gyro name="gyro" port="0" bus="3" />
         </LynxModule>
         <LynxModule name="Control Hub" port="173">
-            <NeveRest40Gearmotor name="frontRight" port="0" />
-            <NeveRest40Gearmotor name="backRight" port="1" />
-            <NeveRest40Gearmotor name="backLeft" port="2" />
-            <NeveRest40Gearmotor name="frontLeft" port="3" />
+            <NeveRest20Gearmotor name="frontRight" port="0" />
+            <NeveRest20Gearmotor name="backRight" port="1" />
+            <NeveRest20Gearmotor name="backLeft" port="2" />
+            <NeveRest20Gearmotor name="frontLeft" port="3" />
             <Servo name="rotation_servo" port="0" />
             <ContinuousRotationServo name="rigging_right" port="1" />
             <Servo name="plunger_servo" port="2" />

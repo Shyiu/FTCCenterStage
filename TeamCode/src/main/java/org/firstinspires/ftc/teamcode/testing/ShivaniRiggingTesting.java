@@ -14,8 +14,8 @@ public class ShivaniRiggingTesting extends LinearOpMode {
     public static boolean release_hooks = false;
 
     public static double motor_power = 0;
-    public static double right_power = 0;
-    public static double left_power = 0;
+    public static double hook_power = 0;
+    public static int TARGET = 0;
     ShivaniRigging rigging;
     @Override
     public void runOpMode() throws InterruptedException {
@@ -26,14 +26,18 @@ public class ShivaniRiggingTesting extends LinearOpMode {
         rigging.activate();
 
         while(!isStopRequested() && opModeIsActive()){
-            rigging.set_right_power(right_power == 0 ? -gamepad2.right_stick_y : right_power);
-            rigging.set_left_power(left_power == 0 ? -gamepad2.left_stick_y : left_power);
-            if(release_hooks){
-                rigging.raise_hooks();
-                release_hooks = false;
-            }
+
+            rigging.setHookPower(hook_power == 0 ? -gamepad1.right_stick_y : hook_power);
             if (update){
                 rigging.update();
+                if(!rigging.isCompletedFor(1)){
+                    rigging.release_motor();
+                }
+            }
+            rigging.set_hook_target_position(TARGET);
+            if(release_hooks){
+                rigging.release_hooks();
+                release_hooks = false;
             }
             rigging.setRiggingPower(motor_power == 0 ? -gamepad1.left_stick_y : motor_power);
             telemetry.addData("gamepad1", -gamepad1.left_stick_y);

@@ -83,6 +83,10 @@ public class PIDMotor extends Subsystem{
     public boolean isBusy(){
         return reached && total_time.time(TimeUnit.SECONDS) - completed_time > 0.500;
     }
+    public boolean isCompletedFor(double time){
+        return reached && total_time.time(TimeUnit.SECONDS) - completed_time > time;
+
+    }
 
     @Override
     public void init(){
@@ -141,21 +145,46 @@ public class PIDMotor extends Subsystem{
     }
 
     public void move_sync(double target, double timeoutS, double MOTOR_POWER) {
-        double currentTime = System.currentTimeMillis();
         double slidesPosition = getCurrentPosition();
-        if (slidesPosition > target) {
-            setPower(-MOTOR_POWER);
-            while (slidesPosition > target && System.currentTimeMillis() - currentTime < timeoutS * 1000 && !exceedingConstraints()) {
-                slidesPosition = getCurrentPosition();
+        double Kp = P;
+        double Ki = I;
+        double Kd = D;
+
+        double reference = target;
+
+        double integralSum = 0;
+
+        timer = new ElapsedTime();
+        double currentTime = timer.time();
+        while (timer.time() - currentTime < timeoutS && !exceedingConstraints()) {
+
+            error = reference - slidesPosition;
+
+            // rate of change of the error
+
+            // sum of all error over time
+            out = (Kp * error);
+            integralSum = integralSum + (error * timer.seconds());
+            if (integralSum <= max_integral){
+                out += (Ki * integralSum) ;
             }
-            setPower(0);
-        } else if (slidesPosition < target) {
-            setPower(MOTOR_POWER);
-            while (slidesPosition < target && System.currentTimeMillis() - currentTime < timeoutS * 1000  && !exceedingConstraints()) {
-                slidesPosition = getCurrentPosition();
+
+
+
+            if(timer.seconds() != 0) {
+                double derivative = (error - lastError) / timer.seconds();
+                out += Kd * derivative;
             }
-            setPower(0);
+            out += Math.copySign(F, out) ;
+            out *= (reversed_encoder ? -1 : 1);
+            setPower(out * MOTOR_POWER);
+            if(Math.abs(error) < 5){
+                break;
+            }
+
         }
+        setPower(0);
+
     }
 
     public void move_async(double target) {
@@ -201,7 +230,7 @@ public class PIDMotor extends Subsystem{
         out += Math.copySign(F, out) ;
         out *= (reversed_encoder ? -1 : 1);
         setPower(out);
-        if(Math.abs(out) < 0.01){
+        if(Math.abs(out) < 0.01 && !reached){
             reached = true;
             completed_time = total_time.time(TimeUnit.SECONDS);
         }

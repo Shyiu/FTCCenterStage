@@ -30,7 +30,7 @@ public class MecanumBotConstant {
     public String slides_motor = "slides_motor";//0
     public String slides_rotation_motor = "slides_rotation_motor";//1
     public String rigging_motor = "rigging_motor";//2
-
+    public String hook_motor = "hook_motor";//3
     //servos
 
     public String distance_sensor = "distance_sensor";//I2C 2

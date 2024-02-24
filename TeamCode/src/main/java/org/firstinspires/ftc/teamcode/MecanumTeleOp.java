@@ -345,12 +345,12 @@ public class MecanumTeleOp extends LinearOpMode {
             }
 
 
-            if(gamepad2.x){
-                shivaniRigging.stop();
-            }
-            if(gamepad2.y){
-                shivaniRigging.openBoth();
-            }
+//            if(gamepad2.x){
+//                shivaniRigging.stop();
+//            }
+//            if(gamepad2.y){
+//                shivaniRigging.openBoth();
+//            }
             if(gamepad1.left_bumper){
                 intake.addBucketPos(sameSignSqrt(gamepad1.left_trigger) / 4);
             }else{
