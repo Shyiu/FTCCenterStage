@@ -10,8 +10,10 @@ import org.firstinspires.ftc.teamcode.subclasses.ShivaniRigging;
 @TeleOp(name = "ShivaniRiggingTest")
 public class ShivaniRiggingTesting extends LinearOpMode {
 
-    public static boolean update = false;
+    public static boolean raise_hooks = false;
     public static boolean release_hooks = false;
+    public static boolean update = false;
+    public static boolean moving =false;
 
     public static double motor_power = 0;
     public static double hook_power = 0;
@@ -23,23 +25,28 @@ public class ShivaniRiggingTesting extends LinearOpMode {
         rigging.init();
 
         waitForStart();
-        rigging.activate();
 
         while(!isStopRequested() && opModeIsActive()){
 
             rigging.setHookPower(hook_power == 0 ? -gamepad1.right_stick_y : hook_power);
-            if (update){
-                rigging.update();
-                if(!rigging.isCompletedFor(1)){
-                    rigging.release_motor();
-                }
+            if (raise_hooks){
+                rigging.raise_hooks_to_sensor();
+                raise_hooks = false;
             }
-            rigging.set_hook_target_position(TARGET);
             if(release_hooks){
                 rigging.release_hooks();
                 release_hooks = false;
             }
-            rigging.setRiggingPower(motor_power == 0 ? -gamepad1.left_stick_y : motor_power);
+            if(!rigging.isBusy() && moving){
+                rigging.moveHook(TARGET);
+            }
+            if(update) {
+                rigging.update();
+            }else {
+                rigging.setRiggingPower(motor_power == 0 ? -gamepad1.left_stick_y : motor_power);
+            }
+//
+//
             telemetry.addData("gamepad1", -gamepad1.left_stick_y);
             rigging.telemetry();
             telemetry.update();

@@ -13,7 +13,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.pipelines.AprilTagPipeline;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.MecanumDrive;
-import org.firstinspires.ftc.teamcode.subclasses.Delivery;
 import org.firstinspires.ftc.teamcode.subclasses.Intake;
 import org.firstinspires.ftc.teamcode.subclasses.MecaTank;
 import org.firstinspires.ftc.teamcode.subclasses.PlaneLauncher;
@@ -41,20 +40,14 @@ public class MecanumTeleOp extends LinearOpMode {
 
 
     public enum DELIVERY_STATE {
-        WAIT,  INTAKE,PLUNGER_DOWN, TRANSFER, RETURN, DELIVERY, D1, RAISE_PLUNGER, D2
+        WAIT,  INTAKE,PLUNGER_DOWN, TRANSFER, RETURN, DELIVERY, D1, RAISE_PLUNGER, D2, START_THROW, MOVE_ARM_THROW, RETURN_ARM_THROW
     }
-    public enum THROW_STATE{
-        WAIT, OPEN_PLUNGER, MOVE_ARM, RETURN_ARM
-    }
-    public enum RIGGING_STATE{
-        WAIT, EXTEND, ADD_SLACK
-    }
+
+
     public enum UNICORN_STATE{
         WAIT, DELIVER, RETRACT,EXTEND
     }
-    THROW_STATE throw_state;
     DELIVERY_STATE delivery_state;
-    RIGGING_STATE rigging_state;
     UNICORN_STATE unicorn_state;
     AprilTagPipeline apriltag_pipeline;
     ArrayList<Integer> apriltag_targets;
@@ -64,6 +57,7 @@ public class MecanumTeleOp extends LinearOpMode {
     public static boolean aarushi_being_useful = true;
     private boolean move_next = false;
     private boolean plane_launcher = false;
+    private boolean lock_stow = false;
     public static boolean active_telemetry = false;
     private double plane_time = 0;
     private double throw_time = 0;
@@ -82,8 +76,7 @@ public class MecanumTeleOp extends LinearOpMode {
 
 
         delivery_state = DELIVERY_STATE.TRANSFER;
-        throw_state = THROW_STATE.WAIT;
-        rigging_state = RIGGING_STATE.WAIT;
+
         unicorn_state = UNICORN_STATE.WAIT;
 
         if(DataTransfer.init) {
@@ -136,7 +129,43 @@ public class MecanumTeleOp extends LinearOpMode {
 
             switch(delivery_state){
                 case WAIT:
+                    if(gamepad1.right_bumper) {
+                        intake.moveClutch(0.25);
+                        delivery_state = DELIVERY_STATE.START_THROW;
+                        throw_time = timer.seconds();
+
+                        break;
+                    }
                     break;
+                case START_THROW:
+                    if (timer.seconds() - throw_time > 0.3){
+                        intake.moveArm(2000);
+                        delivery_state = DELIVERY_STATE.MOVE_ARM_THROW;
+
+                        break;
+                    }
+                    break;
+                case MOVE_ARM_THROW:
+                    if(!intake.isBusy()){
+                        intake.moveClutch(1);
+                        intake.moveBucket(1);
+                        throw_time = timer.time();
+                        delivery_state = DELIVERY_STATE.RETURN_ARM_THROW;
+
+
+
+                        break;
+                    }
+                    break;
+                case RETURN_ARM_THROW:
+                    if (timer.seconds() - throw_time > 0.3) {
+
+                        delivery_state = DELIVERY_STATE.TRANSFER;
+                        next_delivery_state = DELIVERY_STATE.INTAKE;
+                        break;
+                    }
+                    break;
+
                 case INTAKE:
                     intake.pickup();
                     delivery_state = DELIVERY_STATE.WAIT;
@@ -253,38 +282,6 @@ public class MecanumTeleOp extends LinearOpMode {
 
 
 
-            switch(throw_state){
-                case WAIT:
-                    if(gamepad1.right_bumper) {
-                        intake.moveClutch(0.25);
-                        throw_state = THROW_STATE.OPEN_PLUNGER;
-                        throw_time = timer.seconds();
-                        break;
-                    }
-                    break;
-                case OPEN_PLUNGER:
-                    if (timer.seconds() - throw_time > 0.3){
-                            intake.moveArm(2000);
-                            throw_state = THROW_STATE.MOVE_ARM;
-                            break;
-                    }
-                    break;
-                case MOVE_ARM:
-                    if(!intake.isBusy()){
-                        intake.moveClutch(0);
-                        intake.moveBucket(0);
-                        intake.moveArm(0);
-                        throw_state = THROW_STATE.RETURN_ARM;
-                        break;
-                    }
-                    break;
-                case RETURN_ARM:
-                    if (!intake.isBusy()) {
-                        throw_state = THROW_STATE.WAIT;
-                        break;
-                    }
-                    break;
-            }
 
             if(bucket_compensation){
                 intake.bucket_compensation();
@@ -294,47 +291,19 @@ public class MecanumTeleOp extends LinearOpMode {
                 plane_launcher = true;
                 plane_time = timer.seconds();
             }
-            if(plane_launcher && !intake.isBusy() && timer.seconds() - plane_time > 0.4){
+            if(plane_launcher && !intake.isCompleteFor(1) && timer.seconds() - plane_time > 0.4){
                 planeLauncher.launch();
             }
-//            switch(rigging_state){
-//                case WAIT:
-//                    if(gamepad2.x){
-//                        shivaniRigging.openBoth();
-//                        rigging_time = timer.time();
-//                        rigging_state = RIGGING_STATE.EXTEND;
-//                        break;
-//                    }
-//                    if(gamepad2.y){
-//                        shivaniRigging.addSlack();
-//                        rigging_state = RIGGING_STATE.ADD_SLACK;
-//                        break;
-//                    }
-//                    break;
-//                case EXTEND:
-//                    if(timer.time() - rigging_time > .8){
-//                        shivaniRigging.stop();
-//                        rigging_state = RIGGING_STATE.WAIT;
-//                        break;
-//                    }
-//                    break;
-//                case ADD_SLACK:
-//                    if(timer.time() - rigging_time > 0.1){
-//                        shivaniRigging.stop();
-//                        rigging_state = RIGGING_STATE.WAIT;
-//                        break;
-//                    }
-//                    break;
-//
-//
-//
-//            }
-
-            mecatank.set_min_distance(intake.calculate_robot_distance_limit(true));//sets the hardstop faster.
+            if(!gamepad1.a) {
+                mecatank.set_min_distance(intake.calculate_robot_distance_limit(true));
+            }else{
+                mecatank.set_min_distance(0);//sets the hardstop faster.
+            }
             double rigging_power = sameSignSqrt(-gamepad2.right_stick_y);
-            if(rigging_power == 0){
+            if(rigging_power == 0 && !lock_stow){
                 unicorn.stow();
             }else{
+                lock_stow=  true;
                 unicorn.rigging();
                 unicorn_time = timer.time();
             }
@@ -344,19 +313,14 @@ public class MecanumTeleOp extends LinearOpMode {
                 shivaniRigging.setRiggingPower(0);
             }
 
-
-//            if(gamepad2.x){
-//                shivaniRigging.stop();
-//            }
-//            if(gamepad2.y){
-//                shivaniRigging.openBoth();
-//            }
             if(gamepad1.left_bumper){
                 intake.addBucketPos(sameSignSqrt(gamepad1.left_trigger) / 4);
             }else{
                 intake.addBucketPos(0);
             }
-
+            if(gamepad2.x){
+                shivaniRigging.raise_hooks_to_sensor();
+            }
 
 
             all_to_telemetry();
@@ -364,6 +328,8 @@ public class MecanumTeleOp extends LinearOpMode {
             telemetry.update();
             drive.update();
             intake.update();
+            shivaniRigging.update();
+
         }
 
     }

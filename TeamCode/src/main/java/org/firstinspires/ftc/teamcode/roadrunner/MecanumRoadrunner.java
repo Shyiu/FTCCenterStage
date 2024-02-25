@@ -407,6 +407,7 @@ public class MecanumRoadrunner extends LinearOpMode {
             }
 
         }
+        rigging.release_hooks();
         delivery.travel();
         switch (location){
             case LEFT:
@@ -422,6 +423,7 @@ public class MecanumRoadrunner extends LinearOpMode {
         timer.reset();
         while(!isStopRequested() && opModeIsActive()){
             drive.update();
+            rigging.update();
             if(Math.abs(drive.getLastError().getX()) > 8 || Math.abs(drive.getLastError().getY()) > 8){
 
                 drive.breakFollowing();

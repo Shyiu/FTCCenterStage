@@ -16,19 +16,18 @@ import java.util.concurrent.TimeUnit;
 public class PIDMotor extends Subsystem{
     MecanumBotConstant m = new MecanumBotConstant();
     DcMotorEx pid_motor;
-    DigitalChannel magnet_sensor;
     public double targetPos;
     public static double P = 0.0005, I = 0.0002, D = 0;
     public static double F = 0;
     double error, lastError;
     int startPos = Integer.MAX_VALUE;
     boolean direction = true;
-    double GAIN = 30;
     private boolean reversed_encoder = false;
     public boolean stopped = false;
     private double powerReduction = 1;
     private double conversion = -1;
     private boolean reached = false;
+    private double minPower = 0;
     private boolean working_magnet;
     private ElapsedTime timer;
     private ElapsedTime total_time;
@@ -52,9 +51,12 @@ public class PIDMotor extends Subsystem{
         pid_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         pid_motor.setDirection(DcMotor.Direction.FORWARD);
 
+
+
         total_time = new ElapsedTime();
 
     }
+
     public void setPID(double P, double I, double D){
         this.P = P;
         this.I = I;
@@ -81,10 +83,10 @@ public class PIDMotor extends Subsystem{
     }
 
     public boolean isBusy(){
-        return reached && total_time.time(TimeUnit.SECONDS) - completed_time > 0.500;
+        return !(reached && total_time.time(TimeUnit.SECONDS) - completed_time > 0.125);
     }
     public boolean isCompletedFor(double time){
-        return reached && total_time.time(TimeUnit.SECONDS) - completed_time > time;
+        return !(reached && total_time.time(TimeUnit.SECONDS) - completed_time > time);
 
     }
 
@@ -104,6 +106,7 @@ public class PIDMotor extends Subsystem{
         telemetry.addData(name + "'s Min Hardstop", minHardstop);
         telemetry.addData(name + "'s direction", direction);
         telemetry.addData(name + " Exceeding Constraints", exceedingConstraints());
+        telemetry.addData(name + " Busy Status", isBusy());
         telemetry.addData("Out Power", out);
 
 
@@ -230,7 +233,7 @@ public class PIDMotor extends Subsystem{
         out += Math.copySign(F, out) ;
         out *= (reversed_encoder ? -1 : 1);
         setPower(out);
-        if(Math.abs(out) < 0.01 && !reached){
+        if(Math.abs(error) < 20 && !reached){
             reached = true;
             completed_time = total_time.time(TimeUnit.SECONDS);
         }

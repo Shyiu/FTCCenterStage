@@ -30,7 +30,7 @@ public class Intake extends Subsystem{
 
     public static double clutch_in = .58;
     public static double clutch_one = .71;
-    public static double clutch_two = .83;
+    public static double clutch_two = .8;
 
 //    public static double deg_per_tick = 90.0/(1700 - 603);//will replace with gyro
 //    public static double level_position = 603;
@@ -163,8 +163,11 @@ public class Intake extends Subsystem{
     public boolean isBusy(){
         return slide_rotation.isBusy();
     }
+    public boolean isCompleteFor(double seconds){
+        return slide_rotation.isCompletedFor(seconds);
+    }
     public void raise_clutch(){
-        moveClutch(0.46);
+        moveClutch(clutch_two);
     }
 
     public void delivery(){
@@ -181,6 +184,7 @@ public class Intake extends Subsystem{
     @Override
     public void telemetry() {
         slide_rotation.telemetry();
+
         telemetry.addData("Anchor Position", anchor_position);
         telemetry.addData("Running", running);
         telemetry.addData("Arm Angle", ARM_ANGLE);
@@ -210,9 +214,9 @@ public class Intake extends Subsystem{
     public double calculate_robot_distance_limit(){
         double robot_dist = 0;
         if(slide_rotation.getCurrentPosition() > 2000) {
-            double m = (5.4 - 2.3)/(2400 - 2200);
-            double b = 3.3;
-            robot_dist = m * (slide_rotation.getCurrentPosition() - 2300) + b;
+            double m = (2.7 - 0.58)/(2200 - 2000);
+            double b = 0.58;
+            robot_dist = m * (slide_rotation.getCurrentPosition() - 2000) + b;
            
         }
         telemetry.addData("Robot Distance", robot_dist);
@@ -234,8 +238,8 @@ public class Intake extends Subsystem{
     }
     public void bucket_compensation(){
         if(slide_rotation.getCurrentPosition() > 2000) {
-            double m = (0.09 - 0.05)/(2450 - 2300);
-            double b = 0.05;
+            double m = (0.04 - 0.08)/(2100 - 2300);
+            double b = 0.08;
             double target = m * (slide_rotation.getCurrentPosition() - 2300) + b;
             moveBucket(target);
             telemetry.addData("Target", target);

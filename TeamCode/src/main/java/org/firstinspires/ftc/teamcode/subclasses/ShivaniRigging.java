@@ -21,19 +21,23 @@ public class ShivaniRigging extends Subsystem{
     TouchSensor touchSensor;  // Touch sensor Object
     DigitalChannel magnet_sensor;
 
+
     MecanumBotConstant mc = new MecanumBotConstant();
-    private boolean busy = false;
-    private boolean first = true;
-    private boolean up = false;
+    private boolean releasing_hooks = false;
+
     private boolean activated = false;
+
     private boolean touchSensorLimit = true;
-
-    public static double P = 0.0025, I = 1/(210.0 * 2), D = 0;
-    public static double target_position = 162;
+    public static double P = 0.006;
+    private double expected_run_time = .3;
+    private double hook_time = 0;
+    private double release_time = 0;
     ElapsedTime timer;
-    private double delay = .5;
-
-    public static double hold_speed = 0;
+    private enum HOOK_STATE{
+        EXTEND, RETRACT
+    }
+    private HOOK_STATE release_state = HOOK_STATE.EXTEND;
+    public static double HOOK_POWER = 1;
     private String state = "Init";
     Telemetry telemetry;
 
@@ -41,7 +45,7 @@ public class ShivaniRigging extends Subsystem{
         timer = new ElapsedTime();
         this.telemetry = telemetry;
         riggingMotor = new PIDMotor(hardwareMap, telemetry, mc.rigging_motor);
-        hookMotor = new PIDMotor(hardwareMap, telemetry, mc.hook_motor);
+        hookMotor = new PIDMotor(hardwareMap, telemetry,  mc.hook_motor);
         touchSensor = hardwareMap.get(TouchSensor.class, mc.limit_switch);
 
 
@@ -51,14 +55,18 @@ public class ShivaniRigging extends Subsystem{
         riggingMotor.setMaxIntegral(1);
 
         hookMotor.setDirection(DcMotor.Direction.REVERSE);
-        hookMotor.setMin(-60);
-        hookMotor.setMax(270);
         hookMotor.pid_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        hookMotor.setMax(280);
+        hookMotor.setMin(-50);
+        hookMotor.P = P;
+        hookMotor.I = 0;
 
 
-//        magnet_sensor = hardwareMap.get(DigitalChannel.class, mc.magnet_sensor);
-//        // set the digital channel to input.
-//        magnet_sensor.setMode(DigitalChannel.Mode.INPUT);
+
+        magnet_sensor = hardwareMap.get(DigitalChannel.class, mc.magnet_sensor);
+        // set the digital channel to input.
+        magnet_sensor.setMode(DigitalChannel.Mode.INPUT);
+
 
 
 
@@ -66,9 +74,22 @@ public class ShivaniRigging extends Subsystem{
 
     }
     public void setHookPower(double power){
-        hookMotor.setPower(power);
+        if(power > 0){
+            if(magnet_activated()){
+                hookMotor.setAbsPower(0);
+            }else {
+                hookMotor.setAbsPower(power);
+            }
+        }else{
+            hookMotor.setAbsPower(power);
+        }
     }
-
+    public void openHooks(){
+        setHookPower(HOOK_POWER);
+    }
+    public void closeHooks(){
+        setHookPower(-0.3);
+    }
     private boolean magnet_activated(){
         return !magnet_sensor.getState();
     }
@@ -85,35 +106,65 @@ public class ShivaniRigging extends Subsystem{
 
     @Override
     public void telemetry() {
-        hookMotor.telemetry();
         riggingMotor.telemetry();
+        hookMotor.telemetry();
+        telemetry.addData("Magnet Activated", magnet_activated());
+        telemetry.addData("Hook Speed", hookMotor.getPower());
         telemetry.addData("State: ", state);
 
     }
     public boolean isBusy(){
         return activated && hookMotor.isBusy();
     }
-    public boolean isCompletedFor(double time){
-        return activated && hookMotor.isCompletedFor(time);
-    }
-    public void activate(){
-        hookMotor.move_async(target_position);
+    public void raise_hooks_to_sensor(){
+        hook_time = timer.time();
         activated = true;
     }
+
 
     public void release_motor(){
         hookMotor.pid_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
     public void update(){
-        hookMotor.update();
+        if(activated){
+            double elapsed_time = timer.time() - hook_time;
+            double motor_power = Math.max(0.35, HOOK_POWER * (expected_run_time - elapsed_time)/expected_run_time);
+            setHookPower(motor_power);
+            if(magnet_activated()){
+                activated = false;
+                release_motor();
+            }
+        }else{
+            hookMotor.update();
+        }
+        if(releasing_hooks){
+            switch(release_state){
+                case EXTEND:
+                    if(!hookMotor.isBusy()){
+                        hookMotor.move_async(0);
+                        release_time = timer.time();
+                        release_state = HOOK_STATE.RETRACT;
+                    }
+                    break;
+                case RETRACT:
+                    if(!hookMotor.isBusy()){
+                        setHookPower(0);
+                        releasing_hooks = false;
+                    }
+                    break;
+
+            }
+        }
     }
-    public void set_hook_target_position(double target_position){
-        hookMotor.move_async(target_position);
-        activated= true;
+    public void moveHook(int target){
+        hookMotor.move_async(target);
     }
     public void release_hooks(){
-        hookMotor.move_sync(120,3,0.6);
-        hookMotor.move_sync(-60 ,3,0.2);
+        hookMotor.init();
+        hookMotor.move_async(150);
+        releasing_hooks = true;
+        release_state = HOOK_STATE.EXTEND;
+
     }
 
     public void resetEncoder() {
@@ -139,9 +190,6 @@ public class ShivaniRigging extends Subsystem{
 
     @Override
     public void init() {
-        hookMotor.I = I;
-        hookMotor.P = P;
-        hookMotor.D = D;
         riggingMotor.setMax(0);
         hookMotor.init();
 
