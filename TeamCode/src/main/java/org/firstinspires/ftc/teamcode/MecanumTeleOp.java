@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -13,7 +14,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.pipelines.AprilTagPipeline;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.MecanumDrive;
+import org.firstinspires.ftc.teamcode.subclasses.Color;
+import org.firstinspires.ftc.teamcode.subclasses.Distance;
 import org.firstinspires.ftc.teamcode.subclasses.Intake;
+import org.firstinspires.ftc.teamcode.subclasses.MRDistance;
 import org.firstinspires.ftc.teamcode.subclasses.MecaTank;
 import org.firstinspires.ftc.teamcode.subclasses.PlaneLauncher;
 import org.firstinspires.ftc.teamcode.subclasses.ShivaniRigging;
@@ -35,15 +39,19 @@ public class MecanumTeleOp extends LinearOpMode {
     Unicorn unicorn;
     ShivaniRigging shivaniRigging;
     PlaneLauncher planeLauncher;
-
+    MRDistance mrDistance;
+    Distance distance;
+    Color color;
     ElapsedTime timer = new ElapsedTime();
 
 
     public enum DELIVERY_STATE {
-        WAIT,  INTAKE,PLUNGER_DOWN, TRANSFER, RETURN, DELIVERY, D1, RAISE_PLUNGER, D2, START_THROW, MOVE_ARM_THROW, RETURN_ARM_THROW
+        WAIT,  INTAKE,PLUNGER_DOWN, TRANSFER, RETURN, DELIVERY, D1, RAISE_PLUNGER, D2, START_THROW, MOVE_ARM_THROW, BACK_UP_DELAY, RETURN_ARM_THROW
     }
 
-
+    public enum SCANNING_STATE{
+        WAIT, STRAFE, FIRST_HIT, LAST_HIT, STRAFE_ADJUSTMENT, RESET, INTAKE
+    }
     public enum UNICORN_STATE{
         WAIT, DELIVER, RETRACT,EXTEND
     }
@@ -51,19 +59,33 @@ public class MecanumTeleOp extends LinearOpMode {
     UNICORN_STATE unicorn_state;
     AprilTagPipeline apriltag_pipeline;
     ArrayList<Integer> apriltag_targets;
+    SCANNING_STATE scanning_state;
 
     public double delivery_timer = 0;
     public static int plane_launch_height = 260;
+    public static double PIXEL_DISTANCE = 3;
     public static boolean aarushi_being_useful = true;
     private boolean move_next = false;
     private boolean plane_launcher = false;
     private boolean lock_stow = false;
+    private boolean scanning = false;
     public static boolean active_telemetry = false;
+    public static boolean red = false;
     private double plane_time = 0;
     private double throw_time = 0;
     private double rigging_time = 0;
     private double unicorn_time = 0;
+    private double scanning_time;
+    private double delay_timer = 0;
+    private boolean rr_on = false;
+    private double past_color_reading = 0;
+    private double past_color_timer = 0;
+    private double starting_position = 0;
+    public static double BACKDROP_DISTANCE = 15.00;
+    public static double PIXEL_TIME = 0.6;
     private boolean bucket_compensation = false;
+    public static double CORRECTION_HEADING_BACK = -0.05;
+    public static double CORRECTION_HEADING_FORWARD = 0.05;
     DELIVERY_STATE next_delivery_state = DELIVERY_STATE.INTAKE;
 
     public MecanumBotConstant config = new MecanumBotConstant();
@@ -79,6 +101,8 @@ public class MecanumTeleOp extends LinearOpMode {
 
         unicorn_state = UNICORN_STATE.WAIT;
 
+        scanning_state = SCANNING_STATE.WAIT;
+
         if(DataTransfer.init) {
             imu = DataTransfer.imu;
         }else{
@@ -92,8 +116,10 @@ public class MecanumTeleOp extends LinearOpMode {
             DataTransfer.imu = imu;
             DataTransfer.init = true;
         }
+//        red = DataTransfer.red;
         drive = new MecanumDrive(hardwareMap);
 
+        mrDistance = new MRDistance(hardwareMap, telemetry);
 
         mecatank = new MecaTank(hardwareMap, telemetry);
 
@@ -105,10 +131,16 @@ public class MecanumTeleOp extends LinearOpMode {
 
         unicorn = new Unicorn(hardwareMap, telemetry);
 
+        distance = new Distance(hardwareMap, telemetry);
+
+        color = new Color(hardwareMap, telemetry);
+
         mecatank.init();
         shivaniRigging.init();
         intake.init();
         planeLauncher.init();
+        mrDistance.init();
+        distance.init();
 
 
         all_to_telemetry();
@@ -121,12 +153,37 @@ public class MecanumTeleOp extends LinearOpMode {
 
         while (!isStopRequested() && opModeIsActive()) {
 
-            mecatank.setPowers(gamepad1.left_stick_y, gamepad1.right_stick_y, gamepad1.left_bumper ? 0 : gamepad1.left_trigger, gamepad1.right_trigger);
+            if(timer.time() - past_color_timer > 0.005){
+                past_color_reading = color.getDist();
+                past_color_timer = timer.time();
+            }
+            if(gamepad1.dpad_left){
+                if(!rr_on) {
+                    drive.setWeightedDrivePower(new Pose2d(-1, 0, CORRECTION_HEADING_BACK));
+                }
+                rr_on = true;
+            }else if(gamepad1.dpad_right){
+                if(!rr_on) {
+                    drive.setWeightedDrivePower(new Pose2d(1, 0, CORRECTION_HEADING_FORWARD));
+                }
+                rr_on = true;
+            }else if(rr_on) {
+                rr_on = false;
+                drive.setWeightedDrivePower(new Pose2d());
+            }else if(!drive.isBusy() && !scanning){
+                mecatank.setPowers(gamepad1.left_stick_y, gamepad1.right_stick_y, gamepad1.left_bumper ? 0 : gamepad1.left_trigger, gamepad1.right_trigger);
+            }
+            if(gamepad1.y && scanning){
+                scanning = false;
+                scanning_state = SCANNING_STATE.RESET;
+                scanning_time = timer.time();
+                drive.setWeightedDrivePower(new Pose2d());
+            }
 
-
-
-
-
+            if(gamepad2.right_bumper){
+                intake.setPower(0);
+                shivaniRigging.setHookPower(0);
+            }
             switch(delivery_state){
                 case WAIT:
                     if(gamepad1.right_bumper) {
@@ -138,7 +195,7 @@ public class MecanumTeleOp extends LinearOpMode {
                     }
                     break;
                 case START_THROW:
-                    if (timer.seconds() - throw_time > 0.3){
+                    if (timer.seconds() - throw_time > 0.1){
                         intake.moveArm(2000);
                         delivery_state = DELIVERY_STATE.MOVE_ARM_THROW;
 
@@ -158,7 +215,7 @@ public class MecanumTeleOp extends LinearOpMode {
                     }
                     break;
                 case RETURN_ARM_THROW:
-                    if (timer.seconds() - throw_time > 0.3) {
+                    if (timer.seconds() - throw_time > 0.2) {
 
                         delivery_state = DELIVERY_STATE.TRANSFER;
                         next_delivery_state = DELIVERY_STATE.INTAKE;
@@ -172,12 +229,24 @@ public class MecanumTeleOp extends LinearOpMode {
                     move_next = true;
                     break;
                 case RAISE_PLUNGER:
+
                     intake.raise_clutch();
                     delivery_state = DELIVERY_STATE.WAIT;
                     break;
                 case PLUNGER_DOWN:
                     intake.rotate_bucket();
                     delivery_state = DELIVERY_STATE.WAIT;
+                    delay_timer = timer.time();
+                    drive.setWeightedDrivePower(new Pose2d(-0.5,0,0));
+                    move_next = true;
+
+                    break;
+                case BACK_UP_DELAY:
+                    if(timer.time() - delay_timer > 0.3){
+                        drive.setWeightedDrivePower(new Pose2d());
+                        delivery_state = DELIVERY_STATE.WAIT;
+                        move_next = true;
+                    }
                     break;
                 case TRANSFER:
                 case RETURN:
@@ -192,12 +261,60 @@ public class MecanumTeleOp extends LinearOpMode {
                 case D2:
                     intake.delivery_next();
                     delivery_state = DELIVERY_STATE.WAIT;
-
+                    Pose2d drive_estimate = drive.getPoseEstimate();
+                    drive.setPoseEstimate(new Pose2d(distance.getDistFromRobotEdge(), drive_estimate.getY(), drive_estimate.getHeading()));
                     break;
 
             }
-            intake.setPower(sameSignSqrt(-gamepad2.left_stick_y));
+            double intake_power = sameSignSqrt(gamepad2.left_stick_y/2.0);
+            if((distance.getDistFromRobotEdge() < intake.calculate_robot_distance_limit(true) + 2) && intake_power > 0 && intake.getPosition() > intake.calculate_arm_limit(distance.getDistFromRobotEdge()) ){
+                intake.setPower(0);
+            }else{
+                intake.setPower(intake_power);
+            }
+            if(gamepad2.y){
+                shivaniRigging.release_motor();
+            }
+            switch(scanning_state){
+                case RESET:
+                    if(timer.time() - scanning_time > 0.3){
+                        scanning_state=  SCANNING_STATE.WAIT;
+                    }
+                    break;
+                case WAIT:
+                    scanning = false;
+                    if(gamepad1.y){
+                        drive.setWeightedDrivePower(new Pose2d(0, red ? 0.5 : -0.5,0));
+                        scanning_state = SCANNING_STATE.FIRST_HIT;
+                        scanning = true;
+                    }
+                    break;
+                case FIRST_HIT:
+                    if(Math.abs(past_color_reading - color.getDist()) > PIXEL_DISTANCE){
+                        if (red) {
+                            drive.setWeightedDrivePower(new Pose2d(0, -0.2, 0));
+                        }
+                        scanning_state = SCANNING_STATE.STRAFE;
+                        scanning_time = timer.time();
+                        starting_position = drive.getPoseEstimate().getY();
+                    }
+                    break;
+                    //Check if the color sensor detects less than 25 cm or something.
+                case STRAFE:
+                    if((red && timer.time() -scanning_time > PIXEL_TIME) || (!red && Math.abs(drive.getPoseEstimate().getY() - starting_position) > PIXEL_DISTANCE)){
+                        drive.setWeightedDrivePower(new Pose2d());
+                        scanning_state = SCANNING_STATE.INTAKE;
+                    }
+                    break;
+                //strafe for (x) seconds after first hit.
+                case INTAKE:
+                    next_delivery_state = DELIVERY_STATE.INTAKE;
+                    move_next = true;
+                    scanning_state = SCANNING_STATE.WAIT;
+                    break;
 
+
+            }
             boolean abutton = aarushi_being_useful ? gamepad2.a : gamepad1.a;
             if ((abutton || move_next) && time.time(TimeUnit.MILLISECONDS) - delivery_timer > 300 ){
                 move_next = false;
@@ -214,6 +331,10 @@ public class MecanumTeleOp extends LinearOpMode {
                         break;
                     case PLUNGER_DOWN:
                         delivery_state = DELIVERY_STATE.PLUNGER_DOWN;
+                        next_delivery_state = DELIVERY_STATE.BACK_UP_DELAY;
+                        break;
+                    case BACK_UP_DELAY:
+                        delivery_state = DELIVERY_STATE.BACK_UP_DELAY;
                         next_delivery_state = DELIVERY_STATE.TRANSFER;
                         break;
                     case TRANSFER:
@@ -290,24 +411,34 @@ public class MecanumTeleOp extends LinearOpMode {
                 intake.moveArm(plane_launch_height);
                 plane_launcher = true;
                 plane_time = timer.seconds();
+                Pose2d start = drive.getPoseEstimate();
+                Trajectory toLaunch = drive.trajectoryBuilder(start)
+                        .back(start.getX() - BACKDROP_DISTANCE)
+                        .build();
+                drive.followTrajectoryAsync(toLaunch);
             }
-            if(plane_launcher && !intake.isCompleteFor(1) && timer.seconds() - plane_time > 0.4){
+
+            if(!drive.isBusy() && plane_launcher && !intake.isCompleteFor(1) && timer.seconds() - plane_time > 0.4){
                 planeLauncher.launch();
             }
+
             if(!gamepad1.a) {
                 mecatank.set_min_distance(intake.calculate_robot_distance_limit(true));
             }else{
                 mecatank.set_min_distance(0);//sets the hardstop faster.
             }
-            double rigging_power = sameSignSqrt(-gamepad2.right_stick_y);
-            if(rigging_power == 0 && !lock_stow){
+            double rigging_power = sameSignSqrt(gamepad2.right_stick_y);
+            if(rigging_power == 0 && !lock_stow ){
                 unicorn.stow();
-            }else{
-                lock_stow=  true;
+            }else if(timer.time() > 85){
+                if(!lock_stow) {
+                    unicorn_time = timer.time();
+                }
+                lock_stow = true;
                 unicorn.rigging();
-                unicorn_time = timer.time();
+
             }
-            if(!unicorn.isStowed() && timer.time() - unicorn_time > 0.3) {
+            if(lock_stow && timer.time() - unicorn_time > 0.3) {
                 shivaniRigging.setRiggingPower(rigging_power);
             }else{
                 shivaniRigging.setRiggingPower(0);
@@ -318,7 +449,7 @@ public class MecanumTeleOp extends LinearOpMode {
             }else{
                 intake.addBucketPos(0);
             }
-            if(gamepad2.x){
+            if(gamepad2.x && timer.time() > 85){
                 shivaniRigging.raise_hooks_to_sensor();
             }
 

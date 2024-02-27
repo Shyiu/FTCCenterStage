@@ -13,7 +13,7 @@ public class MecaTank extends Subsystem{
     private MecanumBotConstant config;
     private Telemetry telemetry;
     private final double MAX_DRIVE_SPEED = 1;
-    public static double MIN_DISTANCE = 0;
+    public static double MIN_DISTANCE = 0.58;
     public MecaTank(HardwareMap hardwareMap, Telemetry telemetry){
         config = new MecanumBotConstant();
         frontLeft = hardwareMap.get(DcMotor.class, config.fl);

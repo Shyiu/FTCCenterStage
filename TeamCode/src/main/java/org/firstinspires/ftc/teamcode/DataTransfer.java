@@ -6,4 +6,6 @@ public class DataTransfer {
     public static IMU imu;
     public static boolean init = false;
     public static boolean delivered = true;
+    public static boolean red = false;
 }
+

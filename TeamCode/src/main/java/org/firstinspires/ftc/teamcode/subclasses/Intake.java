@@ -28,7 +28,7 @@ public class Intake extends Subsystem{
     public static double servo_rotation_pickup = 0.6;
     private static double anchor_position = 0;
 
-    public static double clutch_in = .58;
+    public static double clutch_in = .62;
     public static double clutch_one = .71;
     public static double clutch_two = .8;
 
@@ -209,7 +209,7 @@ public class Intake extends Subsystem{
         slide_rotation.D = D;
         slide_rotation.move_sync(rotation_init, 5, .1);
         moveBucket(truss_position);
-        moveClutch(clutch_two);
+        moveClutch(0.65);
     }
     public double calculate_robot_distance_limit(){
         double robot_dist = 0;
@@ -228,19 +228,29 @@ public class Intake extends Subsystem{
             return calculate_robot_distance_limit();
         }
         if(slide_rotation.targetPos > 2000) {
-            double m = (5.4 - 2.3)/(2400 - 2200);
-            double b = 3.3;
-            robot_dist = m * (slide_rotation.getCurrentPosition() - 2300) + b;
+            double m = (2.7 - 0.58)/(2200 - 2000);
+            double b = 0.58;
+            robot_dist = m * (slide_rotation.targetPos - 2000) + b;
 
         }
         telemetry.addData("Robot Distance", robot_dist);
         return robot_dist;
     }
+    public int calculate_arm_limit(double robot_distance){
+        double m = (2200 - 2000)/(2.7 - 0.58);
+        double b = 0.58;
+        int arm_limit = (int) Math.floor((robot_distance - b) * m);
+        return arm_limit;
+    }
+    public int getPosition(){
+        return slide_rotation.getCurrentPosition();
+    }
+
     public void bucket_compensation(){
         if(slide_rotation.getCurrentPosition() > 2000) {
-            double m = (0.04 - 0.08)/(2100 - 2300);
-            double b = 0.08;
-            double target = m * (slide_rotation.getCurrentPosition() - 2300) + b;
+            double m = (0.07 - 0.03)/(2400 - 2300);
+            double b = 0.07;
+            double target = m * (slide_rotation.getCurrentPosition() - 2400) + b;
             moveBucket(target);
             telemetry.addData("Target", target);
         }

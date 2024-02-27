@@ -18,6 +18,8 @@ public class MecanumBotConstant {
 
     public String plane_launcher_spring_servo = "spring_servo";//4
 
+    public String range_sensor = "sensor_range";//I2C 1
+    public String color_sensor = "sensor_color";//I2C 2
 
 
 

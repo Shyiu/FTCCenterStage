@@ -14,6 +14,8 @@
             <RevTouchSensor name="sensor_touch" port="1" />
             <REV_VL53L0X_RANGE_SENSOR name="distance_sensor" port="0" bus="2" />
             <Gyro name="gyro" port="0" bus="3" />
+            <DigitalDevice name="magnet_sensor" port="6" />
+
         </LynxModule>
         <LynxModule name="Control Hub" port="173">
             <NeveRest20Gearmotor name="frontRight" port="0" />
@@ -24,7 +26,6 @@
             <ContinuousRotationServo name="rigging_right" port="1" />
             <Servo name="plunger_servo" port="2" />
             <Servo name="delivery_servo" port="5" />
-            <DigitalDevice name="magnet_sensor" port="0" />
             <LynxEmbeddedIMU name="imu" port="0" bus="0" />
             <ModernRoboticsI2cRangeSensor name="sensor_range" port="0" bus="1" />
         </LynxModule>

@@ -28,6 +28,10 @@ public class ShivaniRigging extends Subsystem{
     private boolean activated = false;
 
     private boolean touchSensorLimit = true;
+
+    private boolean disable_update = false;
+
+    private boolean start_move = false;
     public static double P = 0.006;
     private double expected_run_time = .3;
     private double hook_time = 0;
@@ -123,19 +127,36 @@ public class ShivaniRigging extends Subsystem{
 
 
     public void release_motor(){
+
+        setHookPower(0);
         hookMotor.pid_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
     public void update(){
+
         if(activated){
+            if(magnet_activated()){
+                setHookPower(0);
+                hookMotor.init();
+                setHookPower(-.3);
+                try {
+                    sleep(200);
+                }catch(InterruptedException e){
+
+                }
+                disable_update = true;
+
+                activated = false;
+                //                release_motor();
+            }
+
             double elapsed_time = timer.time() - hook_time;
             double motor_power = Math.max(0.35, HOOK_POWER * (expected_run_time - elapsed_time)/expected_run_time);
             setHookPower(motor_power);
-            if(magnet_activated()){
-                activated = false;
-                release_motor();
-            }
+
         }else{
-            hookMotor.update();
+            if(!disable_update) {
+                hookMotor.update();
+            }
         }
         if(releasing_hooks){
             switch(release_state){

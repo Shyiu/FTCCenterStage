@@ -87,6 +87,7 @@ public class MecanumRoadrunner extends LinearOpMode {
 
         DataTransfer.init = false;
 
+
         plane = new PlaneLauncher(hardwareMap);
         delivery = new Unicorn(hardwareMap, telemetry);
         distance = new Distance(hardwareMap, telemetry);
@@ -169,6 +170,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                 break;
             }
         }
+        DataTransfer.red = red;
 
         mc = new MecanumBotConstant();
         drive = new MecanumDrive(hardwareMap);
@@ -195,19 +197,20 @@ public class MecanumRoadrunner extends LinearOpMode {
             case BLUE_STACK:
             case RED_BACKDROP:
                 MIDDLE_TARGET = new Rect(
-                        new Point(670, 330),
-                        new Point(800, 460)
+                        new Point(670, 250),
+                        new Point(800, 406)
                 );
 
                 OTHER_TARGET = new Rect(
 
 
-                        new Point(230, 310),
-                        new Point(370, 410)
+                        new Point(230, 230),
+                        new Point(370, 380)
                 );
                 break;
 
         }
+
         boxDetection = new BoxDetection(telemetry, MIDDLE_TARGET, OTHER_TARGET, red, !stack);
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, mc.camera), cameraMonitorViewId);

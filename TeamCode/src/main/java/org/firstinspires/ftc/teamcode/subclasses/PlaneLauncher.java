@@ -30,10 +30,10 @@ public class PlaneLauncher extends Subsystem{
         launcher.setPosition(position);
     }
     public void launch(){
-        launcher.setPosition(0);
+        launcher.setPosition(.2);//change also
     }
     public void reset(){
-        launcher.setPosition(.65);
+        launcher.setPosition(1);//change
     }
 
     @Override
