@@ -40,7 +40,8 @@ public class MecanumTeleOp extends LinearOpMode {
     ShivaniRigging shivaniRigging;
     PlaneLauncher planeLauncher;
     MRDistance mrDistance;
-    Distance distance;
+    Distance distance_back;
+    
     Color color;
     ElapsedTime timer = new ElapsedTime();
 
@@ -50,7 +51,7 @@ public class MecanumTeleOp extends LinearOpMode {
     }
 
     public enum SCANNING_STATE{
-        WAIT, STRAFE, FIRST_HIT, LAST_HIT, STRAFE_ADJUSTMENT, RESET, INTAKE
+        WAIT, STRAFE, FIRST_HIT, LAST_HIT, STRAFE_ADJUSTMENT, RESET, APPROACH, INTAKE
     }
     public enum UNICORN_STATE{
         WAIT, DELIVER, RETRACT,EXTEND
@@ -131,7 +132,7 @@ public class MecanumTeleOp extends LinearOpMode {
 
         unicorn = new Unicorn(hardwareMap, telemetry);
 
-        distance = new Distance(hardwareMap, telemetry);
+        distance_back = new Distance(hardwareMap, telemetry);
 
         color = new Color(hardwareMap, telemetry);
 
@@ -140,7 +141,7 @@ public class MecanumTeleOp extends LinearOpMode {
         intake.init();
         planeLauncher.init();
         mrDistance.init();
-        distance.init();
+        distance_back.init();
 
 
         all_to_telemetry();
@@ -262,12 +263,12 @@ public class MecanumTeleOp extends LinearOpMode {
                     intake.delivery_next();
                     delivery_state = DELIVERY_STATE.WAIT;
                     Pose2d drive_estimate = drive.getPoseEstimate();
-                    drive.setPoseEstimate(new Pose2d(distance.getDistFromRobotEdge(), drive_estimate.getY(), drive_estimate.getHeading()));
+                    drive.setPoseEstimate(new Pose2d(distance_back.getDistFromRobotEdge(), drive_estimate.getY(), drive_estimate.getHeading()));
                     break;
 
             }
             double intake_power = sameSignSqrt(gamepad2.left_stick_y/2.0);
-            if((distance.getDistFromRobotEdge() < intake.calculate_robot_distance_limit(true) + 2) && intake_power > 0 && intake.getPosition() > intake.calculate_arm_limit(distance.getDistFromRobotEdge()) ){
+            if((distance_back.getDistFromRobotEdge() < intake.calculate_robot_distance_limit(true) + 2) && intake_power > 0 && intake.getPosition() > intake.calculate_arm_limit(distance_back.getDistFromRobotEdge()) ){
                 intake.setPower(0);
             }else{
                 intake.setPower(intake_power);
@@ -275,6 +276,7 @@ public class MecanumTeleOp extends LinearOpMode {
             if(gamepad2.y){
                 shivaniRigging.release_motor();
             }
+            double distance_to_go = 0;//distance sensor in front - offset (pixel length)
             switch(scanning_state){
                 case RESET:
                     if(timer.time() - scanning_time > 0.3){
@@ -284,13 +286,23 @@ public class MecanumTeleOp extends LinearOpMode {
                 case WAIT:
                     scanning = false;
                     if(gamepad1.y){
-                        drive.setWeightedDrivePower(new Pose2d(0, red ? 0.5 : -0.5,0));
-                        scanning_state = SCANNING_STATE.FIRST_HIT;
+                        starting_position = drive.getPoseEstimate().getX();
+                        drive.setWeightedDrivePower(new Pose2d(0.7,0,0));
+                        scanning_state = SCANNING_STATE.FIRST_HIT;//MAKE IT APPROACH IF USING A DISTANCE SENSOR. (deadwheels if they are accurate?)
                         scanning = true;
                     }
                     break;
+                case APPROACH:
+                    double remainder = Math.abs(drive.getPoseEstimate().getX() - starting_position);
+                    drive.setWeightedDrivePower(new Pose2d(0.7 * remainder/distance_to_go));
+                    if(Math.abs(drive.getPoseEstimate().getX() - starting_position) < 0.5) {
+                        drive.setWeightedDrivePower(new Pose2d(0, red ? 0.5 : -0.5, 0));
+                        scanning_state = SCANNING_STATE.FIRST_HIT;
+
+                    }
+                    break;
                 case FIRST_HIT:
-                    if(Math.abs(past_color_reading - color.getDist()) > PIXEL_DISTANCE){
+                    if(Math.abs(past_color_reading - color.getDist()) > PIXEL_DISTANCE){//Change to distance sensor picks up a drop instead.
                         if (red) {
                             drive.setWeightedDrivePower(new Pose2d(0, -0.2, 0));
                         }
