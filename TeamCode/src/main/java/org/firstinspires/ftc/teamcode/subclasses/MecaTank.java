@@ -12,7 +12,7 @@ public class MecaTank extends Subsystem{
     private Distance distance;
     private MecanumBotConstant config;
     private Telemetry telemetry;
-    private final double MAX_DRIVE_SPEED = 1;
+    private double MAX_DRIVE_SPEED = 1;
     public static double MIN_DISTANCE = 0.58;
     public MecaTank(HardwareMap hardwareMap, Telemetry telemetry){
         config = new MecanumBotConstant();
@@ -65,6 +65,7 @@ public class MecaTank extends Subsystem{
 
         double leftPower = sameSignSqrt(-left_stick_y);
         double rightPower = sameSignSqrt(-right_stick_y);
+
         if (leftPower < 0 && rightPower < 0 && distance.getDistFromRobotEdge() < MIN_DISTANCE){
             frontRight.setPower(0);
             backRight.setPower(0);
@@ -95,5 +96,9 @@ public class MecaTank extends Subsystem{
     @Override
     public void init() {
 
+    }
+
+    public void setMaxPower(double v) {
+        MAX_DRIVE_SPEED = v;
     }
 }

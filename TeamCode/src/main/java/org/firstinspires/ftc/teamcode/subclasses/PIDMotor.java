@@ -38,6 +38,9 @@ public class PIDMotor extends Subsystem{
     private double max_integral = 0;
     private double out = 0;
     private double completed_time = 0;
+    private double SLOW_POWER = 1;
+    private int SLOW_POS = 0;
+    private boolean SLOW = false;
 
     HardwareMap hardware;
     Telemetry telemetry;
@@ -67,6 +70,7 @@ public class PIDMotor extends Subsystem{
         setPID(P,I,D);
         this.F = F;
     }
+
     public void setMaxIntegral(double max_integral){
         this.max_integral = max_integral;
     }
@@ -89,7 +93,6 @@ public class PIDMotor extends Subsystem{
         return !(reached && total_time.time(TimeUnit.SECONDS) - completed_time > time);
 
     }
-
     @Override
     public void init(){
         setPower(0);
@@ -232,7 +235,11 @@ public class PIDMotor extends Subsystem{
         }
         out += Math.copySign(F, out) ;
         out *= (reversed_encoder ? -1 : 1);
-        setPower(out);
+        if(SLOW && currentPosition > SLOW_POS){
+            setPower(out * SLOW_POWER);
+        }else {
+            setPower(out);
+        }
         if(Math.abs(error) < 20 && !reached){
             reached = true;
             completed_time = total_time.time(TimeUnit.SECONDS);
@@ -242,6 +249,14 @@ public class PIDMotor extends Subsystem{
         timer.reset();
 
 
+    }
+
+    public void setSlowPower(double power) {
+        SLOW_POWER = power;
+    }
+    public void setSlowPosition(int position){
+        SLOW_POS = position;
+        SLOW = true;
     }
 
 

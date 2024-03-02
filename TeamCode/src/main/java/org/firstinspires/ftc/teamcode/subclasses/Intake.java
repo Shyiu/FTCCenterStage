@@ -23,14 +23,17 @@ public class Intake extends Subsystem{
 
     private boolean update_rotation = true;
     private boolean gyro_ready = false;
+    private double holding_power = 0;
 
     public static int rotation_pickup = 0;
-    public static double servo_rotation_pickup = 0.6;
+    public static double servo_rotation_pickup = 0.58;
     private static double anchor_position = 0;
 
     public static double clutch_in = .62;
     public static double clutch_one = .71;
     public static double clutch_two = .8;
+
+    private double delay = 0;
 
 //    public static double deg_per_tick = 90.0/(1700 - 603);//will replace with gyro
 //    public static double level_position = 603;
@@ -48,12 +51,15 @@ public class Intake extends Subsystem{
     //rotation intake position = 0.65
     //rotation parallel to slides = 0.70
     //rotation intake delivery = 1
+    private double SLOW_POWER = 1;
+    private double SLOW_POSITION = Double.MAX_VALUE;
 
 
     private double ARM_LENGTH = 15.875;//in
     private double ARM_ANGLE = -30;
     private double BACKDROP_HEIGHT = 35;//in
     private double BACKDROP_LENGTH = 10.5;//in
+
 
     public static Servo.Direction SERVO_DIRECTION = Servo.Direction.REVERSE;
     Telemetry telemetry;
@@ -93,9 +99,17 @@ public class Intake extends Subsystem{
 
     public void moveArm(double position){
         slide_rotation.move_async(position);
+        update_rotation = true;
+        delay = timer.seconds() - 0.4;
     }
     public void moveClutch(double position){
         clutch.setPosition(position);
+    }
+    public void setSlowPower(double power){
+        slide_rotation.setSlowPower(power);
+    }
+    public void setSlowPosition(int position){
+        slide_rotation.setSlowPosition(position);
     }
     public void delivery_next(){
         if (delivery_stage > 3){
@@ -120,8 +134,8 @@ public class Intake extends Subsystem{
 
     public void update(){
         if (!update_rotation) {
-            slide_rotation.move_async(slide_rotation.getCurrentPosition());
-        }else{
+            ;
+        }else if(timer.seconds() - delay > 0.1){
             slide_rotation.update();
         }
 //        ARM_ANGLE = 180 - ((slide_rotation.getCurrentPosition() - level_position) * deg_per_tick);
@@ -143,15 +157,31 @@ public class Intake extends Subsystem{
         update_anchor();
 
     }
-
+    public void setHoldingPower(double power){
+        holding_power = power;
+    }
     public void setPower(double power){
         if(power == 0){
+            if(!update_rotation){
+                slide_rotation.move_async(slide_rotation.getCurrentPosition());
+                slide_rotation.setPower(0);
+                delay = timer.seconds();
+            }
             update_rotation = true;
             return;
         }
         update_rotation = false;
         slide_rotation.setPower(power);
     }
+//    public void setPower(double power, boolean kf){
+//        if(power == 0){
+//            update_rotation = true;
+//            delay = timer.time();
+//            return;
+//        }
+//        update_rotation = false;
+//        slide_rotation.setPower(power);
+//    }
 
     public void pickup(){
         moveArm(rotation_pickup);
@@ -227,18 +257,18 @@ public class Intake extends Subsystem{
         if(!use_target_position){
             return calculate_robot_distance_limit();
         }
-        if(slide_rotation.targetPos > 2000) {
-            double m = (2.7 - 0.58)/(2200 - 2000);
-            double b = 0.58;
-            robot_dist = m * (slide_rotation.targetPos - 2000) + b;
+        if(slide_rotation.targetPos > 2200) {
+            double m = (0.7 - 3.8)/(2200 - 2400);
+            double b = 0.7;
+            robot_dist = m * (slide_rotation.targetPos - 2200) + b;
 
         }
         telemetry.addData("Robot Distance", robot_dist);
         return robot_dist;
     }
     public int calculate_arm_limit(double robot_distance){
-        double m = (2200 - 2000)/(2.7 - 0.58);
-        double b = 0.58;
+        double m = (2200 - 2400)/(0.7 - 3.8);
+        double b = 0.7;
         int arm_limit = (int) Math.floor((robot_distance - b) * m);
         return arm_limit;
     }
@@ -247,8 +277,8 @@ public class Intake extends Subsystem{
     }
 
     public void bucket_compensation(){
-        if(slide_rotation.getCurrentPosition() > 2000) {
-            double m = (0.07 - 0.03)/(2400 - 2300);
+        if(slide_rotation.getCurrentPosition() > 2250) {
+            double m = (0.05 - 0.1)/(2400 - 2600);
             double b = 0.07;
             double target = m * (slide_rotation.getCurrentPosition() - 2400) + b;
             moveBucket(target);

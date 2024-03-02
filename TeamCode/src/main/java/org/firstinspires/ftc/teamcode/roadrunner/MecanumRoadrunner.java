@@ -55,7 +55,7 @@ public class MecanumRoadrunner extends LinearOpMode {
 
     private Vector2d left_blue = new Vector2d(49,40);
     private Vector2d middle_blue = new Vector2d(49,34);
-    private Vector2d right_blue = new Vector2d(49, 27.5);
+    private Vector2d right_blue = new Vector2d(49, 28.5);
 
     private Vector2d left_red = new Vector2d(49, -31);
     private Vector2d middle_red = new Vector2d(49,-37);
@@ -427,25 +427,26 @@ public class MecanumRoadrunner extends LinearOpMode {
         while(!isStopRequested() && opModeIsActive()){
             drive.update();
             rigging.update();
-            if(Math.abs(drive.getLastError().getX()) > 8 || Math.abs(drive.getLastError().getY()) > 8){
+            if(Math.abs(drive.getLastError().getX()) > 12 || Math.abs(drive.getLastError().getY()) > 12){
 
                 drive.breakFollowing();
                 drive.setDrivePower(new Pose2d());
                 crashed = true;
+                DataTransfer.delivered = false;
 
 
-                if(red){
-                    return;
-                }
-                //Initialize the recovery sequence
-                double angle = drive.getExternalHeading();
 
-                TrajectorySequence center = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                        .forward(5)
-                        .turn(-angle)
-                        .build();
-                drive.followTrajectorySequence(center);
-                drive.setWeightedDrivePower(new Pose2d(-0.5,0,0));
+                return;
+
+//                //Initialize the recovery sequence
+//                double angle = drive.getExternalHeading();
+//
+//                TrajectorySequence center = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+//                        .forward(5)
+//                        .turn(-angle)
+//                        .build();
+//                drive.followTrajectorySequence(center);
+//                drive.setWeightedDrivePower(new Pose2d(-0.5,0,0));
 
 
 

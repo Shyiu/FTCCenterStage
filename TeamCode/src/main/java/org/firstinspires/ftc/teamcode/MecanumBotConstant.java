@@ -36,6 +36,7 @@ public class MecanumBotConstant {
     //servos
 
     public String distance_sensor = "distance_sensor";//I2C 2
+    public String front_distance = "front_distance_sensor";//I2C 2
     public String gyro = "gyro"; //I2C 3
 
 

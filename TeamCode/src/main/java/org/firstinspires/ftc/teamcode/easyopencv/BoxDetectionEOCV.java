@@ -18,6 +18,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 public class BoxDetectionEOCV extends OpenCvPipeline {
     Telemetry telemetry;
     Mat mat = new Mat();
+    Mat output = new Mat();
     public enum Location {
         LEFT,
         MIDDLE,
@@ -73,6 +74,7 @@ public class BoxDetectionEOCV extends OpenCvPipeline {
     @Override
     public Mat processFrame(Mat input) {
         Imgproc.cvtColor(input, mat, Imgproc.COLOR_RGB2HSV);
+        input.copyTo(output);
         Scalar low, high;
         if (isRed) {
             low = new Scalar(0, 125, 0);
@@ -103,34 +105,41 @@ public class BoxDetectionEOCV extends OpenCvPipeline {
         boolean middle = MIDDLE_VALUE > OTHER_VALUE + .1 && MIDDLE_VALUE > PERCENT_COLOR_THRESHOLD;
         boolean other = OTHER_VALUE > MIDDLE_VALUE + .1 && OTHER_VALUE > PERCENT_COLOR_THRESHOLD;
 
+        Scalar red = new Scalar(255, 0, 0);
+        Scalar green = new Scalar(0,255,0);
+
 
         if (other) {
             location = isLeft ? Location.LEFT : Location.RIGHT;
             String position = location == Location.RIGHT ? "Right": "Left";
 
             telemetry.addData("Box Detection", position);
+            Imgproc.rectangle(output, MIDDLE_TARGET, red);
+            Imgproc.rectangle(output, OTHER_TARGET, green);
         }
         else if (middle){
             location = Location.MIDDLE;
             telemetry.addData("Box Detection", "Middle");
+            Imgproc.rectangle(output, MIDDLE_TARGET, green);
+            Imgproc.rectangle(output, OTHER_TARGET, red);
+
         }
         else {
             location = isLeft ? Location.RIGHT : Location.LEFT;
             String position = location == Location.RIGHT ? "Right": "Left";
             telemetry.addData("Box Detection", position);
+            Imgproc.rectangle(output, MIDDLE_TARGET, red);
+            Imgproc.rectangle(output, OTHER_TARGET, red);
         }
 
         telemetry.update();
 
-        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB);
 
 
-        Scalar white = new Scalar(255, 255, 255);
 
-        Imgproc.rectangle(mat, MIDDLE_TARGET, white);
-        Imgproc.rectangle(mat, OTHER_TARGET, white);
 
-        return mat;
+
+        return output;
 
     }
     public Location getLocation(){

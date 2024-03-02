@@ -22,6 +22,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 public class DistanceTesting extends LinearOpMode {
     Distance distance;
 
+    Distance frontDistance;
 
 
 
@@ -30,9 +31,12 @@ public class DistanceTesting extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         distance = new Distance(hardwareMap,telemetry);
+        frontDistance = new Distance(hardwareMap, telemetry, true);
+
         waitForStart();
         while(!isStopRequested() && opModeIsActive()){
             distance.telemetry();
+            frontDistance.telemetry();
             telemetry.update();
         }
     }

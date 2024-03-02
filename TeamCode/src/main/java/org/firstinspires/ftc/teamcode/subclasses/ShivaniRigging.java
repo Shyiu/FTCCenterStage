@@ -38,7 +38,7 @@ public class ShivaniRigging extends Subsystem{
     private double release_time = 0;
     ElapsedTime timer;
     private enum HOOK_STATE{
-        EXTEND, RETRACT
+        EXTEND, RETRACT, COMPLETE
     }
     private HOOK_STATE release_state = HOOK_STATE.EXTEND;
     public static double HOOK_POWER = 1;
@@ -169,13 +169,25 @@ public class ShivaniRigging extends Subsystem{
                     break;
                 case RETRACT:
                     if(!hookMotor.isBusy()){
-                        setHookPower(0);
-                        releasing_hooks = false;
+                        setHookPower(-.4);
+                        release_state = HOOK_STATE.COMPLETE;
+                        timer.reset();
+
                     }
                     break;
+                case COMPLETE:
+                    if(timer.time() > 0.3){
+                        setHookPower(0);
+                        releasing_hooks = false;
+                        break;
+
+                    }
 
             }
         }
+    }
+    public int getHookPosition(){
+        return hookMotor.getCurrentPosition();
     }
     public void moveHook(int target){
         hookMotor.move_async(target);
