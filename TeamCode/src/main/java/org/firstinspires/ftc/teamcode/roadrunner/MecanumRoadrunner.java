@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.pipelines.BoxDetection;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.roadrunner.drive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.trajectorysequence.TrajectorySequence;
+import org.firstinspires.ftc.teamcode.subclasses.Color;
 import org.firstinspires.ftc.teamcode.subclasses.Distance;
 import org.firstinspires.ftc.teamcode.subclasses.Intake;
 import org.firstinspires.ftc.teamcode.subclasses.PlaneLauncher;
@@ -38,24 +39,26 @@ public class MecanumRoadrunner extends LinearOpMode {
     BoxDetection.Location location;
     TrajectorySequence middle, left, right, intermediate, score;
     TrajectorySequence intoBackdrop;
+
+    private double strafe_timer;
+
+    ElapsedTime timer;
+
     enum START{
         RED_BACKDROP,
         RED_STACK,
         BLUE_BACKDROP,
         BLUE_STACK
     }
-    private final double BLUE_SIDE_RIGHT = 28.5;
-    private final double BLUE_SIDE_MIDDLE = 32;
-    private final double BLUE_SIDE_LEFT = 38;
 
-    private final double RED_SIDE_LEFT = -28.5;
-    private final double RED_SIDE_MIDDLE = -32;//c
-    private final double RED_SIDE_RIGHT = -38;
-
-
+    private enum AUTO_STATES{
+        FIRST_PATH,
+        IDENTIFY_SPOT
+    }
+    private AUTO_STATES auto_states;
     private Vector2d left_blue = new Vector2d(49,40);
     private Vector2d middle_blue = new Vector2d(49,34);
-    private Vector2d right_blue = new Vector2d(49, 28.5);
+    private Vector2d right_blue = new Vector2d(49, 30.5);
 
     private Vector2d left_red = new Vector2d(49, -31);
     private Vector2d middle_red = new Vector2d(49,-37);
@@ -64,6 +67,9 @@ public class MecanumRoadrunner extends LinearOpMode {
     private boolean red = false;
     private boolean stack = false;
     private boolean crashed = false;
+
+    private boolean middle_to_middle_of_field = false;
+
     START position;
     public static Rect MIDDLE_TARGET = new Rect(
             new Point(150, 300),
@@ -75,10 +81,14 @@ public class MecanumRoadrunner extends LinearOpMode {
     PlaneLauncher plane;
 
 //    Lift lift;
-    Unicorn delivery;
+    Unicorn unicorn;
     Distance distance;
     Intake intake;
     ShivaniRigging rigging;
+
+    Color color;
+    private float[] colors;
+
     private boolean exit = false;
     @Override
     public void runOpMode() throws InterruptedException {
@@ -86,17 +96,17 @@ public class MecanumRoadrunner extends LinearOpMode {
 
 
         DataTransfer.init = false;
-
+        auto_states = AUTO_STATES.FIRST_PATH;
 
         plane = new PlaneLauncher(hardwareMap);
-        delivery = new Unicorn(hardwareMap, telemetry);
+        unicorn = new Unicorn(hardwareMap, telemetry);
         distance = new Distance(hardwareMap, telemetry);
         intake = new Intake(hardwareMap, telemetry);
         rigging = new ShivaniRigging(hardwareMap, telemetry);
 //
         intake.init();
         plane.init();
-        delivery.init();
+        unicorn.init();
         rigging.init();
         distance.init();
 
@@ -320,7 +330,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                 drive.setPoseEstimate(robotStart);
 
                 middle = drive.trajectorySequenceBuilder(robotStart)//updated
-                        .lineToLinearHeading(new Pose2d(-34.00, 29.5, Math.toRadians(90)))
+                        .lineToLinearHeading(new Pose2d(-34.00, 30.5, Math.toRadians(90)))
                         .lineTo(new Vector2d(-34, 33))
                         .splineTo(new Vector2d(-39,45), Math.toRadians(180))
                         .splineToConstantHeading(new Vector2d(-44,50), Math.toRadians(90))
@@ -398,8 +408,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                 break;
         }
 
-        ElapsedTime timer = new ElapsedTime();
-        double delay = 500;
+        timer = new ElapsedTime();
         while (!isStarted()) {
             telemetry.addData("Location", boxDetection.getLocation());
             telemetry.update();
@@ -410,8 +419,12 @@ public class MecanumRoadrunner extends LinearOpMode {
             }
 
         }
+
+        unicorn.travel();
+        if(stack){
+            sleep(10000);
+        }
         rigging.release_hooks();
-        delivery.travel();
         switch (location){
             case LEFT:
                 drive.followTrajectorySequenceAsync(left);
@@ -423,6 +436,8 @@ public class MecanumRoadrunner extends LinearOpMode {
                 drive.followTrajectorySequenceAsync(middle);
                 break;
         }
+        double strafe_power = location.equals(BoxDetection.Location.RIGHT) ? 0.4 : -0.4;
+
         timer.reset();
         while(!isStopRequested() && opModeIsActive()){
             drive.update();
@@ -432,81 +447,78 @@ public class MecanumRoadrunner extends LinearOpMode {
                 drive.breakFollowing();
                 drive.setDrivePower(new Pose2d());
                 crashed = true;
+                if(drive.getExternalHeading() > Math.toRadians(173) && drive.getExternalHeading() < Math.toRadians(187)){ //Basically are we within 7 degrees of 180 since hitting the truss is a different error or something.
+                    telemetry.addLine("Collide with delbotics?");
+                    telemetry.update();
+                }
                 DataTransfer.delivered = false;
-
-
 
                 return;
 
-//                //Initialize the recovery sequence
-//                double angle = drive.getExternalHeading();
-//
-//                TrajectorySequence center = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-//                        .forward(5)
-//                        .turn(-angle)
-//                        .build();
-//                drive.followTrajectorySequence(center);
-//                drive.setWeightedDrivePower(new Pose2d(-0.5,0,0));
-
-
 
             }
-            if(!crashed) {
-                if (!drive.isBusy()) {
-                    sleep(1000);
-                    Pose2d startPose = drive.getPoseEstimate();
-                    intoBackdrop = drive.trajectorySequenceBuilder(startPose)
-                            .lineToLinearHeading(new Pose2d(startPose.getX() + getAdjustedDistance() + 1, startPose.getY(), Math.toRadians(180)),
-                                    drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                                    drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
+            switch(auto_states){
+                case FIRST_PATH:
+                    if (!drive.isBusy()) {
+                        if(!crashed) {
+                            if (!drive.isBusy()) {
+                                rigging.setHookPower(0);
+                                sleep(2000);
+                                Pose2d startPose = drive.getPoseEstimate();
+                                intoBackdrop = drive.trajectorySequenceBuilder(startPose)
+                                        .lineToLinearHeading(new Pose2d(startPose.getX() + getAdjustedDistance() + 1, startPose.getY(), Math.toRadians(180)),
+                                                drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                                                drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
 
-                            )
-                            .build();
-                    drive.followTrajectorySequence(intoBackdrop);
-                    sleep(500);
-                    delivery.deliver();
-                    sleep(500);
-                    delivery.goToPosition(0.45);
-                    sleep(500);
-                    delivery.goToPosition(0.36);
-                    sleep(500);
-                    if (!stack) {
-                        startPose = drive.getPoseEstimate();
-                        Vector2d endPose = new Vector2d();
-                        if (red) {
-                            endPose = new Vector2d(50, -61);
-                        } else {
-                            endPose = new Vector2d(50, 64);
+                                        )
+                                        .build();
+                                drive.followTrajectorySequence(intoBackdrop);
+                                strafe_timer = timer.time();
+                                colors = color.getRGBValues();
+                                if(colors[0] < 0.014){
+                                    deliver();
+                                    return;
+                                }
+                                drive.setWeightedDrivePower(new Pose2d(0, strafe_power));
+
+                                auto_states = AUTO_STATES.IDENTIFY_SPOT;
+                            }
                         }
-                        TrajectorySequence intoPark = drive.trajectorySequenceBuilder(startPose)
-                                .forward(6)
-                                .addDisplacementMarker(() -> {
-                                    delivery.stow();
-                                })
-                                .waitSeconds(1)
-                                .splineToConstantHeading(endPose, Math.toRadians(0))
-
-                                .build();
-                        drive.followTrajectorySequence(intoPark);
-                        Trajectory last = drive.trajectoryBuilder(drive.getPoseEstimate())
-                                .back(getAdjustedDistance() - 2,
-                                        drive.getVelocityConstraint(DriveConstants.MAX_VEL * .60, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                                        drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                                .build();
-                        drive.followTrajectory(last);
-
-                    }else{
-                        delivery.stow();
                     }
-                    return;
-                }
-            }else{
-                if(getAdjustedDistance() < 6){
-                    drive.setWeightedDrivePower(new Pose2d());
-                    DataTransfer.delivered = false;
-                    return;
-                }
+                case IDENTIFY_SPOT:
+                    colors = color.getRGBValues();
+                    telemetry.addData("red", colors[0]);
+                    telemetry.addData("green", colors[1]);
+                    telemetry.addData("blue", colors[2]);
+                    if(colors[0] < 0.014 || timer.seconds() - strafe_timer > 3){
+                        drive.setWeightedDrivePower(new Pose2d());
+                        if(strafe_power > 0) {
+                            intoBackdrop = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                                    .strafeLeft(2)
+                                    .back(1,
+                                            drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                                            drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
+                                    )
+                                    .build();
+                        }
+                        else{
+                            intoBackdrop = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                                    .back(1,
+                                            drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                                            drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
+                                    )
+                                    .build();
+                        }
+                        drive.followTrajectorySequence(intoBackdrop);
+                        deliver();
+                        park();
+                        return;
+                    }
+
+
+
             }
+
 
         }
     }
@@ -518,6 +530,56 @@ public class MecanumRoadrunner extends LinearOpMode {
         return output;
 
     }
+    public void park(){
+        if (!stack) {
+
+            Vector2d endPose = new Vector2d();
+            if (red) {
+                if(location == BoxDetection.Location.LEFT || (location == BoxDetection.Location.MIDDLE && !middle_to_middle_of_field)) {
+                    endPose = new Vector2d(50, -61);
+                }else{
+                    endPose = new Vector2d(50, -11);
+                }
+            } else {
+                if(location == BoxDetection.Location.LEFT || (location == BoxDetection.Location.MIDDLE && middle_to_middle_of_field)) {
+                    endPose = new Vector2d(50,11);
+
+                }else{
+                    endPose = new Vector2d(50, 64);
+
+                }
+            }
+            TrajectorySequence intoPark = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                    .forward(6)
+                    .addDisplacementMarker(() -> {
+                        unicorn.stow();
+                    })
+                    .waitSeconds(0.3)
+                    .splineToConstantHeading(endPose, Math.toRadians(0))
+
+                    .build();
+            drive.followTrajectorySequence(intoPark);
+            Trajectory last = drive.trajectoryBuilder(drive.getPoseEstimate())
+                    .back(getAdjustedDistance() - 2,
+                            drive.getVelocityConstraint(DriveConstants.MAX_VEL * .60, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                            drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                    .build();
+            drive.followTrajectory(last);
+
+        }else{
+            unicorn.stow();
+        }
+    }
+    public void deliver(){
+//        sleep(500);
+        unicorn.deliver();
+        sleep(1400);
+        unicorn.goToPosition(0.45);
+        sleep(500);
+        unicorn.deliver();
+        sleep(500);
+    }
+
 
 
 }

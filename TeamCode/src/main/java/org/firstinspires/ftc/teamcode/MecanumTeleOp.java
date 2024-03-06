@@ -70,6 +70,7 @@ public class MecanumTeleOp extends LinearOpMode {
     private boolean skip_auto_alignment = false;
     private boolean lock_stow = false;
     private boolean scanning = false;
+    private boolean disabled_zero = false;
     public static boolean active_telemetry = false;
     public static boolean red = false;
     private double plane_time = 0;
@@ -144,7 +145,7 @@ public class MecanumTeleOp extends LinearOpMode {
         shivaniRigging.init();
         intake.init();
         intake.setSlowPower(0.5);
-        intake.setSlowPosition(1750);
+        intake.setSlowPosition(1650);
 
         planeLauncher.init();
 
@@ -196,7 +197,6 @@ public class MecanumTeleOp extends LinearOpMode {
                 intake.moveArm(intake.getPosition());
                 shivaniRigging.setHookPower(0);
                 shivaniRigging.moveHook(shivaniRigging.getHookPosition());
-
             }
             switch(delivery_state){
                 case WAIT:
@@ -537,11 +537,11 @@ public class MecanumTeleOp extends LinearOpMode {
                 }
                 lock_stow = true;
                 unicorn.rigging();
-
             }
             if(lock_stow && timer.time() - unicorn_time > 0.3) {
                 shivaniRigging.setRiggingPower(rigging_power);
-            }else{
+            }
+            else{
                 shivaniRigging.setRiggingPower(0);
             }
 
@@ -552,6 +552,16 @@ public class MecanumTeleOp extends LinearOpMode {
             }
             if(gamepad2.x && timer.time() > 85){
                 shivaniRigging.raise_hooks_to_sensor();
+                disabled_zero = true;
+            }else if(!gamepad1.left_bumper && gamepad1.dpad_down){
+                shivaniRigging.setHookPower(-.3);
+            }else if(gamepad1.dpad_down && gamepad1.left_bumper){
+                shivaniRigging.setHookPower(.4);
+            }
+            else{
+                if(!disabled_zero) {
+                    shivaniRigging.setHookPower(0);
+                }
             }
 
 
@@ -561,7 +571,9 @@ public class MecanumTeleOp extends LinearOpMode {
             telemetry.update();
             drive.update();
             intake.update();
-            shivaniRigging.update();
+            if(disabled_zero) {
+                shivaniRigging.update();
+            }
 
         }
 

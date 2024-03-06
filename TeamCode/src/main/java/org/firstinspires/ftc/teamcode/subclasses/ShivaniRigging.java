@@ -179,9 +179,11 @@ public class ShivaniRigging extends Subsystem{
                     if(timer.time() > 0.3){
                         setHookPower(0);
                         releasing_hooks = false;
-                        break;
 
                     }
+                    break;
+
+
 
             }
         }

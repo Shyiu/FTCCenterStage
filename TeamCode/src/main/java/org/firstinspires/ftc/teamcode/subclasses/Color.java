@@ -21,7 +21,7 @@ public class Color extends Subsystem{
         this.telemetry = telemetry;
         mc = new MecanumBotConstant();
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, mc.color_sensor);
-        colorSensor.setGain(1);
+        colorSensor.setGain(5);
 
     }
     public double getDist() {
@@ -36,6 +36,13 @@ public class Color extends Subsystem{
         android.graphics.Color.colorToHSV(colors.toColor(), hsvValues);
 
         return hsvValues[1];
+    }
+
+    public float[] getRGBValues(){
+        NormalizedRGBA colors = colorSensor.getNormalizedColors();
+
+
+        return new float[]{colors.red, colors.green, colors.blue};
     }
     @Override
     public void telemetry() {

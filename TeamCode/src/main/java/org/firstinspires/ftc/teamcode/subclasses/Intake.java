@@ -232,7 +232,7 @@ public class Intake extends Subsystem{
         slide_rotation.init();
         timer.reset();
         slide_rotation.setMin(0);
-        slide_rotation.setMax(2700);
+        slide_rotation.setMax(2550);
         slide_rotation.setDirection(DcMotorSimple.Direction.REVERSE);
         slide_rotation.P = P;
         slide_rotation.I = I;
@@ -243,10 +243,10 @@ public class Intake extends Subsystem{
     }
     public double calculate_robot_distance_limit(){
         double robot_dist = 0;
-        if(slide_rotation.getCurrentPosition() > 2000) {
-            double m = (2.7 - 0.58)/(2200 - 2000);
-            double b = 0.58;
-            robot_dist = m * (slide_rotation.getCurrentPosition() - 2000) + b;
+        if(slide_rotation.getCurrentPosition() > 2100) {
+            double m = (1.8 - 0)/(2300 - 2200);
+            double b = 1.8;
+            robot_dist = m * (slide_rotation.targetPos - 2300) + b;
            
         }
         telemetry.addData("Robot Distance", robot_dist);
@@ -257,18 +257,18 @@ public class Intake extends Subsystem{
         if(!use_target_position){
             return calculate_robot_distance_limit();
         }
-        if(slide_rotation.targetPos > 2200) {
-            double m = (0.7 - 3.8)/(2200 - 2400);
-            double b = 0.7;
-            robot_dist = m * (slide_rotation.targetPos - 2200) + b;
+        if(slide_rotation.targetPos > 2100) {
+            double m = (1.8 - 0)/(2300 - 2200);
+            double b = 1.8;
+            robot_dist = m * (slide_rotation.targetPos - 2300) + b;
 
         }
         telemetry.addData("Robot Distance", robot_dist);
         return robot_dist;
     }
     public int calculate_arm_limit(double robot_distance){
-        double m = (2200 - 2400)/(0.7 - 3.8);
-        double b = 0.7;
+        double m = (2300 - 2200)/(1.8 - 0);
+        double b = 1.8;
         int arm_limit = (int) Math.floor((robot_distance - b) * m);
         return arm_limit;
     }
@@ -277,10 +277,10 @@ public class Intake extends Subsystem{
     }
 
     public void bucket_compensation(){
-        if(slide_rotation.getCurrentPosition() > 2250) {
-            double m = (0.05 - 0.1)/(2400 - 2600);
-            double b = 0.07;
-            double target = m * (slide_rotation.getCurrentPosition() - 2400) + b;
+        if(slide_rotation.getCurrentPosition() > 2150) {
+            double m = (0.013 - 0.04)/(2200 - 2300);
+            double b = 0.013;
+            double target = m * (slide_rotation.getCurrentPosition() - 2200) + b;
             moveBucket(target);
             telemetry.addData("Target", target);
         }
