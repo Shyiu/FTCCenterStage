@@ -26,13 +26,14 @@ public class IntakeTest extends LinearOpMode {
     public static boolean pid = false;
     public static boolean change = false;
     public static boolean compensation = false;
-
+    public static boolean old_compensation = true;
 
     public static int target = -1000;
 
     protected MecaTank mecatank;
     protected Intake intake;
     protected Distance distance;
+    protected Distance front_distance;
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -41,8 +42,11 @@ public class IntakeTest extends LinearOpMode {
         intake = new Intake(hardwareMap, telemetry);
         mecatank = new MecaTank(hardwareMap, telemetry);
         distance = new Distance(hardwareMap,telemetry);
+        front_distance = new Distance(hardwareMap,telemetry, true);
+
         intake.init();
         distance.init();
+        front_distance.init();
 
 
         intake.telemetry();
@@ -66,6 +70,11 @@ public class IntakeTest extends LinearOpMode {
                 intake.moveBucket(PLATE_POSITION);
 
             }
+            if(old_compensation){
+                intake.useOldAlignment();
+            }else{
+                intake.useCurrentAlignment();
+            }
             intake.calculate_robot_distance_limit();
             intake.moveClutch(PLUNGER_POSITION);
             intake.setPower(-gamepad1.left_stick_y);
@@ -74,6 +83,8 @@ public class IntakeTest extends LinearOpMode {
             intake.telemetry();
             mecatank.telemetry();
             distance.telemetry();
+            front_distance.telemetry();   
+
             telemetry.update();
 
         }

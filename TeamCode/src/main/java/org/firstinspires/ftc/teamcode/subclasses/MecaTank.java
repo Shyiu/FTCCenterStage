@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.subclasses;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -9,11 +8,14 @@ import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 
 public class MecaTank extends Subsystem{
     private DcMotor frontLeft, frontRight, backLeft, backRight;
-    private Distance distance;
+    private Distance distance_back;
+    private Distance distance_front;
     private MecanumBotConstant config;
     private Telemetry telemetry;
     private double MAX_DRIVE_SPEED = 1;
-    public static double MIN_DISTANCE = 0.58;
+    public static double REAR_MIN_DISTANCE = 2.08;
+    public static double FRONT_MIN_DISTANCE = 4;
+    private boolean enable_front_stop = false;
     public MecaTank(HardwareMap hardwareMap, Telemetry telemetry){
         config = new MecanumBotConstant();
         frontLeft = hardwareMap.get(DcMotor.class, config.fl);
@@ -21,7 +23,24 @@ public class MecaTank extends Subsystem{
         backLeft = hardwareMap.get(DcMotor.class, config.bl);
         backRight = hardwareMap.get(DcMotor.class, config.br);
 
-        distance = new Distance(hardwareMap, telemetry);
+        distance_back = new Distance(hardwareMap, telemetry);
+        distance_front = new Distance(hardwareMap, telemetry, true);
+        backRight.setDirection(DcMotor.Direction.FORWARD);
+        frontRight.setDirection(DcMotor.Direction.FORWARD);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        this.telemetry = telemetry;
+
+    }
+    public MecaTank(HardwareMap hardwareMap, Telemetry telemetry, Distance distance_back, Distance distance_front){
+        config = new MecanumBotConstant();
+        frontLeft = hardwareMap.get(DcMotor.class, config.fl);
+        frontRight = hardwareMap.get(DcMotor.class, config.fr);
+        backLeft = hardwareMap.get(DcMotor.class, config.bl);
+        backRight = hardwareMap.get(DcMotor.class, config.br);
+
+        this.distance_back = distance_back;
+        this.distance_front = distance_front;
         backRight.setDirection(DcMotor.Direction.FORWARD);
         frontRight.setDirection(DcMotor.Direction.FORWARD);
         backLeft.setDirection(DcMotor.Direction.REVERSE);
@@ -33,7 +52,7 @@ public class MecaTank extends Subsystem{
         return Math.copySign(Math.sqrt(Math.abs(number)), number);
     }
     public void set_min_distance(double distance){
-        MIN_DISTANCE = distance;
+        REAR_MIN_DISTANCE = distance;
     }
     public void set_individual_powers(double fl_power, double fr_power, double bl_power, double br_power){
         frontRight.setPower(fr_power);
@@ -66,7 +85,14 @@ public class MecaTank extends Subsystem{
         double leftPower = sameSignSqrt(-left_stick_y);
         double rightPower = sameSignSqrt(-right_stick_y);
 
-        if (leftPower < 0 && rightPower < 0 && distance.getDistFromRobotEdge() < MIN_DISTANCE){
+        if (leftPower < 0 && rightPower < 0 && distance_back.getFilteredDist() < REAR_MIN_DISTANCE){
+            frontRight.setPower(0);
+            backRight.setPower(0);
+            frontLeft.setPower(0);
+            backLeft.setPower(0);
+            return;
+        }
+        if(rightPower > 0 && leftPower > 0 && distance_front.getFilteredDist() < FRONT_MIN_DISTANCE && enable_front_stop){
             frontRight.setPower(0);
             backRight.setPower(0);
             frontLeft.setPower(0);
@@ -83,7 +109,9 @@ public class MecaTank extends Subsystem{
 
 
     }
-
+    public void setFrontStop(boolean stop){
+        enable_front_stop = stop;
+    }
     @Override
     public void telemetry() {
 

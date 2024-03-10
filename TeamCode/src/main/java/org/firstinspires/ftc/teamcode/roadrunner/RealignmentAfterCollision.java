@@ -85,7 +85,7 @@ public class RealignmentAfterCollision extends LinearOpMode {
                     if (avoid_descore) {
                         toBackdropAdjusted
                                 .strafeTo(new Vector2d(13, 33))
-                                .splineToConstantHeading(new Vector2d(12, 13), 0)
+                                .splineToConstantHeading(new Vector2d(16, 13), 0)
                                 .splineToConstantHeading(new Vector2d(25, 13), 0)
                                 .splineToConstantHeading(endPose, 0);
                     } else {
@@ -100,7 +100,7 @@ public class RealignmentAfterCollision extends LinearOpMode {
                     if (avoid_descore) {
                         toBackdropAdjusted
                                 .strafeTo(new Vector2d(13, -33))
-                                .splineToConstantHeading(new Vector2d(12, -13), 0)
+                                .splineToConstantHeading(new Vector2d(16, -13), 0)
                                 .splineToConstantHeading(new Vector2d(25, -13), 0)
                                 .splineToConstantHeading(endPose, 0);
                     } else {

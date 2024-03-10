@@ -57,7 +57,7 @@ public class MecanumRoadrunner extends LinearOpMode {
     }
     private AUTO_STATES auto_states;
     private Vector2d left_blue = new Vector2d(49,40);
-    private Vector2d middle_blue = new Vector2d(49,34);
+    private Vector2d middle_blue = new Vector2d(49,36);
     private Vector2d right_blue = new Vector2d(49, 30.5);
 
     private Vector2d left_red = new Vector2d(49, -31);
@@ -103,6 +103,7 @@ public class MecanumRoadrunner extends LinearOpMode {
         distance = new Distance(hardwareMap, telemetry);
         intake = new Intake(hardwareMap, telemetry);
         rigging = new ShivaniRigging(hardwareMap, telemetry);
+        color = new Color(hardwareMap, telemetry);
 //
         intake.init();
         plane.init();
@@ -294,9 +295,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         .splineToLinearHeading(new Pose2d(25.50, -36.5, Math.toRadians(270)), Math.toRadians(90))
                         .forward(3)
                         .splineToConstantHeading(new Vector2d(25.50, -48.5), Math.toRadians(0))
-
                         .splineToConstantHeading(new Vector2d(32.50, -44.5), Math.toRadians(90))
-
                         .splineTo(right_red, Math.toRadians(0))
                         .build();
                 middle = drive.trajectorySequenceBuilder(robotStart)
@@ -436,7 +435,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                 drive.followTrajectorySequenceAsync(middle);
                 break;
         }
-        double strafe_power = location.equals(BoxDetection.Location.RIGHT) ? 0.4 : -0.4;
+        double strafe_power = location.equals(BoxDetection.Location.RIGHT) ? -0.4 : 0.4;
 
         timer.reset();
         while(!isStopRequested() && opModeIsActive()){
@@ -450,6 +449,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                 if(drive.getExternalHeading() > Math.toRadians(173) && drive.getExternalHeading() < Math.toRadians(187)){ //Basically are we within 7 degrees of 180 since hitting the truss is a different error or something.
                     telemetry.addLine("Collide with delbotics?");
                     telemetry.update();
+                    sleep(3000);
                 }
                 DataTransfer.delivered = false;
 
@@ -463,10 +463,10 @@ public class MecanumRoadrunner extends LinearOpMode {
                         if(!crashed) {
                             if (!drive.isBusy()) {
                                 rigging.setHookPower(0);
-                                sleep(2000);
+                                sleep(1000);
                                 Pose2d startPose = drive.getPoseEstimate();
                                 intoBackdrop = drive.trajectorySequenceBuilder(startPose)
-                                        .lineToLinearHeading(new Pose2d(startPose.getX() + getAdjustedDistance() + 1, startPose.getY(), Math.toRadians(180)),
+                                        .back(getAdjustedDistance(),
                                                 drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                                                 drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
 
@@ -477,6 +477,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                                 colors = color.getRGBValues();
                                 if(colors[0] < 0.014){
                                     deliver();
+                                    park();
                                     return;
                                 }
                                 drive.setWeightedDrivePower(new Pose2d(0, strafe_power));
@@ -485,6 +486,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                             }
                         }
                     }
+                    break;
                 case IDENTIFY_SPOT:
                     colors = color.getRGBValues();
                     telemetry.addData("red", colors[0]);
@@ -494,8 +496,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         drive.setWeightedDrivePower(new Pose2d());
                         if(strafe_power > 0) {
                             intoBackdrop = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                                    .strafeLeft(2)
-                                    .back(1,
+                                    .back(getAdjustedDistance(),
                                             drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                                             drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
                                     )
@@ -503,7 +504,8 @@ public class MecanumRoadrunner extends LinearOpMode {
                         }
                         else{
                             intoBackdrop = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                                    .back(1,
+                                    .strafeRight(2)
+                                    .back(getAdjustedDistance(),
                                             drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                                             drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
                                     )
@@ -514,6 +516,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                         park();
                         return;
                     }
+                    break;
 
 
 
@@ -523,11 +526,11 @@ public class MecanumRoadrunner extends LinearOpMode {
         }
     }
     public double getAdjustedDistance(){
-        double output = distance.getDistFromRobotEdge()+ 0.05;
+        double output = distance.getDist();
         if (output > 78){
             output = 8;
         }
-        return output;
+        return output - 2;
 
     }
     public void park(){
@@ -578,6 +581,23 @@ public class MecanumRoadrunner extends LinearOpMode {
         sleep(500);
         unicorn.deliver();
         sleep(500);
+        TrajectorySequence deliver_clear;
+        if(location == BoxDetection.Location.LEFT || location == BoxDetection.Location.MIDDLE){
+            deliver_clear = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                    .strafeLeft(4,
+                            drive.getVelocityConstraint(DriveConstants.MAX_VEL * .40, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                            drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                    .forward(3)
+                    .build();
+        }else{
+            deliver_clear = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                    .strafeRight(4,
+                            drive.getVelocityConstraint(DriveConstants.MAX_VEL * .40, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                            drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                    .forward(3)
+                    .build();
+        }
+        drive.followTrajectorySequence(deliver_clear);
     }
 
 

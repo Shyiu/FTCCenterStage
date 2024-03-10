@@ -139,7 +139,8 @@ public class BoxDetectionEOCV extends OpenCvPipeline {
 
 
 
-        return output;
+        return mat;
+        //return output;
 
     }
     public Location getLocation(){

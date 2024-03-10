@@ -38,7 +38,7 @@ public class PIDMotor extends Subsystem{
     private double max_integral = 0;
     private double out = 0;
     private double completed_time = 0;
-    private double SLOW_POWER = 1;
+    private double MAX_POWER = 1;
     private int SLOW_POS = 0;
     private boolean SLOW = false;
 
@@ -235,11 +235,9 @@ public class PIDMotor extends Subsystem{
         }
         out += Math.copySign(F, out) ;
         out *= (reversed_encoder ? -1 : 1);
-        if(SLOW && currentPosition > SLOW_POS){
-            setPower(out * SLOW_POWER);
-        }else {
-            setPower(out);
-        }
+
+        setPower(out* MAX_POWER);
+
         if(Math.abs(error) < 20 && !reached){
             reached = true;
             completed_time = total_time.time(TimeUnit.SECONDS);
@@ -251,13 +249,10 @@ public class PIDMotor extends Subsystem{
 
     }
 
-    public void setSlowPower(double power) {
-        SLOW_POWER = power;
+    public void setMaxPower(double power) {
+        MAX_POWER = power;
     }
-    public void setSlowPosition(int position){
-        SLOW_POS = position;
-        SLOW = true;
-    }
+
 
 
 //    public double getBatteryVoltage() {

@@ -58,7 +58,7 @@ public class ShivaniRigging extends Subsystem{
         riggingMotor.setReversedEncoder(true);
         riggingMotor.setMaxIntegral(1);
 
-        hookMotor.setDirection(DcMotor.Direction.REVERSE);
+        hookMotor.setDirection(DcMotor.Direction.FORWARD);
         hookMotor.pid_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         hookMotor.setMax(280);
         hookMotor.setMin(-50);
@@ -77,6 +77,39 @@ public class ShivaniRigging extends Subsystem{
 
 
     }
+    public ShivaniRigging(HardwareMap hardwareMap, Telemetry telemetry, ElapsedTime timer){
+        this.timer =timer;
+        this.telemetry = telemetry;
+        riggingMotor = new PIDMotor(hardwareMap, telemetry, mc.rigging_motor);
+        hookMotor = new PIDMotor(hardwareMap, telemetry,  mc.hook_motor);
+        touchSensor = hardwareMap.get(TouchSensor.class, mc.limit_switch);
+
+
+        riggingMotor.setDirection(DcMotor.Direction.FORWARD);
+        riggingMotor.setMin(-2200);
+        riggingMotor.setReversedEncoder(true);
+        riggingMotor.setMaxIntegral(1);
+
+        hookMotor.setDirection(DcMotor.Direction.FORWARD);
+        hookMotor.pid_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        hookMotor.setMax(280);
+        hookMotor.setMin(-50);
+        hookMotor.P = P;
+        hookMotor.I = 0;
+
+
+
+        magnet_sensor = hardwareMap.get(DigitalChannel.class, mc.magnet_sensor);
+        // set the digital channel to input.
+        magnet_sensor.setMode(DigitalChannel.Mode.INPUT);
+
+
+
+
+
+
+    }
+
     public void setHookPower(double power){
         if(power > 0){
             if(magnet_activated()){

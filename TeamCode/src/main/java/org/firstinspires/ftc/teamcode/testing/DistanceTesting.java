@@ -24,6 +24,9 @@ public class DistanceTesting extends LinearOpMode {
 
     Distance frontDistance;
 
+    public static double front_filter = 0.8;
+    public static double back_filter = 0.5;
+
 
 
     @Override
@@ -35,6 +38,18 @@ public class DistanceTesting extends LinearOpMode {
 
         waitForStart();
         while(!isStopRequested() && opModeIsActive()){
+            telemetry.addData("Raw Front Distance", frontDistance.getDist());
+            telemetry.addData("Filtered Front Distance", frontDistance.getFilteredDist());
+
+            telemetry.addData("Raw Back Distance", distance.getDist());
+            telemetry.addData("Filtered Back Distance", distance.getFilteredDist());
+
+            frontDistance.setFilter(front_filter);
+            distance.setFilter(back_filter);
+
+            distance.update();
+            frontDistance.update();
+
             distance.telemetry();
             frontDistance.telemetry();
             telemetry.update();

@@ -87,57 +87,37 @@ public class PixelDrop extends LinearOpMode {
         ElapsedTime timer = new ElapsedTime();
         waitForStart();
         timer.reset();
-        double strafe_power = side.equals(SIDE.RIGHT) ? 0.4 : -0.4;
+        double strafe_power = side.equals(SIDE.RIGHT) ? -0.4 : 0.4;
         while(!isStopRequested() && opModeIsActive()){
             drive.update();
             switch(auto_states){
                 case FIRST_PATH:
                     if (!drive.isBusy()) {
-                        Pose2d startPose = drive.getPoseEstimate();
-                        intoBackdrop = drive.trajectorySequenceBuilder(startPose)
-                                .lineToLinearHeading(new Pose2d(startPose.getX() + getAdjustedDistance() + BACKDROP_DISTANCE, startPose.getY(), Math.toRadians(180)),
-                                        drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                                        drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                                )
-                                .build();
-                        drive.followTrajectorySequence(intoBackdrop);
+                            if (!drive.isBusy()) {
+                                rigging.setHookPower(0);
+                                sleep(1000);
+                                Pose2d startPose = drive.getPoseEstimate();
+                                intoBackdrop = drive.trajectorySequenceBuilder(startPose)
+                                        .back(getAdjustedDistance(),
+                                                drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                                                drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
 
-                        if(drive.getExternalHeading() > Math.toRadians(95) && drive.getExternalHeading() < Math.toRadians(85)){//We are probably clipping something, we will back up strafe in the correct direct according to power and drive forward
-                            if(drive.getPoseEstimate().getY() < 0){
-                                Trajectory evade = drive.trajectoryBuilder(drive.getPoseEstimate())
-                                        .splineToLinearHeading(new Pose2d(40,-34, Math.toRadians(180)), Math.toRadians(180))
+                                        )
                                         .build();
-                                drive.followTrajectory(evade);
+                                drive.followTrajectorySequence(intoBackdrop);
+                                strafe_timer = timer.time();
+                                colors = color.getRGBValues();
+                                if(colors[0] < 0.014){
+                                    deliver();
+                                    return;
+                                }
+                                drive.setWeightedDrivePower(new Pose2d(0, strafe_power));
 
-                            }else{
-                                Trajectory evade = drive.trajectoryBuilder(drive.getPoseEstimate())
-                                        .splineToLinearHeading(new Pose2d(40,34, Math.toRadians(180)), Math.toRadians(180))
-                                        .build();
-                                drive.followTrajectory(evade);
+                                auto_states = AUTO_STATES.IDENTIFY_SPOT;
                             }
-                            //drive into the backdrop again after correction.
-                            startPose = drive.getPoseEstimate();
-                            intoBackdrop = drive.trajectorySequenceBuilder(startPose)
-                                    .lineToLinearHeading(new Pose2d(startPose.getX() + getAdjustedDistance() + BACKDROP_DISTANCE, startPose.getY(), Math.toRadians(180)),
-                                            drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                                            drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
-                                    )
-                                    .build();
-                            drive.followTrajectorySequence(intoBackdrop);
-
                         }
 
-
-                        strafe_timer = timer.time();
-                        colors = color.getRGBValues();
-                        if(colors[0] < 0.014){
-                            deliver();
-                            return;
-                        }
-                        drive.setWeightedDrivePower(new Pose2d(0, strafe_power));
-
-                        auto_states = AUTO_STATES.IDENTIFY_SPOT;
-                    }
+                    break;
                 case IDENTIFY_SPOT:
                     colors = color.getRGBValues();
                     telemetry.addData("red", colors[0]);
@@ -147,8 +127,7 @@ public class PixelDrop extends LinearOpMode {
                         drive.setWeightedDrivePower(new Pose2d());
                         if(strafe_power > 0) {
                             intoBackdrop = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                                    .strafeLeft(2)
-                                    .back(1,
+                                    .back(getAdjustedDistance(),
                                             drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                                             drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
                                     )
@@ -156,7 +135,8 @@ public class PixelDrop extends LinearOpMode {
                         }
                         else{
                             intoBackdrop = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                                    .back(1,
+                                    .strafeRight(2)
+                                    .back(getAdjustedDistance(),
                                             drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                                             drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
                                     )
@@ -166,6 +146,7 @@ public class PixelDrop extends LinearOpMode {
                         deliver();
                         return;
                     }
+                    break;
 
 
 

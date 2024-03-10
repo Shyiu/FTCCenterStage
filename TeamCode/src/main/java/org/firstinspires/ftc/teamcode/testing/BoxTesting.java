@@ -34,6 +34,7 @@ public class BoxTesting extends LinearOpMode {
             new Point(960, 540));
     public static boolean red = false;
     public static boolean backdrop = false;
+    public static boolean filter = false;
     //(450,404), (640, 544) BLUE STACK and RED BACKDROP
     //(640,404), (900, 544) BLUE BACKDROP AND RED STACK
     @Override
@@ -44,6 +45,7 @@ public class BoxTesting extends LinearOpMode {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, mc.camera), cameraMonitorViewId);
         pipeline.isRed = red;
+        pipeline.filter = filter;
         camera.setPipeline(pipeline);
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override

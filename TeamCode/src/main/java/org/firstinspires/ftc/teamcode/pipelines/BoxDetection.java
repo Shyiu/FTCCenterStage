@@ -21,7 +21,7 @@ public class BoxDetection extends OpenCvPipeline {
     Telemetry telemetry;
     Mat mat = new Mat();
     Mat output = new Mat();
-
+    public boolean filter = true;
 
     public enum Location {
         LEFT,
@@ -118,12 +118,19 @@ public class BoxDetection extends OpenCvPipeline {
             telemetry.addData("Box Detection", position);
             Imgproc.rectangle(output, MIDDLE_TARGET, red);
             Imgproc.rectangle(output, OTHER_TARGET, green);
+
+            Imgproc.rectangle(mat, MIDDLE_TARGET, red);
+            Imgproc.rectangle(mat, OTHER_TARGET, green);
         }
         else if (middle){
             location = Location.MIDDLE;
             telemetry.addData("Box Detection", "Middle");
             Imgproc.rectangle(output, MIDDLE_TARGET, green);
             Imgproc.rectangle(output, OTHER_TARGET, red);
+
+            Imgproc.rectangle(mat, MIDDLE_TARGET, green);
+            Imgproc.rectangle(mat, OTHER_TARGET, red);
+
 
         }
         else {
@@ -132,6 +139,9 @@ public class BoxDetection extends OpenCvPipeline {
             telemetry.addData("Box Detection", position);
             Imgproc.rectangle(output, MIDDLE_TARGET, red);
             Imgproc.rectangle(output, OTHER_TARGET, red);
+
+            Imgproc.rectangle(mat, MIDDLE_TARGET, red);
+            Imgproc.rectangle(mat, OTHER_TARGET, red);
         }
 
         telemetry.update();
@@ -139,7 +149,9 @@ public class BoxDetection extends OpenCvPipeline {
 
 
 
-
+        if(filter){
+            return mat;
+        }
 
         return output;
 

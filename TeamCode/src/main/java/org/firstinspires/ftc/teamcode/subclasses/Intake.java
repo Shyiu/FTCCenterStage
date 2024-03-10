@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
+import org.firstinspires.ftc.teamcode.lib.BucketEulersApproximation;
 
 
 @Config
@@ -20,40 +21,36 @@ public class Intake extends Subsystem{
     protected MecanumBotConstant m;
     protected boolean running = false;
     private ElapsedTime timer;
-
+    private BucketEulersApproximation approximation;
+    private BucketEulersApproximation approximation_old;
     private boolean update_rotation = true;
     private boolean gyro_ready = false;
     private double holding_power = 0;
 
     public static int rotation_pickup = 0;
-    public static double servo_rotation_pickup = 0.58;
+    public static double servo_rotation_pickup = 0.61;
     private static double anchor_position = 0;
 
-    public static double clutch_in = .62;
-    public static double clutch_one = .71;
-    public static double clutch_two = .8;
+    public static double clutch_in = 0.065;
+    public static double clutch_one = 0.12;
+    public static double clutch_two = 0.24;
+    public static double clutch_intake = 0.3;
 
     private double delay = 0;
-
-//    public static double deg_per_tick = 90.0/(1700 - 603);//will replace with gyro
-//    public static double level_position = 603;
-//    public static double servo_moves_per_degree = 180/1.0;
-//    public static double STARTING_ANGLE = 15;
-//    public static double STARTING_ARM_HEIGHT = 9.875;
-
     private static int rotation_init = 0;
 
     private static double truss_position = 0.05;
-    private static double delivery_position = 0.07;
+    private static double delivery_position = 0.05;
 
     public static double P = 0.0015, I = 0.0002, D = 0;
     private int delivery_stage = 0;
     //rotation intake position = 0.65
     //rotation parallel to slides = 0.70
     //rotation intake delivery = 1
+    private double MAX_POWER = 1;
     private double SLOW_POWER = 1;
     private double SLOW_POSITION = Double.MAX_VALUE;
-
+    private boolean use_old = false;
 
     private double ARM_LENGTH = 15.875;//in
     private double ARM_ANGLE = -30;
@@ -72,8 +69,29 @@ public class Intake extends Subsystem{
         rotation.setDirection(SERVO_DIRECTION);
         clutch = hardwareMap.get(Servo.class, m.clutch);
         timer = new ElapsedTime();
+        approximation = new BucketEulersApproximation(50);
+        approximation_old = new BucketEulersApproximation(50, true);
     }
+    public Intake(HardwareMap hardwareMap, Telemetry telemetry, ElapsedTime timer){
+        m = new MecanumBotConstant();
+        this.telemetry = telemetry;
+        slide_rotation = new PIDMotor(hardwareMap, telemetry, m.slides_rotation_motor);
 
+        rotation = hardwareMap.get(Servo.class, m.bucket_servo);
+        rotation.setDirection(SERVO_DIRECTION);
+        clutch = hardwareMap.get(Servo.class, m.clutch);
+        this.timer = timer;
+        approximation = new BucketEulersApproximation(50);
+        approximation_old = new BucketEulersApproximation(50, true);
+
+
+    }
+    public void useOldAlignment(){
+        use_old = true;
+    }
+    public void useCurrentAlignment(){
+        use_old = false;
+    }
     public void moveBucket(double position){
         if(position <= 0.7 && position >= 0) {
             rotation.setPosition(position);
@@ -105,12 +123,7 @@ public class Intake extends Subsystem{
     public void moveClutch(double position){
         clutch.setPosition(position);
     }
-    public void setSlowPower(double power){
-        slide_rotation.setSlowPower(power);
-    }
-    public void setSlowPosition(int position){
-        slide_rotation.setSlowPosition(position);
-    }
+
     public void delivery_next(){
         if (delivery_stage > 3){
             delivery_stage = 1;
@@ -138,13 +151,20 @@ public class Intake extends Subsystem{
         }else if(timer.seconds() - delay > 0.1){
             slide_rotation.update();
         }
+        if(slide_rotation.getCurrentPosition() > 1650 && slide_rotation.targetPos > 1800){
+            slide_rotation.setMaxPower(0.5);
+        }else if(slide_rotation.getCurrentPosition() < 1000 && slide_rotation.targetPos < 300){
+            slide_rotation.setMaxPower(0.5);
+        }else{
+            slide_rotation.setMaxPower(1);
+
+        }
 //        ARM_ANGLE = 180 - ((slide_rotation.getCurrentPosition() - level_position) * deg_per_tick);
 
 
     }
     public void rotate_bucket(){
-
-        rotation.setPosition(.45);
+        rotation.setPosition(.43);
         update_anchor();
     }
     public void update_anchor(){
@@ -197,7 +217,7 @@ public class Intake extends Subsystem{
         return slide_rotation.isCompletedFor(seconds);
     }
     public void raise_clutch(){
-        moveClutch(clutch_two);
+        moveClutch(clutch_intake);
     }
 
     public void delivery(){
@@ -223,14 +243,7 @@ public class Intake extends Subsystem{
 
     @Override
     public void init() {
-
-
-
-//        if(!gyro_ready){
-//            throw new AssertionError("Init Gyro");
-//        }
         slide_rotation.init();
-        timer.reset();
         slide_rotation.setMin(0);
         slide_rotation.setMax(2550);
         slide_rotation.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -238,54 +251,49 @@ public class Intake extends Subsystem{
         slide_rotation.I = I;
         slide_rotation.D = D;
         slide_rotation.move_sync(rotation_init, 5, .1);
-        moveBucket(truss_position);
-        moveClutch(0.65);
+        go_to_transfer();
     }
     public double calculate_robot_distance_limit(){
         double robot_dist = 0;
-        if(slide_rotation.getCurrentPosition() > 2100) {
-            double m = (1.8 - 0)/(2300 - 2200);
-            double b = 1.8;
-            robot_dist = m * (slide_rotation.targetPos - 2300) + b;
-           
+        if(slide_rotation.getCurrentPosition() > 1750) {
+            robot_dist = use_old ? approximation_old.getDistanceApproximation(slide_rotation.getCurrentPosition()) : approximation.getDistanceApproximation(slide_rotation.getCurrentPosition());
         }
+
         telemetry.addData("Robot Distance", robot_dist);
         return robot_dist;
     }
+
     public double calculate_robot_distance_limit(boolean use_target_position){
         double robot_dist = 0;
         if(!use_target_position){
             return calculate_robot_distance_limit();
         }
-        if(slide_rotation.targetPos > 2100) {
-            double m = (1.8 - 0)/(2300 - 2200);
-            double b = 1.8;
-            robot_dist = m * (slide_rotation.targetPos - 2300) + b;
-
+        if(slide_rotation.getCurrentPosition() > 1750) {
+            robot_dist = use_old ? approximation_old.getDistanceApproximation(slide_rotation.targetPos) : approximation.getDistanceApproximation(slide_rotation.targetPos);
         }
         telemetry.addData("Robot Distance", robot_dist);
         return robot_dist;
     }
+
     public int calculate_arm_limit(double robot_distance){
-        double m = (2300 - 2200)/(1.8 - 0);
-        double b = 1.8;
-        int arm_limit = (int) Math.floor((robot_distance - b) * m);
+
+        int arm_limit = use_old ? approximation_old.getArmLimit(robot_distance) :  approximation.getArmLimit(robot_distance);
+
+        telemetry.addData("Arm Limit", arm_limit);
         return arm_limit;
     }
+
     public int getPosition(){
         return slide_rotation.getCurrentPosition();
     }
 
     public void bucket_compensation(){
-        if(slide_rotation.getCurrentPosition() > 2150) {
-            double m = (0.013 - 0.04)/(2200 - 2300);
-            double b = 0.013;
-            double target = m * (slide_rotation.getCurrentPosition() - 2200) + b;
+        if(slide_rotation.getCurrentPosition() > 1750) {
+            double target = use_old ? approximation_old.getApproximation(slide_rotation.getCurrentPosition()) :  approximation.getApproximation(slide_rotation.getCurrentPosition());
             moveBucket(target);
             telemetry.addData("Target", target);
+            telemetry.update();
         }
-
-
     }
 
     public void addBucketPos(double increase) {
