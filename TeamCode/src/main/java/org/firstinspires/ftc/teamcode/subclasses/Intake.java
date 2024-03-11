@@ -151,8 +151,11 @@ public class Intake extends Subsystem{
         }else if(timer.seconds() - delay > 0.1){
             slide_rotation.update();
         }
-        if(slide_rotation.getCurrentPosition() > 1650 && slide_rotation.targetPos > 1800){
-            slide_rotation.setMaxPower(0.5);
+        if(!slide_rotation.isBusy()){
+            slide_rotation.setMaxPower(1);
+        }
+        else if(slide_rotation.getCurrentPosition() > 1650 && slide_rotation.targetPos > 1800){
+            slide_rotation.setMaxPower(0.3);
         }else if(slide_rotation.getCurrentPosition() < 1000 && slide_rotation.targetPos < 300){
             slide_rotation.setMaxPower(0.5);
         }else{
@@ -268,7 +271,7 @@ public class Intake extends Subsystem{
         if(!use_target_position){
             return calculate_robot_distance_limit();
         }
-        if(slide_rotation.getCurrentPosition() > 1750) {
+        if(slide_rotation.getCurrentPosition() > (use_old ? 2100 : 1750 )) {
             robot_dist = use_old ? approximation_old.getDistanceApproximation(slide_rotation.targetPos) : approximation.getDistanceApproximation(slide_rotation.targetPos);
         }
         telemetry.addData("Robot Distance", robot_dist);
@@ -288,7 +291,7 @@ public class Intake extends Subsystem{
     }
 
     public void bucket_compensation(){
-        if(slide_rotation.getCurrentPosition() > 1750) {
+        if(slide_rotation.getCurrentPosition() > (use_old ? 2100 : 1750)) {
             double target = use_old ? approximation_old.getApproximation(slide_rotation.getCurrentPosition()) :  approximation.getApproximation(slide_rotation.getCurrentPosition());
             moveBucket(target);
             telemetry.addData("Target", target);

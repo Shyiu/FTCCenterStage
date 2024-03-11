@@ -33,16 +33,16 @@ public class DistanceTesting extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        distance = new Distance(hardwareMap,telemetry);
-        frontDistance = new Distance(hardwareMap, telemetry, true);
+        distance = new Distance(hardwareMap,telemetry, true);
+        frontDistance = new Distance(hardwareMap, telemetry, false);
 
         waitForStart();
         while(!isStopRequested() && opModeIsActive()){
-            telemetry.addData("Raw Front Distance", frontDistance.getDist());
-            telemetry.addData("Filtered Front Distance", frontDistance.getFilteredDist());
+            telemetry.addData("Raw Left Distance", frontDistance.getDist());
+            telemetry.addData("Filtered Left Distance", frontDistance.getFilteredDist());
 
-            telemetry.addData("Raw Back Distance", distance.getDist());
-            telemetry.addData("Filtered Back Distance", distance.getFilteredDist());
+            telemetry.addData("Raw Right Distance", distance.getDist());
+            telemetry.addData("Filtered Right Distance", distance.getFilteredDist());
 
             frontDistance.setFilter(front_filter);
             distance.setFilter(back_filter);

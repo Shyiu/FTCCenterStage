@@ -36,7 +36,8 @@ public class MecanumTeleOp extends LinearOpMode {
     Unicorn unicorn;
     ShivaniRigging shivaniRigging;
     PlaneLauncher planeLauncher;
-    Distance distance_back;
+    Distance distance_rear_left;
+    Distance distance_rear_right;
     Distance distance_front;
     ElapsedTime timer;
 
@@ -82,8 +83,6 @@ public class MecanumTeleOp extends LinearOpMode {
     private double scanning_time;
     private double delay_timer = 0;
     private boolean rr_on = false;
-    private double past_distance_reading = 0;
-    private double past_distance_timer = 0;
     private double starting_position = 0;
     public static double BACKDROP_DISTANCE = 18.00;
     public static double PIXEL_TIME = 0.6;
@@ -134,15 +133,19 @@ public class MecanumTeleOp extends LinearOpMode {
 
         unicorn = new Unicorn(hardwareMap, telemetry);
 
-        distance_back = new Distance(hardwareMap, telemetry, timer);
 
-        distance_front = new Distance(hardwareMap, telemetry, true, timer);
+
+
+        distance_rear_left = new Distance(hardwareMap, telemetry, false, timer);
+        distance_rear_right = new Distance(hardwareMap, telemetry, true, timer);
+        distance_front = new Distance(hardwareMap, telemetry, timer);
+
 
         distance_front.setFilter(0.8);
-        distance_back.setFilter(0.8);
+        distance_rear_right.setFilter(0.8);
+        distance_rear_left.setFilter(0.8);
 
-        mecatank = new MecaTank(hardwareMap, telemetry, distance_back, distance_front);
-
+        mecatank = new MecaTank(hardwareMap, telemetry, distance_rear_right, distance_rear_left, distance_front);
 
 
 
@@ -152,7 +155,8 @@ public class MecanumTeleOp extends LinearOpMode {
 
         planeLauncher.init();
 
-        distance_back.init();
+        distance_rear_right.init();
+        distance_rear_left.init();
         distance_front.init();
 
 
@@ -167,10 +171,10 @@ public class MecanumTeleOp extends LinearOpMode {
 
         while (!isStopRequested() && opModeIsActive()) {
 
-            if(timer.time() - past_distance_timer > 0.005){
-                past_distance_reading = distance_front.getFilteredDist();
-                past_distance_timer = timer.time();
-            }
+//            if(timer.time() - past_distance_timer > 0.005){
+//                past_distance_reading = distance_front.getFilteredDist();
+//                past_distance_timer = timer.time();
+//            }
 
             //Speed Limiting Stuff
             if(gamepad1.a) {
@@ -180,8 +184,8 @@ public class MecanumTeleOp extends LinearOpMode {
                 mecatank.set_min_distance(0);
                 drive.breakFollowing();
             }
-            else if(distance_back.getFilteredDist() < 26 && (next_delivery_state == DELIVERY_STATE.D1) ){
-                double speed = (26 - Math.max(0,26 - distance_back.getFilteredDist()))/(26.0);
+            else if(distance_rear_right.getFilteredDist() < 26 && (next_delivery_state == DELIVERY_STATE.D1) ){
+                double speed = (26 - Math.max(0,26 - distance_rear_right.getFilteredDist()))/(26.0);
                 speed = Math.max(0.5, speed);
                 max_speed_change = MAX_SPEED == speed;
 
@@ -291,10 +295,12 @@ public class MecanumTeleOp extends LinearOpMode {
                     break;
                 case TRANSFER:
                 case RETURN:
+                    mecatank.setRearStop(false);
                     intake.go_to_transfer();
                     delivery_state = DELIVERY_STATE.WAIT;
                     break;
                 case DELIVERY:
+                    mecatank.setRearStop(true);
                     intake.delivery();
                     delivery_state = DELIVERY_STATE.WAIT;
                     break;
@@ -303,14 +309,14 @@ public class MecanumTeleOp extends LinearOpMode {
                     intake.delivery_next();
                     delivery_state = DELIVERY_STATE.WAIT;
                     Pose2d drive_estimate = drive.getPoseEstimate();
-                    if(distance_back.getFilteredDist() < 100) {
-                        drive.setPoseEstimate(new Pose2d(distance_back.getFilteredDist(), drive_estimate.getY(), drive_estimate.getHeading()));
+                    if(distance_rear_right.getFilteredDist() < 100) {
+                        drive.setPoseEstimate(new Pose2d(distance_rear_right.getFilteredDist(), drive_estimate.getY(), drive_estimate.getHeading()));
                     }
                     break;
 
             }
             double intake_power = sameSignSqrt(gamepad2.left_stick_y/2.0);
-            if((distance_back.getFilteredDist() < intake.calculate_robot_distance_limit(true) + 1) && intake_power > 0 && intake.getPosition() > intake.calculate_arm_limit(distance_back.getFilteredDist() + 1.5) ){
+            if((distance_rear_right.getFilteredDist() < intake.calculate_robot_distance_limit(true) + 1) && intake_power > 0 && intake.getPosition() > intake.calculate_arm_limit(distance_rear_right.getFilteredDist() + 1.5) ){
                 intake.setPower(0);
             }else{
                 intake.setPower(intake_power);
@@ -564,7 +570,12 @@ public class MecanumTeleOp extends LinearOpMode {
                 unicorn.rigging();
             }
             if(lock_stow && timer.time() - unicorn_time > 0.3) {
-                shivaniRigging.setRiggingPower(rigging_power);
+                if(rigging_power < 0) {
+                    shivaniRigging.setRiggingPower(rigging_power/2);
+
+                }else{
+                    shivaniRigging.setRiggingPower(rigging_power);
+                }
             }
             else{
                 shivaniRigging.setRiggingPower(0);
@@ -594,11 +605,13 @@ public class MecanumTeleOp extends LinearOpMode {
 
             all_to_telemetry();
             telemetry.addData("Status", "Running");
+            telemetry.addData("Robot Heading", mecatank.calculate_angle());
             telemetry.update();
             drive.update();
             intake.update();
-            distance_front.update();
-            distance_back.update();
+//            distance_front.update();
+            distance_rear_left.update();
+            distance_rear_right.update();
 
             if(disabled_zero) {
                 shivaniRigging.update();

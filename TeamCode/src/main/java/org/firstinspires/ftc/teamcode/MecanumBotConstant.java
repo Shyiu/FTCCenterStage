@@ -19,7 +19,7 @@ public class MecanumBotConstant {
     public String plane_launcher_spring_servo = "spring_servo";//4
 
     public String range_sensor = "sensor_range";//I2C 1
-    public String front_distance = "front_distance_sensor";//I2C 2
+    public String right_distance = "right_distance";//I2C 2
 
     public String color_sensor = "sensor_color";//I2C 3
 
@@ -37,7 +37,8 @@ public class MecanumBotConstant {
     public String hook_motor = "hook_motor";//3
     //servos
 
-    public String distance_sensor = "distance_sensor";//I2C 2
+    public String left_distance = "left_distance";//I2C 2
+    public String front_distance = "front_distance";//I2C 1
     public String gyro = "gyro"; //I2C 3
 
 

@@ -41,7 +41,7 @@ public class IntakeTest extends LinearOpMode {
 
         intake = new Intake(hardwareMap, telemetry);
         mecatank = new MecaTank(hardwareMap, telemetry);
-        distance = new Distance(hardwareMap,telemetry);
+        distance = new Distance(hardwareMap,telemetry, false);
         front_distance = new Distance(hardwareMap,telemetry, true);
 
         intake.init();

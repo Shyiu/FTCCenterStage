@@ -21,21 +21,25 @@ public class Distance extends Subsystem{
     public static double filter_value = 0;
     private double delay = 0;
     private ElapsedTime timer;
-    private boolean front = false;
+    private boolean right = false;
     Telemetry telemetry;
     public Distance(HardwareMap hardwareMap, Telemetry telemetry){
         this.telemetry = telemetry;
         mc = new MecanumBotConstant();
         timer = new ElapsedTime();
 
-        sensorDistance = hardwareMap.get(DistanceSensor.class, mc.distance_sensor);
+        sensorDistance = hardwareMap.get(DistanceSensor.class, mc.front_distance);
 
     }
-    public Distance(HardwareMap hardwareMap, Telemetry telemetry, boolean front){
-        this.front = front;
+    public Distance(HardwareMap hardwareMap, Telemetry telemetry, boolean right){
+        this.right = right;
         this.telemetry = telemetry;
         mc = new MecanumBotConstant();
-        sensorDistance = hardwareMap.get(DistanceSensor.class, mc.front_distance);
+        if(right) {
+            sensorDistance = hardwareMap.get(DistanceSensor.class, mc.right_distance);
+        }else{
+            sensorDistance = hardwareMap.get(DistanceSensor.class, mc.left_distance);
+        }
         timer = new ElapsedTime();
 
         past_distance_reading = getDist();
@@ -47,15 +51,18 @@ public class Distance extends Subsystem{
         mc = new MecanumBotConstant();
         this.timer = timer;
 
-        sensorDistance = hardwareMap.get(DistanceSensor.class, mc.distance_sensor);
+        sensorDistance = hardwareMap.get(DistanceSensor.class, mc.front_distance);
 
     }
-    public Distance(HardwareMap hardwareMap, Telemetry telemetry, boolean front, ElapsedTime timer){
-        this.front = front;
+    public Distance(HardwareMap hardwareMap, Telemetry telemetry, boolean right, ElapsedTime timer){
+        this.right = right;
         this.telemetry = telemetry;
         mc = new MecanumBotConstant();
-        sensorDistance = hardwareMap.get(DistanceSensor.class, mc.front_distance);
-        this.timer = timer;
+        if(right) {
+            sensorDistance = hardwareMap.get(DistanceSensor.class, mc.right_distance);
+        }else{
+            sensorDistance = hardwareMap.get(DistanceSensor.class, mc.left_distance);
+        }        this.timer = timer;
 
         past_distance_reading = getDist();
         current_dist = getDist();
@@ -75,7 +82,7 @@ public class Distance extends Subsystem{
     }
     @Override
     public void telemetry() {
-        String label = front ? "Front " : "Back ";
+        String label = right ? "Right " : "Left ";
         telemetry.addData(label + "Robot Edge Distance", getDistFromRobotEdge());
         telemetry.addData(label + "Distance (in)", getDist());
     }
