@@ -20,6 +20,7 @@ public class ShivaniRigging extends Subsystem{
     PIDMotor hookMotor;
     TouchSensor touchSensor;  // Touch sensor Object
     DigitalChannel magnet_sensor;
+    Servo swing_damper;
 
 
     MecanumBotConstant mc = new MecanumBotConstant();
@@ -61,7 +62,7 @@ public class ShivaniRigging extends Subsystem{
         hookMotor.setDirection(DcMotor.Direction.FORWARD);
         hookMotor.pid_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         hookMotor.setMax(280);
-        hookMotor.setMin(-50);
+        hookMotor.setMin(-280);
         hookMotor.P = P;
         hookMotor.I = 0;
 
@@ -72,6 +73,7 @@ public class ShivaniRigging extends Subsystem{
         magnet_sensor.setMode(DigitalChannel.Mode.INPUT);
 
 
+        swing_damper = hardwareMap.get(Servo.class, mc.damper);
 
 
 
@@ -93,9 +95,11 @@ public class ShivaniRigging extends Subsystem{
         hookMotor.setDirection(DcMotor.Direction.FORWARD);
         hookMotor.pid_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         hookMotor.setMax(280);
-        hookMotor.setMin(-50);
+        hookMotor.setMin(-280);
         hookMotor.P = P;
         hookMotor.I = 0;
+
+        swing_damper = hardwareMap.get(Servo.class, mc.damper);
 
 
 
@@ -151,8 +155,12 @@ public class ShivaniRigging extends Subsystem{
 
     }
     public boolean isBusy(){
-        return activated && hookMotor.isBusy();
+        return !magnet_activated();
     }
+    public boolean doneMoving(){
+        return !hookMotor.isBusy();
+    }
+
     public void raise_hooks_to_sensor(){
         hook_time = timer.time();
         activated = true;
@@ -174,45 +182,35 @@ public class ShivaniRigging extends Subsystem{
                 try {
                     sleep(200);
                 }catch(InterruptedException e){
-
                 }
                 disable_update = true;
-
                 activated = false;
-                //                release_motor();
             }
-
             double elapsed_time = timer.time() - hook_time;
             double motor_power = Math.max(0.35, HOOK_POWER * (expected_run_time - elapsed_time)/expected_run_time);
             setHookPower(motor_power);
 
-        }else{
+        }
+        else{
             if(!disable_update) {
+                telemetry.addLine("Updating");
                 hookMotor.update();
+                telemetry.update();
             }
         }
         if(releasing_hooks){
             switch(release_state){
                 case EXTEND:
                     if(!hookMotor.isBusy()){
-                        hookMotor.move_async(0);
+                        hookMotor.move_async(-100);
                         release_time = timer.time();
-                        release_state = HOOK_STATE.RETRACT;
-                    }
-                    break;
-                case RETRACT:
-                    if(!hookMotor.isBusy()){
-                        setHookPower(-.4);
                         release_state = HOOK_STATE.COMPLETE;
-                        timer.reset();
-
                     }
                     break;
                 case COMPLETE:
-                    if(timer.time() > 0.3){
+                    if(!hookMotor.isBusy()){
                         setHookPower(0);
                         releasing_hooks = false;
-
                     }
                     break;
 
@@ -229,7 +227,7 @@ public class ShivaniRigging extends Subsystem{
     }
     public void release_hooks(){
         hookMotor.init();
-        hookMotor.move_async(150);
+        hookMotor.move_async(140);
         releasing_hooks = true;
         release_state = HOOK_STATE.EXTEND;
 
@@ -255,10 +253,17 @@ public class ShivaniRigging extends Subsystem{
         riggingMotor.init();
 
     }
+    public void moveDamper(double position){
+        swing_damper.setPosition(position);
+    }
+    public void releaseDamper(){
+        moveDamper(0.5);
+    }
 
     @Override
     public void init() {
         riggingMotor.setMax(0);
+        swing_damper.setPosition(1);
         hookMotor.init();
 
 

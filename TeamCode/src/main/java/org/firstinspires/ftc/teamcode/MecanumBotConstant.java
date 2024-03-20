@@ -16,13 +16,12 @@ public class MecanumBotConstant {
     public String delivery = "delivery_servo";//5
 
 
-    public String plane_launcher_spring_servo = "spring_servo";//4
+    public String damper = "damper_servo";//4
 
     public String range_sensor = "sensor_range";//I2C 1
     public String right_distance = "right_distance";//I2C 2
 
     public String color_sensor = "sensor_color";//I2C 3
-
 
 
 

@@ -56,17 +56,18 @@ public class MecanumRoadrunner extends LinearOpMode {
         IDENTIFY_SPOT
     }
     private AUTO_STATES auto_states;
-    private Vector2d left_blue = new Vector2d(49,40);
-    private Vector2d middle_blue = new Vector2d(49,36);
-    private Vector2d right_blue = new Vector2d(49, 30.5);
+    private Vector2d left_blue = new Vector2d(46,40);
+    private Vector2d middle_blue = new Vector2d(46,36);
+    private Vector2d right_blue = new Vector2d(46, 30.5);
 
-    private Vector2d left_red = new Vector2d(49, -31);
-    private Vector2d middle_red = new Vector2d(49,-37);
-    private Vector2d right_red = new Vector2d(49,-42);
+    private Vector2d left_red = new Vector2d(46, -31);
+    private Vector2d middle_red = new Vector2d(46,-37);
+    private Vector2d right_red = new Vector2d(46,-42);
 
     private boolean red = false;
     private boolean stack = false;
     private boolean crashed = false;
+    private boolean skip_strafe_move = false;
 
     private boolean middle_to_middle_of_field = false;
 
@@ -100,7 +101,7 @@ public class MecanumRoadrunner extends LinearOpMode {
 
         plane = new PlaneLauncher(hardwareMap);
         unicorn = new Unicorn(hardwareMap, telemetry);
-        distance = new Distance(hardwareMap, telemetry);
+        distance = new Distance(hardwareMap, telemetry, true);
         intake = new Intake(hardwareMap, telemetry);
         rigging = new ShivaniRigging(hardwareMap, telemetry);
         color = new Color(hardwareMap, telemetry);
@@ -131,6 +132,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                     telemetry.addLine("Selected Blue Backstage");
                     red = false;
                     stack = false;
+//                    skip_strafe_move = true;
                     position = START.BLUE_BACKDROP;
                     break;
                 }
@@ -140,6 +142,7 @@ public class MecanumRoadrunner extends LinearOpMode {
                     telemetry.update();
                     stack = false;
                     red = true;
+//                    skip_strafe_move = true;
                     position = START.RED_BACKDROP;
 
                     break;
@@ -442,7 +445,8 @@ public class MecanumRoadrunner extends LinearOpMode {
             drive.update();
             rigging.update();
             if(Math.abs(drive.getLastError().getX()) > 12 || Math.abs(drive.getLastError().getY()) > 12){
-
+                rigging.setHookPower(0);
+                rigging.moveHook(rigging.getHookPosition());
                 drive.breakFollowing();
                 drive.setDrivePower(new Pose2d());
                 crashed = true;
@@ -460,10 +464,12 @@ public class MecanumRoadrunner extends LinearOpMode {
             switch(auto_states){
                 case FIRST_PATH:
                     if (!drive.isBusy()) {
+                        rigging.setHookPower(0);
+                        rigging.moveHook(rigging.getHookPosition());
                         if(!crashed) {
                             if (!drive.isBusy()) {
-                                rigging.setHookPower(0);
-                                sleep(1000);
+
+                                sleep(500);
                                 Pose2d startPose = drive.getPoseEstimate();
                                 intoBackdrop = drive.trajectorySequenceBuilder(startPose)
                                         .back(getAdjustedDistance(),
@@ -473,13 +479,21 @@ public class MecanumRoadrunner extends LinearOpMode {
                                         )
                                         .build();
                                 drive.followTrajectorySequence(intoBackdrop);
-                                strafe_timer = timer.time();
+                                sleep(250);
                                 colors = color.getRGBValues();
-                                if(colors[0] < 0.014){
-                                    deliver();
+                                telemetry.addData("red", colors[0]);
+                                telemetry.addData("green", colors[1]);
+                                telemetry.addData("blue", colors[2]);
+                                telemetry.addData("no pixel", colors[0] <= 0.008);
+                                telemetry.update();
+
+                                if(colors[0] < 0.009){
+                                    deliver(true);
                                     park();
                                     return;
                                 }
+                                strafe_timer = timer.seconds();
+
                                 drive.setWeightedDrivePower(new Pose2d(0, strafe_power));
 
                                 auto_states = AUTO_STATES.IDENTIFY_SPOT;
@@ -492,11 +506,11 @@ public class MecanumRoadrunner extends LinearOpMode {
                     telemetry.addData("red", colors[0]);
                     telemetry.addData("green", colors[1]);
                     telemetry.addData("blue", colors[2]);
-                    if(colors[0] < 0.014 || timer.seconds() - strafe_timer > 3){
+                    if(colors[0] <= 0.009 || timer.seconds() - strafe_timer > 3){
                         drive.setWeightedDrivePower(new Pose2d());
                         if(strafe_power > 0) {
                             intoBackdrop = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                                    .back(getAdjustedDistance(),
+                                    .forward(.2,
                                             drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                                             drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
                                     )
@@ -504,15 +518,14 @@ public class MecanumRoadrunner extends LinearOpMode {
                         }
                         else{
                             intoBackdrop = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                                    .strafeRight(2)
-                                    .back(getAdjustedDistance(),
+                                    .forward(.2,
                                             drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                                             drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
                                     )
                                     .build();
                         }
                         drive.followTrajectorySequence(intoBackdrop);
-                        deliver();
+                        deliver(false);
                         park();
                         return;
                     }
@@ -526,9 +539,9 @@ public class MecanumRoadrunner extends LinearOpMode {
         }
     }
     public double getAdjustedDistance(){
-        double output = distance.getDist();
+        double output = distance.getDist() + 0.05;
         if (output > 78){
-            output = 8;
+            output = 0.5;
         }
         return output - 2;
 
@@ -573,33 +586,40 @@ public class MecanumRoadrunner extends LinearOpMode {
             unicorn.stow();
         }
     }
-    public void deliver(){
+
+    public void deliver(boolean dodge){
 //        sleep(500);
         unicorn.deliver();
-        sleep(1400);
-        unicorn.goToPosition(0.45);
-        sleep(500);
-        unicorn.deliver();
-        sleep(500);
+        sleep(1200);
+
+
         TrajectorySequence deliver_clear;
-        if(location == BoxDetection.Location.LEFT || location == BoxDetection.Location.MIDDLE){
-            deliver_clear = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                    .strafeLeft(4,
-                            drive.getVelocityConstraint(DriveConstants.MAX_VEL * .40, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                    .forward(3)
-                    .build();
+        if(!skip_strafe_move && !dodge && distance.getDist() > 3.6) {
+            colors = color.getRGBValues();
+            unicorn.deliver();
+            if(location == BoxDetection.Location.LEFT || location == BoxDetection.Location.MIDDLE){
+                deliver_clear = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                        .strafeLeft(4,
+                                drive.getVelocityConstraint(DriveConstants.MAX_VEL * .40, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                                drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                        .forward(3)
+                        .build();
+            } else {
+                deliver_clear = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                        .strafeRight(4,
+                                drive.getVelocityConstraint(DriveConstants.MAX_VEL * .40, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                                drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                        .forward(3)
+                        .build();
+            }
         }else{
             deliver_clear = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                    .strafeRight(4,
-                            drive.getVelocityConstraint(DriveConstants.MAX_VEL * .40, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                            drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                     .forward(3)
                     .build();
         }
         drive.followTrajectorySequence(deliver_clear);
-    }
 
+    }
 
 
 }

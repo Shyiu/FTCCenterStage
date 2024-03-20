@@ -15,8 +15,8 @@ public class MecaTank extends Subsystem{
     private Telemetry telemetry;
     private double MAX_DRIVE_SPEED = 1;
     public static double REAR_MIN_DISTANCE = 2.08;
-    public static double FRONT_MIN_DISTANCE = 4;
-    public static double distance_sensor_distance = 10;
+    public static double FRONT_MIN_DISTANCE = 5.7;
+    public static double distance_sensor_distance = 7.5;
     private boolean enable_front_stop = false;
     private boolean enable_rear_stop = false;
     public MecaTank(HardwareMap hardwareMap, Telemetry telemetry){
@@ -70,7 +70,7 @@ public class MecaTank extends Subsystem{
         double x1 = distance_rear_right.getFilteredDist();
         double x2 = distance_rear_left.getFilteredDist();
         double delta_x = x2 - x1;
-        return Math.asin(delta_x/distance_sensor_distance);
+        return Math.toDegrees(Math.atan(delta_x/distance_sensor_distance));
     }
     public void setPowers(double left_stick_y, double right_stick_y, double left_trigger, double right_trigger){
 
@@ -97,13 +97,13 @@ public class MecaTank extends Subsystem{
         double leftPower = sameSignSqrt(-left_stick_y);
         double rightPower = sameSignSqrt(-right_stick_y);
 
-//        if(enable_front_stop && rightPower > 0 && leftPower > 0 && distance_front.getFilteredDist() < FRONT_MIN_DISTANCE) {
-//            frontRight.setPower(0);
-//            backRight.setPower(0);
-//            frontLeft.setPower(0);
-//            backLeft.setPower(0);
-//            return;
-//        }
+        if(enable_front_stop && rightPower > 0 && leftPower > 0 && distance_front.getFilteredDist() < FRONT_MIN_DISTANCE) {
+            frontRight.setPower(0);
+            backRight.setPower(0);
+            frontLeft.setPower(0);
+            backLeft.setPower(0);
+            return;
+        }
         if (enable_rear_stop && leftPower < 0 && distance_rear_left.getFilteredDist() < REAR_MIN_DISTANCE){
             frontLeft.setPower(0);
             backLeft.setPower(0);

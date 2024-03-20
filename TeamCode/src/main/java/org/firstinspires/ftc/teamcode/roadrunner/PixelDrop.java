@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.DataTransfer;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
@@ -67,7 +68,7 @@ public class PixelDrop extends LinearOpMode {
 
 
         unicorn = new Unicorn(hardwareMap, telemetry);
-        distance = new Distance(hardwareMap, telemetry);
+        distance = new Distance(hardwareMap, telemetry, true);
         color = new Color(hardwareMap, telemetry);
 
         unicorn.init();
@@ -94,7 +95,6 @@ public class PixelDrop extends LinearOpMode {
                 case FIRST_PATH:
                     if (!drive.isBusy()) {
                             if (!drive.isBusy()) {
-                                rigging.setHookPower(0);
                                 sleep(1000);
                                 Pose2d startPose = drive.getPoseEstimate();
                                 intoBackdrop = drive.trajectorySequenceBuilder(startPose)
@@ -106,11 +106,23 @@ public class PixelDrop extends LinearOpMode {
                                         .build();
                                 drive.followTrajectorySequence(intoBackdrop);
                                 strafe_timer = timer.time();
+                                sleep(250);
                                 colors = color.getRGBValues();
-                                if(colors[0] < 0.014){
-                                    deliver();
+                                telemetry.addData("red", colors[0]);
+                                telemetry.addData("green", colors[1]);
+                                telemetry.addData("blue", colors[2]);
+                                telemetry.addData("no pixel", colors[0] <= 0.008);
+                                telemetry.update();
+
+                                if(colors[0] < 0.009){
+                                    deliver(true);
+                                    telemetry.addLine("no pixel");
+                                    telemetry.update();
+                                    sleep(2000);
                                     return;
                                 }
+                                strafe_timer = timer.seconds();
+
                                 drive.setWeightedDrivePower(new Pose2d(0, strafe_power));
 
                                 auto_states = AUTO_STATES.IDENTIFY_SPOT;
@@ -123,11 +135,17 @@ public class PixelDrop extends LinearOpMode {
                     telemetry.addData("red", colors[0]);
                     telemetry.addData("green", colors[1]);
                     telemetry.addData("blue", colors[2]);
-                    if(colors[0] < 0.014 || timer.seconds() - strafe_timer > 3){
+                    telemetry.addData("no pixel dodge", colors[0] <= 0.008);
+                    telemetry.addData("timer dodge", timer.seconds() - strafe_timer > 3);
+                    telemetry.update();
+                    if(timer.seconds() - strafe_timer < 0.1){
+                        break;
+                    }
+                    if(colors[0] <= 0.009 || timer.seconds() - strafe_timer > 3){
                         drive.setWeightedDrivePower(new Pose2d());
                         if(strafe_power > 0) {
                             intoBackdrop = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                                    .back(getAdjustedDistance(),
+                                    .forward(.2,
                                             drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                                             drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
                                     )
@@ -135,15 +153,17 @@ public class PixelDrop extends LinearOpMode {
                         }
                         else{
                             intoBackdrop = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                                    .strafeRight(2)
-                                    .back(getAdjustedDistance(),
+                                    .forward(.2,
                                             drive.getVelocityConstraint(DriveConstants.MAX_VEL * .10, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                                             drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL)
                                     )
                                     .build();
                         }
                         drive.followTrajectorySequence(intoBackdrop);
-                        deliver();
+                        deliver(false);
+                        telemetry.addLine("dodged");
+                        telemetry.update();
+                        sleep(2000);
                         return;
                     }
                     break;
@@ -154,25 +174,50 @@ public class PixelDrop extends LinearOpMode {
             telemetry.update();
 
 
+
             }
         }
 
     public double getAdjustedDistance(){
-        double output = distance.getDistFromRobotEdge()+ 0.05;
+        double output = distance.getDist() + 0.05;
         if (output > 78){
-            output = 8;
+            output = 0.5;
         }
-        return output;
+        return output - 2;
 
     }
 
-    public void deliver(){
+    public void deliver(boolean dodge){
 //        sleep(500);
         unicorn.deliver();
-        sleep(1400);
-        unicorn.goToPosition(0.45);
-        sleep(500);
-        unicorn.deliver();
-        sleep(500);
+        sleep(2700);
+
+
+        TrajectorySequence deliver_clear;
+        if(!dodge && distance.getDist() > 3.6) {
+            colors = color.getRGBValues();
+            unicorn.deliver();
+            if (side == SIDE.LEFT || side == SIDE.MIDDLE) {
+                deliver_clear = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                        .strafeLeft(4,
+                                drive.getVelocityConstraint(DriveConstants.MAX_VEL * .40, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                                drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                        .forward(3)
+                        .build();
+            } else {
+                deliver_clear = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                        .strafeRight(4,
+                                drive.getVelocityConstraint(DriveConstants.MAX_VEL * .40, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                                drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                        .forward(3)
+                        .build();
+            }
+        }else{
+            deliver_clear = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                    .forward(3)
+                    .build();
+        }
+        drive.followTrajectorySequence(deliver_clear);
+
     }
 }

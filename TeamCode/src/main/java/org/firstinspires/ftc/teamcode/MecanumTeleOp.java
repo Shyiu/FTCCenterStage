@@ -54,27 +54,35 @@ public class MecanumTeleOp extends LinearOpMode {
     public enum UNICORN_STATE{
         WAIT, DELIVER, RETRACT,EXTEND
     }
+    public enum RIGGING_STATE{
+        WAIT, MOVE, AUTO_MOVE
+    }
     DELIVERY_STATE delivery_state;
     UNICORN_STATE unicorn_state;
+    RIGGING_STATE rigging_state;
     PLANE_STATE plane_state;
     AprilTagPipeline apriltag_pipeline;
     ArrayList<Integer> apriltag_targets;
     SCANNING_STATE scanning_state;
 
     public double delivery_timer = 0;
-    public static int plane_launch_height = 210;
+    public static int plane_launch_height = 170;
     public static double PIXEL_DISTANCE = 3;
     public static boolean aarushi_being_useful = true;
     public static double STRAFE_SPEED = 0.3;
     public static double DRIVE_SPEED = 0.2;
+    public static boolean tele_op_delay = true;
     private boolean move_next = false;
     private boolean move_arm = false;
+    private boolean disable_manual = false;
     private boolean skip_auto_alignment = false;
     public static boolean enable_auto_drive = false;
     private boolean lock_stow = false;
     private boolean scanning = false;
-    private boolean disabled_zero = false;
+    private boolean update_rigging = false;
     public static boolean active_telemetry = false;
+    private boolean enable_rear = true;
+    private boolean enable_front = true;
     public static boolean red = false;
     private double plane_time = 0;
     private double throw_time = 0;
@@ -83,7 +91,9 @@ public class MecanumTeleOp extends LinearOpMode {
     private double scanning_time;
     private double delay_timer = 0;
     private boolean rr_on = false;
+    public static double rig_delay = 85;
     private double starting_position = 0;
+    private boolean hook_moved = false;
     public static double BACKDROP_DISTANCE = 18.00;
     public static double PIXEL_TIME = 0.6;
     private boolean bucket_compensation = false;
@@ -106,6 +116,8 @@ public class MecanumTeleOp extends LinearOpMode {
         plane_state = PLANE_STATE.WAIT;
 
         scanning_state = SCANNING_STATE.WAIT;
+
+        rigging_state = RIGGING_STATE.WAIT;
 
 
 
@@ -133,8 +145,7 @@ public class MecanumTeleOp extends LinearOpMode {
 
         unicorn = new Unicorn(hardwareMap, telemetry);
 
-
-
+        intake.useOldAlignment();
 
         distance_rear_left = new Distance(hardwareMap, telemetry, false, timer);
         distance_rear_right = new Distance(hardwareMap, telemetry, true, timer);
@@ -229,7 +240,12 @@ public class MecanumTeleOp extends LinearOpMode {
             }else if(gamepad2.dpad_down){
                 intake.useOldAlignment();
             }
-
+            if(gamepad2.right_trigger > 0.5){
+                intake.moveArm(intake.calculate_arm_limit(distance_rear_right.getFilteredDist() - 0.2));
+                disable_manual = true;
+            }
+            telemetry.addData("Calculated Arm Limit", intake.calculate_arm_limit(distance_rear_right.getFilteredDist()));
+            telemetry.addData("distance", distance_rear_right.getFilteredDist());
             if(gamepad2.right_bumper){
                 intake.setPower(0);
                 intake.moveArm(intake.getPosition());
@@ -300,12 +316,12 @@ public class MecanumTeleOp extends LinearOpMode {
                     delivery_state = DELIVERY_STATE.WAIT;
                     break;
                 case DELIVERY:
+                    disable_manual = true;
                     mecatank.setRearStop(true);
                     intake.delivery();
                     delivery_state = DELIVERY_STATE.WAIT;
                     break;
                 case D1:
-                case D2:
                     intake.delivery_next();
                     delivery_state = DELIVERY_STATE.WAIT;
                     Pose2d drive_estimate = drive.getPoseEstimate();
@@ -313,16 +329,29 @@ public class MecanumTeleOp extends LinearOpMode {
                         drive.setPoseEstimate(new Pose2d(distance_rear_right.getFilteredDist(), drive_estimate.getY(), drive_estimate.getHeading()));
                     }
                     break;
-
+                case D2:
+                    intake.delivery_next();
+                    delivery_state = DELIVERY_STATE.WAIT;
+                    drive_estimate = drive.getPoseEstimate();
+                    if(distance_rear_right.getFilteredDist() < 100) {
+                        drive.setPoseEstimate(new Pose2d(distance_rear_right.getFilteredDist(), drive_estimate.getY(), drive_estimate.getHeading()));
+                    }
+//                    move_next = true;
+                    break;
+            }
+            if(disable_manual && !intake.isBusy()){
+                disable_manual = false;
             }
             double intake_power = sameSignSqrt(gamepad2.left_stick_y/2.0);
-            if((distance_rear_right.getFilteredDist() < intake.calculate_robot_distance_limit(true) + 1) && intake_power > 0 && intake.getPosition() > intake.calculate_arm_limit(distance_rear_right.getFilteredDist() + 1.5) ){
-                intake.setPower(0);
-            }else{
-                intake.setPower(intake_power);
+            if(!disable_manual) {
+                if ((distance_rear_right.getFilteredDist() < intake.calculate_robot_distance_limit(true) + 1) && intake_power > 0 && intake.getPosition() > intake.calculate_arm_limit(distance_rear_right.getFilteredDist() + .5)) {
+                    intake.setPower(0);
+                } else {
+                    intake.setPower(intake_power);
+                }
             }
             if(gamepad2.left_bumper){
-                intake.setPower(-0.005);
+                intake.moveArm(intake.getPosition() + 50);
             }
 
 
@@ -359,7 +388,7 @@ public class MecanumTeleOp extends LinearOpMode {
                             break;
                         }
                         Trajectory toDistance = drive.trajectoryBuilder(drive.getPoseEstimate())
-                                .forward(starting_position - target_position ,
+                                .forward(starting_position - target_position,
                                         drive.getVelocityConstraint(DriveConstants.MAX_VEL * .40, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                                         drive.getAccelerationConstraint(DriveConstants.MAX_ACCEL * 0.40))
                                 .build();
@@ -489,7 +518,10 @@ public class MecanumTeleOp extends LinearOpMode {
             if(bucket_compensation){
                 intake.bucket_compensation();
             }
-
+            if(gamepad1.dpad_up && DataTransfer.delivered) {
+                bucket_compensation = false;
+                intake.moveArm(intake.getPosition() - 50);
+            }
 
             //Unicorn Stuff
             switch(unicorn_state){
@@ -548,8 +580,12 @@ public class MecanumTeleOp extends LinearOpMode {
                             .forward(distance_front.getFilteredDist() - BACKDROP_DISTANCE)
                             .build();
                     drive.followTrajectoryAsync(toLaunch);
+
+                    plane_time = timer.seconds();
+                    plane_state = PLANE_STATE.LAUNCH;
+                    break;
                 case LAUNCH:
-                    if(!drive.isBusy() && !intake.isCompleteFor(2) && timer.seconds() - plane_time > 0.4){
+                    if(!drive.isBusy() && !intake.isCompleteFor(1) && timer.seconds() - plane_time > 0.4){
                         planeLauncher.launch();
                     }
                     break;
@@ -559,46 +595,74 @@ public class MecanumTeleOp extends LinearOpMode {
 
 
             //Rigging Stuff
-            double rigging_power = sameSignSqrt(gamepad2.right_stick_y);
-            if(rigging_power == 0 && !lock_stow && DataTransfer.delivered){
-                unicorn.stow();
-            }else if(timer.time() > 85){
-                if(!lock_stow) {
-                    unicorn_time = timer.time();
-                }
-                lock_stow = true;
-                unicorn.rigging();
-            }
-            if(lock_stow && timer.time() - unicorn_time > 0.3) {
-                if(rigging_power < 0) {
-                    shivaniRigging.setRiggingPower(rigging_power/2);
+            switch(rigging_state){
+                case WAIT:
+                    double rigging_power = sameSignSqrt(gamepad2.right_stick_y);
+                    if(rigging_power == 0 && !lock_stow && DataTransfer.delivered){
+                        unicorn.stow();
+                    }else if(timer.time() > rig_delay){
+                        if(!lock_stow) {
+                            unicorn_time = timer.time();
+                        }
+                        lock_stow = true;
+                        unicorn.rigging();
+                        shivaniRigging.releaseDamper();
+                    }
+                    if(lock_stow && timer.time() - unicorn_time > 0.3) {
+                        if(rigging_power < 0) {
+                            shivaniRigging.setRiggingPower(rigging_power/2);
 
-                }else{
-                    shivaniRigging.setRiggingPower(rigging_power);
-                }
+                        }else{
+                            shivaniRigging.setRiggingPower(rigging_power);
+                        }
+                    }
+                    else{
+                        shivaniRigging.setRiggingPower(0);
+                    }
+                    if(gamepad2.x && (timer.time() > rig_delay)){
+                        shivaniRigging.raise_hooks_to_sensor();
+                        telemetry.clear();
+                        telemetry.addLine("here");
+                        telemetry.update();
+                        update_rigging = true;
+                        rigging_state = RIGGING_STATE.AUTO_MOVE;
+                        break;
+                    }
+
+
+                    if(!gamepad1.left_bumper && gamepad1.dpad_down){
+                        shivaniRigging.setHookPower(-.3);
+                        rigging_state = RIGGING_STATE.MOVE;
+                        break;
+                    }else if(gamepad1.dpad_down && gamepad1.left_bumper){
+                        shivaniRigging.setHookPower(.4);
+                        rigging_state = RIGGING_STATE.MOVE;
+                        break;
+                    }
+                    break;
+
+                case MOVE:
+                    if(!gamepad1.dpad_down){
+                        shivaniRigging.setHookPower(0);
+                        rigging_state = RIGGING_STATE.WAIT;
+                    }
+                    break;
+                case AUTO_MOVE:
+                    if(!shivaniRigging.isBusy()) {
+                        rigging_state = RIGGING_STATE.WAIT;
+                        update_rigging = false;
+                    }
+                    break;
+
             }
-            else{
-                shivaniRigging.setRiggingPower(0);
-            }
+
 
             if(gamepad1.left_bumper){
                 intake.addBucketPos(sameSignSqrt(gamepad1.left_trigger) / 4);
             }else{
                 intake.addBucketPos(0);
             }
-            if(gamepad2.x && timer.time() > 85){
-                shivaniRigging.raise_hooks_to_sensor();
-                disabled_zero = true;
-            }else if(!gamepad1.left_bumper && gamepad1.dpad_down){
-                shivaniRigging.setHookPower(-.3);
-            }else if(gamepad1.dpad_down && gamepad1.left_bumper){
-                shivaniRigging.setHookPower(.4);
-            }
-            else{
-                if(!disabled_zero) {
-                    shivaniRigging.setHookPower(0);
-                }
-            }
+
 
 
 
@@ -609,14 +673,19 @@ public class MecanumTeleOp extends LinearOpMode {
             telemetry.update();
             drive.update();
             intake.update();
-//            distance_front.update();
-            distance_rear_left.update();
-            distance_rear_right.update();
-
-            if(disabled_zero) {
-                shivaniRigging.update();
+            if(enable_front) {
+                distance_front.update();
+            }
+            if(enable_rear) {
+                distance_rear_left.update();
+                distance_rear_right.update();
             }
 
+            if(update_rigging){
+                telemetry.clear();
+                telemetry.update();
+                shivaniRigging.update();
+            }
         }
 
     }

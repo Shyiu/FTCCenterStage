@@ -17,7 +17,7 @@ public class Unicorn extends Subsystem{
     private boolean stowed = false;
 
 
-    public static double DELIVER = 0.38;
+    public static double DELIVER = 0.40;
     public static double STOW_AWAY = 0;
     public static double RIGGING = 1;
     public static double TRAVEL_POSITION = 0.6;

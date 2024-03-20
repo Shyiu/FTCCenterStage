@@ -22,6 +22,7 @@ public class Distance extends Subsystem{
     private double delay = 0;
     private ElapsedTime timer;
     private boolean right = false;
+    private boolean front = false;
     Telemetry telemetry;
     public Distance(HardwareMap hardwareMap, Telemetry telemetry){
         this.telemetry = telemetry;
@@ -29,6 +30,7 @@ public class Distance extends Subsystem{
         timer = new ElapsedTime();
 
         sensorDistance = hardwareMap.get(DistanceSensor.class, mc.front_distance);
+        front = true;
 
     }
     public Distance(HardwareMap hardwareMap, Telemetry telemetry, boolean right){
@@ -82,8 +84,12 @@ public class Distance extends Subsystem{
     }
     @Override
     public void telemetry() {
-        String label = right ? "Right " : "Left ";
-        telemetry.addData(label + "Robot Edge Distance", getDistFromRobotEdge());
+        String label;
+        if(!front) {
+            label = right ? "Right " : "Left ";
+        }else{
+            label = "Front ";
+        }
         telemetry.addData(label + "Distance (in)", getDist());
     }
     public void update(){

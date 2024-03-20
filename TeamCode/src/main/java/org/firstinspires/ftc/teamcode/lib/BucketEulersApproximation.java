@@ -21,16 +21,14 @@ public class BucketEulersApproximation {
 
         reverse_distance = new NanoMap();
 
-
-
         //Specific Data for the Arm
         map.put(2200.0,0.1);
         map.put(2250.0,0.05);
-        map.put(2300.0,0.03);
-        map.put(2350.0,0.03);
-        map.put(2400.0,0.06);
-        map.put(2450.0,0.08);
-        map.put(2500.0,0.1);
+        map.put(2300.0,0.07);
+        map.put(2350.0,0.08);
+        map.put(2400.0,0.1);
+        map.put(2450.0,0.1);
+        map.put(2500.0,0.12);
         map.put(2550.0,0.12);
 
         distance.put(2200.0, 1.8);
@@ -94,7 +92,7 @@ public class BucketEulersApproximation {
         distance.put(2500.0, 13.0);
         distance.put(2550.0, 13.6);
 
-        reverse_distance.put(2.0, 1950.0);
+        reverse_distance.put(2.0, 1950);
         reverse_distance.put(3.0, 2000);
         reverse_distance.put(4.0, 2066);
         reverse_distance.put(5.0, 2136);
@@ -122,15 +120,11 @@ public class BucketEulersApproximation {
     }
 
     public double getApproximationForHashMap(NanoMap map, double value){
-        int low_value = steps * (int) Math.floor(value/steps);
-        int high_value = steps * (int) Math.ceil(value/steps);
-        double slope = (map.get(high_value) - map.get(low_value) )/(steps);
-        double y = slope * (value - low_value) + map.get(low_value);
-        return y;
+       return getApproximationForHashMap(map, value, steps);
     }
     public double getApproximationForHashMap(NanoMap map, double value, int steps){
-        int low_value = steps * (int) Math.floor(value/steps);
-        int high_value = steps * (int) Math.ceil(value/steps);
+        double low_value = steps * (int) Math.floor(value/steps);
+        double high_value = steps * (int) Math.ceil(value/steps);
         double slope = (map.get(high_value) - map.get(low_value) )/(steps);
         double y = slope * (value - low_value) + map.get(low_value);
         return y;

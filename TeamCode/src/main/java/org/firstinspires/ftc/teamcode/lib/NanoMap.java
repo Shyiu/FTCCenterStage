@@ -11,8 +11,8 @@ public class NanoMap {
     private double max_value;
     private double min_value;
     public NanoMap(){
-        max_key = 0;
-        min_key = 0;
+        max_key = Double.MIN_VALUE;
+        min_key = Double.MAX_VALUE;
         map = new HashMap<>();
         max_value = 0;
         min_value = 0;
