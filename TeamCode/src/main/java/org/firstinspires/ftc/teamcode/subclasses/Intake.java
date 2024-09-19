@@ -11,10 +11,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
 import org.firstinspires.ftc.teamcode.lib.BucketEulersApproximation;
+import org.firstinspires.ftc.teamcode.lib.PIDMotor;
+import org.firstinspires.ftc.teamcode.lib.Subsystem;
 
 
 @Config
-public class Intake extends Subsystem{
+public class Intake extends Subsystem {
     protected Servo rotation;
     protected Servo clutch;
     protected PIDMotor slide_rotation;
@@ -57,6 +59,11 @@ public class Intake extends Subsystem{
     private double BACKDROP_HEIGHT = 35;//in
     private double BACKDROP_LENGTH = 10.5;//in
 
+
+    //controller stuff
+    private double arm_at_0_ticks = 1750;
+    private double arm_at_45_ticks = 2302;
+    private double bucket_90 = 0.31;
 
     public static Servo.Direction SERVO_DIRECTION = Servo.Direction.REVERSE;
     Telemetry telemetry;
@@ -180,6 +187,17 @@ public class Intake extends Subsystem{
         update_anchor();
 
     }
+    public void moveBucketWithController(double targetAngle){
+        double arm_angle = (double) (slide_rotation.getCurrentPosition() - arm_at_0_ticks) / (arm_at_45_ticks - arm_at_0_ticks) * 45.0;
+         arm_angle = 90 - arm_angle;
+        double target_position = (90 - arm_angle - targetAngle)/90.0 * bucket_90;
+        telemetry.addData("real wow amzingArm Angle", arm_angle);
+        telemetry.addData("target_positoin for the ", target_position);
+
+
+        moveBucket(target_position);
+
+    }
     public void setHoldingPower(double power){
         holding_power = power;
     }
@@ -237,7 +255,7 @@ public class Intake extends Subsystem{
     @Override
     public void telemetry() {
         slide_rotation.telemetry();
-
+        telemetry.addData("Servo Position", rotation.getPosition());
         telemetry.addData("Anchor Position", anchor_position);
         telemetry.addData("Running", running);
         telemetry.addData("Arm Angle", ARM_ANGLE);

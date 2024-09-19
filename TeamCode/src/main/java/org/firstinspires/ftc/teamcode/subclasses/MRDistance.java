@@ -1,14 +1,14 @@
 package org.firstinspires.ftc.teamcode.subclasses;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cRangeSensor;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
+import org.firstinspires.ftc.teamcode.lib.Subsystem;
 
-public class MRDistance extends Subsystem{
+public class MRDistance extends Subsystem {
 
     private ModernRoboticsI2cRangeSensor rangeSensor;
     private MecanumBotConstant mc;

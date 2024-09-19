@@ -5,8 +5,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
+import org.firstinspires.ftc.teamcode.lib.Subsystem;
 
-public class MecaTank extends Subsystem{
+public class MecaTank extends Subsystem {
     private DcMotor frontLeft, frontRight, backLeft, backRight;
     private Distance distance_rear_left;
     private Distance distance_rear_right;

@@ -8,9 +8,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
+import org.firstinspires.ftc.teamcode.lib.Subsystem;
 
 @Config
-public class Unicorn extends Subsystem{
+public class Unicorn extends Subsystem {
     protected Servo delivery;
     protected MecanumBotConstant m;
 

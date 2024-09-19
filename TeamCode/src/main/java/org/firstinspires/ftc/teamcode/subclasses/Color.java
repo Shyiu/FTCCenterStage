@@ -8,8 +8,9 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
+import org.firstinspires.ftc.teamcode.lib.Subsystem;
 
-public class Color extends Subsystem{
+public class Color extends Subsystem {
     private NormalizedColorSensor colorSensor;
 
     private MecanumBotConstant mc;

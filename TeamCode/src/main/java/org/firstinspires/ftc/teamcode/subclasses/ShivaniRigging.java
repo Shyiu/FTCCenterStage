@@ -4,7 +4,6 @@ import static java.lang.Thread.sleep;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -13,9 +12,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
+import org.firstinspires.ftc.teamcode.lib.PIDMotor;
+import org.firstinspires.ftc.teamcode.lib.Subsystem;
 
 @Config
-public class ShivaniRigging extends Subsystem{
+public class ShivaniRigging extends Subsystem {
     PIDMotor riggingMotor;
     PIDMotor hookMotor;
     TouchSensor touchSensor;  // Touch sensor Object

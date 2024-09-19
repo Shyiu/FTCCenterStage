@@ -5,8 +5,10 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
+import org.firstinspires.ftc.teamcode.lib.Subsystem;
+
 @Config
-public class PlaneLauncher extends Subsystem{
+public class PlaneLauncher extends Subsystem {
     Servo launcher;
     private double startPos = 0.1;
     public static double launchPos = .21;

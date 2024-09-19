@@ -7,25 +7,22 @@ import android.util.Size;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
-import org.firstinspires.ftc.teamcode.pipelines.AprilTagPipeline;
+import org.firstinspires.ftc.teamcode.lib.Subsystem;
 import org.firstinspires.ftc.teamcode.pipelines.BoxDetection;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.teamcode.pipelines.BoxProcessor;
 
-import org.opencv.core.Rect;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class DualVisionProcessor extends Subsystem{
+public class DualVisionProcessor extends Subsystem {
     private VisionPortal boxVisonPortal, aprilTagVisionPortal;
 
     private BoxProcessor boxProcessor;

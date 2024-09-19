@@ -7,9 +7,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
+import org.firstinspires.ftc.teamcode.lib.Subsystem;
 
 @Config
-public class Delivery extends Subsystem{
+public class Delivery extends Subsystem {
     protected Servo delivery, plunger;
     protected MecanumBotConstant m;
     private ElapsedTime timer;

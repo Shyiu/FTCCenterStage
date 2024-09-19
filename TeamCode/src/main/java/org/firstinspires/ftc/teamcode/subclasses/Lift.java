@@ -7,8 +7,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
+import org.firstinspires.ftc.teamcode.lib.Subsystem;
 
-public class Lift extends Subsystem{
+public class Lift extends Subsystem {
     MecanumBotConstant m = new MecanumBotConstant();
     DcMotor slides;
     DigitalChannel magnet_sensor;

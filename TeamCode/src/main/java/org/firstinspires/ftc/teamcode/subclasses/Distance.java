@@ -8,9 +8,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.MecanumBotConstant;
+import org.firstinspires.ftc.teamcode.lib.Subsystem;
 
 @Config
-public class Distance extends Subsystem{
+public class Distance extends Subsystem {
     private DistanceSensor sensorDistance;
 
     private MecanumBotConstant mc;
