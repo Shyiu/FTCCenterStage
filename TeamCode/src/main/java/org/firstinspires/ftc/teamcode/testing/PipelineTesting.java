@@ -1,0 +1,54 @@
+package org.firstinspires.ftc.teamcode.testing;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.pipelines.AprilTagPipeline;
+import org.firstinspires.ftc.teamcode.subclasses.Distance;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+
+@Config
+@TeleOp(name = "PipeLineTesting")
+public class PipelineTesting extends LinearOpMode {
+    AprilTagPipeline pipeline;
+    ArrayList<Integer> targets;
+    Distance distance;
+
+    @Override
+    public void runOpMode() throws InterruptedException {
+        pipeline = new AprilTagPipeline(hardwareMap);
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        distance = new Distance(hardwareMap, telemetry);
+        distance.init();
+        targets =  new ArrayList<>(Arrays.asList(0,1,2,3,4,5,6));
+        waitForStart();
+        while(!isStopRequested() && opModeIsActive()){
+            AprilTagDetection detection = pipeline.getDetectionsForTargets(targets);
+            if (detection != null) {
+                telemetry.clear();
+
+                telemetry.addData("Target", "ID %d (%s)", detection.id, detection.metadata.name);
+                telemetry.addData("Range", "%5.1f inches", detection.ftcPose.range);//35 in
+                telemetry.addData("Bearing", "%3.0f degrees", detection.ftcPose.bearing);//12 degress
+                telemetry.addData("Yaw", "%3.0f degrees", detection.ftcPose.yaw);
+                telemetry.addData("X", detection.center.x);
+                telemetry.addData("Y", detection.center.y);
+                distance.telemetry();
+            }
+            else{
+                telemetry.clear();
+                telemetry.addLine("es broken");
+            }
+            telemetry.update();
+
+        }
+    }
+
+}

@@ -32,6 +32,10 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 import android.app.Activity;
 import android.graphics.Color;
 import android.view.View;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -39,6 +43,8 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.SwitchableLight;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 /*
@@ -64,8 +70,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
+@Config
 @TeleOp(name = "Sensor: Color", group = "Sensor")
-@Disabled
+//@Disabled
 public class SensorColor extends LinearOpMode {
 
   /** The colorSensor field will contain a reference to our color sensor hardware object */
@@ -75,7 +82,6 @@ public class SensorColor extends LinearOpMode {
    * in this sample application; you probably *don't* need this when you use a color sensor on your
    * robot. Note that you won't see anything change on the Driver Station, only on the Robot Controller. */
   View relativeLayout;
-
   /*
    * The runOpMode() method is the root of this OpMode, as it is in all LinearOpModes.
    * Our implementation here, though is a bit unusual: we've decided to put all the actual work
@@ -86,12 +92,14 @@ public class SensorColor extends LinearOpMode {
    * block around the main, core logic, and an easy way to make that all clear was to separate
    * the former from the latter in separate methods.
    */
-  @Override public void runOpMode() {
+  @Override
+  public void runOpMode() {
 
     // Get a reference to the RelativeLayout so we can later change the background
     // color of the Robot Controller app to match the hue detected by the RGB sensor.
     int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
     relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
+
 
     try {
       runSample(); // actually execute the sample
